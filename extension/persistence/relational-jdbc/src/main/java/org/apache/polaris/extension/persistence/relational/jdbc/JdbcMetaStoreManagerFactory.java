@@ -140,12 +140,6 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
         PrincipalSecretsResult secretsResult =
             bootstrapServiceAndCreatePolarisPrincipalForRealm(
                 realmContext, metaStoreManagerMap.get(realm));
-
-        // TODO: duplicate output when called from QuarkusProducers.maybeBootstrap
-        if (rootCredentialsSet.credentials().containsKey(realm)) {
-          LOGGER.info("Bootstrapped realm {} using preset credentials.", realm);
-        }
-
         results.put(realm, secretsResult);
       }
     }
