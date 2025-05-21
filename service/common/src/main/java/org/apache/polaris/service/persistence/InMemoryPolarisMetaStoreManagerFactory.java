@@ -117,6 +117,7 @@ public class InMemoryPolarisMetaStoreManagerFactory
         continue; // already bootstrapped (possible benign race)
       }
 
+      // TODO: duplicate output when called from QuarkusProducers.maybeBootstrap
       String msg =
           String.format(
               "realm: %1s root principal credentials: %2s:%3s",

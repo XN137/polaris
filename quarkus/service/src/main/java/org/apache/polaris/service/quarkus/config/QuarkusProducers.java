@@ -193,10 +193,8 @@ public class QuarkusProducers {
       var realmIds = realmContextConfiguration.realms();
 
       LOGGER.info(
-          "Bootstrapping realm(s) {}, if necessary, from root credentials set provided via the environment variable {} or Java system property {} ...",
-          realmIds.stream().map(r -> "'" + r + "'").collect(Collectors.joining(", ")),
-          RootCredentialsSet.ENVIRONMENT_VARIABLE,
-          RootCredentialsSet.SYSTEM_PROPERTY);
+          "Auto-Bootstrapping realm(s) {} ...",
+          realmIds.stream().map(r -> "'" + r + "'").collect(Collectors.joining(", ")));
 
       var result = factory.bootstrapRealms(realmIds, rootCredentialsSet);
 
