@@ -51,6 +51,10 @@ tasks.withType(JavaCompile::class.java).configureEach {
   val errorproneRules = rootProject.projectDir.resolve("codestyle/errorprone-rules.properties")
   inputs.file(errorproneRules).withPathSensitivity(PathSensitivity.RELATIVE)
   options.errorprone.checks.putAll(provider { memoizedErrorproneRules(errorproneRules) })
+  // use the below options to allow patching at compile time
+  // options.errorprone.errorproneArgs.add("-XepOpt:Nullness:DefaultNullnessAnnotation=jakarta.annotation.Nullable")
+  // options.errorprone.errorproneArgs.add("-XepPatchChecks:ReturnMissingNullable")
+  // options.errorprone.errorproneArgs.add("-XepPatchLocation:IN_PLACE")
 }
 
 private fun memoizedErrorproneRules(rulesFile: File): Map<String, CheckSeverity> =
