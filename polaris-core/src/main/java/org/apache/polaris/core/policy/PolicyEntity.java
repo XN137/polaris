@@ -20,6 +20,7 @@ package org.apache.polaris.core.policy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
+import jakarta.annotation.Nullable;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.rest.RESTUtil;
 import org.apache.polaris.core.entity.NamespaceEntity;
@@ -38,7 +39,7 @@ public class PolicyEntity extends PolarisEntity {
     super(sourceEntity);
   }
 
-  public static PolicyEntity of(PolarisBaseEntity sourceEntity) {
+  public static @Nullable PolicyEntity of(PolarisBaseEntity sourceEntity) {
     if (sourceEntity != null) {
       return new PolicyEntity(sourceEntity);
     }
@@ -76,7 +77,7 @@ public class PolicyEntity extends PolarisEntity {
   }
 
   @JsonIgnore
-  public Namespace getParentNamespace() {
+  public @Nullable Namespace getParentNamespace() {
     String parentNamespace = getInternalPropertiesAsMap().get(NamespaceEntity.PARENT_NAMESPACE_KEY);
     if (parentNamespace != null) {
       return RESTUtil.decodeNamespace(parentNamespace);

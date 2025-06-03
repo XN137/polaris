@@ -21,6 +21,7 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static org.apache.polaris.docs.generator.SmallRyeConfigs.concatWithDot;
 
 import com.sun.source.doctree.DocCommentTree;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -340,7 +341,7 @@ public class DocGenDoclet implements Doclet {
     }
 
     @Override
-    public Kind getKind() {
+    public @Nullable Kind getKind() {
       return null;
     }
 

@@ -19,6 +19,7 @@
 package org.apache.polaris.service.auth;
 
 import io.smallrye.common.annotation.Identifier;
+import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.context.RealmContext;
@@ -42,7 +43,7 @@ public class NoneTokenBrokerFactory implements TokenBrokerFactory {
         }
 
         @Override
-        public TokenResponse generateFromClientSecrets(
+        public @Nullable TokenResponse generateFromClientSecrets(
             String clientId,
             String clientSecret,
             String grantType,
@@ -53,7 +54,7 @@ public class NoneTokenBrokerFactory implements TokenBrokerFactory {
         }
 
         @Override
-        public TokenResponse generateFromToken(
+        public @Nullable TokenResponse generateFromToken(
             TokenType subjectTokenType,
             String subjectToken,
             String grantType,
@@ -63,7 +64,7 @@ public class NoneTokenBrokerFactory implements TokenBrokerFactory {
         }
 
         @Override
-        public DecodedToken verify(String token) {
+        public @Nullable DecodedToken verify(String token) {
           return null;
         }
       };

@@ -106,7 +106,7 @@ public class MemorySizeJackson extends SimpleModule {
         }
       }
 
-      return null;
+      return this;
     }
   }
 }

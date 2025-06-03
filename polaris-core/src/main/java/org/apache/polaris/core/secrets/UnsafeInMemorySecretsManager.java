@@ -105,13 +105,11 @@ public class UnsafeInMemorySecretsManager implements UserSecretsManager {
 
   /** {@inheritDoc} */
   @Override
-  @Nonnull
   public String readSecret(@Nonnull UserSecretReference secretReference) {
     // TODO: Precondition checks and/or wire in PolarisDiagnostics
     String encryptedSecretCipherTextBase64 = rawSecretStore.get(secretReference.getUrn());
     if (encryptedSecretCipherTextBase64 == null) {
-      // Secret at this URN no longer exists.
-      return null;
+      throw new IllegalArgumentException("Secret at this URN no longer exists.");
     }
 
     String encryptedSecretKeyBase64 = secretReference.getReferencePayload().get(ENCRYPTION_KEY);

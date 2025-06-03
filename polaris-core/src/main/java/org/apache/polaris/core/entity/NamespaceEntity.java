@@ -19,6 +19,7 @@
 package org.apache.polaris.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.annotation.Nullable;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.rest.RESTUtil;
 import org.apache.polaris.core.catalog.PolarisCatalogHelpers;
@@ -35,7 +36,7 @@ public class NamespaceEntity extends PolarisEntity {
     super(sourceEntity);
   }
 
-  public static NamespaceEntity of(PolarisBaseEntity sourceEntity) {
+  public static @Nullable NamespaceEntity of(PolarisBaseEntity sourceEntity) {
     if (sourceEntity != null) {
       return new NamespaceEntity(sourceEntity);
     }

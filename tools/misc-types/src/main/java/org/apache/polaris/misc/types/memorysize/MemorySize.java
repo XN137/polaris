@@ -25,6 +25,7 @@ import static java.util.Locale.ROOT;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
@@ -196,7 +197,7 @@ public abstract class MemorySize {
    * @param value - value to convert.
    * @return {@link MemorySize} - a memory size represented by the given value
    */
-  public static MemorySize valueOf(String value) {
+  public static @Nullable MemorySize valueOf(String value) {
     value = value.trim();
     if (value.isEmpty()) {
       return null;

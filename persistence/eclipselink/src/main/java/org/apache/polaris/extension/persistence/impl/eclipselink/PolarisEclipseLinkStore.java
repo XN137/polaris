@@ -206,6 +206,7 @@ public class PolarisEclipseLinkStore {
     LOGGER.debug("All entities deleted.");
   }
 
+  @Nullable
   ModelEntity lookupEntity(EntityManager session, long catalogId, long entityId, long typeCode) {
     diagnosticServices.check(session != null, "session_is_null");
     checkInitialized();
@@ -239,6 +240,7 @@ public class PolarisEclipseLinkStore {
     return (List<ModelEntity>) session.createNativeQuery(hql, ModelEntity.class).getResultList();
   }
 
+  @Nullable
   ModelEntityActive lookupEntityActive(
       EntityManager session, PolarisEntitiesActiveKey entityActiveKey) {
     diagnosticServices.check(session != null, "session_is_null");
@@ -306,6 +308,7 @@ public class PolarisEclipseLinkStore {
     return query.getResultList();
   }
 
+  @Nullable
   ModelEntityChangeTracking lookupEntityChangeTracking(
       EntityManager session, long catalogId, long entityId) {
     diagnosticServices.check(session != null, "session_is_null");
@@ -322,6 +325,7 @@ public class PolarisEclipseLinkStore {
         .orElse(null);
   }
 
+  @Nullable
   ModelGrantRecord lookupGrantRecord(
       EntityManager session,
       long securableCatalogId,
@@ -382,6 +386,7 @@ public class PolarisEclipseLinkStore {
         .getResultList();
   }
 
+  @Nullable
   ModelPrincipalSecrets lookupPrincipalSecrets(EntityManager session, String clientId) {
     diagnosticServices.check(session != null, "session_is_null");
     checkInitialized();
@@ -480,6 +485,7 @@ public class PolarisEclipseLinkStore {
     }
   }
 
+  @Nullable
   ModelPolicyMappingRecord lookupPolicyMappingRecord(
       EntityManager session,
       long targetCatalogId,

@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.persistence.relational.jdbc.models;
 
+import jakarta.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -113,7 +114,7 @@ public class ModelPolicyMappingRecord implements Converter<PolarisPolicyMappingR
     }
   }
 
-  public static ModelPolicyMappingRecord fromPolicyMappingRecord(
+  public static @Nullable ModelPolicyMappingRecord fromPolicyMappingRecord(
       PolarisPolicyMappingRecord record) {
     if (record == null) return null;
 
@@ -127,7 +128,8 @@ public class ModelPolicyMappingRecord implements Converter<PolarisPolicyMappingR
         .build();
   }
 
-  public static PolarisPolicyMappingRecord toPolicyMappingRecord(ModelPolicyMappingRecord model) {
+  public static @Nullable PolarisPolicyMappingRecord toPolicyMappingRecord(
+      ModelPolicyMappingRecord model) {
     if (model == null) return null;
 
     return new PolarisPolicyMappingRecord(

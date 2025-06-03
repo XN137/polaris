@@ -73,6 +73,7 @@ public class CatalogEntity extends PolarisEntity {
     super(sourceEntity);
   }
 
+  @Nullable
   public static CatalogEntity of(PolarisBaseEntity sourceEntity) {
     if (sourceEntity != null) {
       return new CatalogEntity(sourceEntity);
@@ -127,6 +128,7 @@ public class CatalogEntity extends PolarisEntity {
             .build();
   }
 
+  @Nullable
   private StorageConfigInfo getStorageInfo(Map<String, String> internalProperties) {
     if (internalProperties.containsKey(PolarisEntityConstants.getStorageConfigInfoPropertyName())) {
       PolarisStorageConfigurationInfo configInfo = getStorageConfigurationInfo();
@@ -169,6 +171,7 @@ public class CatalogEntity extends PolarisEntity {
     return null;
   }
 
+  @Nullable
   private ConnectionConfigInfo getConnectionInfo(Map<String, String> internalProperties) {
     if (internalProperties.containsKey(
         PolarisEntityConstants.getConnectionConfigInfoPropertyName())) {
@@ -196,6 +199,7 @@ public class CatalogEntity extends PolarisEntity {
     return null;
   }
 
+  @Nullable
   public Catalog.TypeEnum getCatalogType() {
     return Optional.ofNullable(getInternalPropertiesAsMap().get(CATALOG_TYPE_PROPERTY))
         .map(Catalog.TypeEnum::valueOf)
@@ -207,6 +211,7 @@ public class CatalogEntity extends PolarisEntity {
         .containsKey(PolarisEntityConstants.getConnectionConfigInfoPropertyName());
   }
 
+  @Nullable
   public ConnectionConfigInfoDpo getConnectionConfigInfoDpo() {
     String configStr =
         getInternalPropertiesAsMap()

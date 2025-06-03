@@ -155,6 +155,7 @@ public class BaseResult {
       }
     }
 
+    @Nullable
     static ReturnStatus getStatus(int code) {
       return code >= REVERSE_MAPPING_ARRAY.length ? null : REVERSE_MAPPING_ARRAY[code];
     }

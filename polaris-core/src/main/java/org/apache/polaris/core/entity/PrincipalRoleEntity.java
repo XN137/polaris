@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.core.entity;
 
+import jakarta.annotation.Nullable;
 import org.apache.polaris.core.admin.model.PrincipalRole;
 import org.apache.polaris.core.entity.table.federated.FederatedEntities;
 
@@ -29,7 +30,7 @@ public class PrincipalRoleEntity extends PolarisEntity {
     super(sourceEntity);
   }
 
-  public static PrincipalRoleEntity of(PolarisBaseEntity sourceEntity) {
+  public static @Nullable PrincipalRoleEntity of(PolarisBaseEntity sourceEntity) {
     if (sourceEntity != null) {
       return new PrincipalRoleEntity(sourceEntity);
     }

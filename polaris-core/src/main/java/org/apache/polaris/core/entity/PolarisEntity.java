@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,14 +140,14 @@ public class PolarisEntity extends PolarisBaseEntity {
     this.grantRecordsVersion = grantRecordsVersion;
   }
 
-  public static PolarisEntity of(PolarisBaseEntity sourceEntity) {
+  public static @Nullable PolarisEntity of(PolarisBaseEntity sourceEntity) {
     if (sourceEntity != null) {
       return new PolarisEntity(sourceEntity);
     }
     return null;
   }
 
-  public static PolarisEntity of(EntityResult result) {
+  public static @Nullable PolarisEntity of(EntityResult result) {
     if (result.isSuccess()) {
       return new PolarisEntity(result.getEntity());
     }
@@ -165,14 +166,14 @@ public class PolarisEntity extends PolarisBaseEntity {
     return entityCore;
   }
 
-  public static List<PolarisEntityCore> toCoreList(List<PolarisEntity> path) {
+  public static @Nullable List<PolarisEntityCore> toCoreList(List<PolarisEntity> path) {
     return Optional.ofNullable(path)
         .filter(Predicate.not(List::isEmpty))
         .map(list -> list.stream().map(PolarisEntity::toCore).collect(Collectors.toList()))
         .orElse(null);
   }
 
-  public static List<NameAndId> toNameAndIdList(List<EntityNameLookupRecord> entities) {
+  public static @Nullable List<NameAndId> toNameAndIdList(List<EntityNameLookupRecord> entities) {
     return Optional.ofNullable(entities)
         .map(
             list ->

@@ -447,6 +447,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
     return b == null ? 0 : b.getGrantRecordsVersion();
   }
 
+  @Nullable
   @Override
   public PolarisGrantRecord lookupGrantRecord(
       @Nonnull PolarisCallContext callCtx,

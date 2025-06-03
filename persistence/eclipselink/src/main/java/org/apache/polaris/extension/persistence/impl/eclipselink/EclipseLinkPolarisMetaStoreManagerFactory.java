@@ -74,10 +74,12 @@ public class EclipseLinkPolarisMetaStoreManagerFactory
         secretsGenerator(realmContext, rootCredentialsSet));
   }
 
+  @Nullable
   private String configurationFile() {
     return eclipseLinkConfiguration.configurationFile().map(Path::toString).orElse(null);
   }
 
+  @Nullable
   private String persistenceUnitName() {
     return eclipseLinkConfiguration.configurationFile().isPresent()
         ? eclipseLinkConfiguration.persistenceUnit()

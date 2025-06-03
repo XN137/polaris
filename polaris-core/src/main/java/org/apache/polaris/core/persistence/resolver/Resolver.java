@@ -401,6 +401,7 @@ public class Resolver {
    *
    * @return status of the resolve pass
    */
+  @Nullable
   private ResolverStatus runResolvePass() {
 
     // we will resolve those again
@@ -956,6 +957,7 @@ public class Resolver {
    * @return the resolve entity. Potentially update the toValidate list if we will have to validate
    *     that this entity is up-to-date
    */
+  @Nullable
   private ResolvedPolarisEntity resolveByName(
       @Nonnull List<ResolvedPolarisEntity> toValidate,
       long catalogId,
@@ -1039,6 +1041,7 @@ public class Resolver {
    * @return the resolve entity. Potentially update the toValidate list if we will have to validate
    *     that this entity is up-to-date
    */
+  @Nullable
   private ResolvedPolarisEntity resolveById(
       @Nonnull List<ResolvedPolarisEntity> toValidate,
       @Nonnull PolarisEntityType entityType,

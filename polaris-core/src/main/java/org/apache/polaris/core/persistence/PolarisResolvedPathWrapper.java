@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.core.persistence;
 
+import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.polaris.core.entity.PolarisEntity;
@@ -35,14 +36,14 @@ public class PolarisResolvedPathWrapper {
     this.resolvedPath = resolvedPath;
   }
 
-  public ResolvedPolarisEntity getResolvedLeafEntity() {
+  public @Nullable ResolvedPolarisEntity getResolvedLeafEntity() {
     if (resolvedPath == null || resolvedPath.isEmpty()) {
       return null;
     }
     return resolvedPath.get(resolvedPath.size() - 1);
   }
 
-  public PolarisEntity getRawLeafEntity() {
+  public @Nullable PolarisEntity getRawLeafEntity() {
     ResolvedPolarisEntity resolvedEntity = getResolvedLeafEntity();
     if (resolvedEntity != null) {
       return resolvedEntity.getEntity();
@@ -54,21 +55,21 @@ public class PolarisResolvedPathWrapper {
     return resolvedPath;
   }
 
-  public List<PolarisEntity> getRawFullPath() {
+  public @Nullable List<PolarisEntity> getRawFullPath() {
     if (resolvedPath == null) {
       return null;
     }
     return resolvedPath.stream().map(ResolvedPolarisEntity::getEntity).collect(Collectors.toList());
   }
 
-  public List<ResolvedPolarisEntity> getResolvedParentPath() {
+  public @Nullable List<ResolvedPolarisEntity> getResolvedParentPath() {
     if (resolvedPath == null) {
       return null;
     }
     return resolvedPath.subList(0, resolvedPath.size() - 1);
   }
 
-  public List<PolarisEntity> getRawParentPath() {
+  public @Nullable List<PolarisEntity> getRawParentPath() {
     if (resolvedPath == null) {
       return null;
     }

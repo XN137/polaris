@@ -83,6 +83,7 @@ public class LoadPolicyMappingsResult extends BaseResult {
     return entities;
   }
 
+  @Nullable
   @JsonIgnore
   public Map<Long, PolarisBaseEntity> getEntitiesAsMap() {
     return entities == null

@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.extension.persistence.impl.eclipselink.models;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -139,7 +140,7 @@ public class ModelEntityActive {
         .build();
   }
 
-  public static EntityNameLookupRecord toEntityActive(ModelEntityActive model) {
+  public static @Nullable EntityNameLookupRecord toEntityActive(ModelEntityActive model) {
     if (model == null) {
       return null;
     }

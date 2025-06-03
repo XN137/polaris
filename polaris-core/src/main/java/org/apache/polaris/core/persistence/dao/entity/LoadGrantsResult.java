@@ -95,6 +95,7 @@ public class LoadGrantsResult extends BaseResult {
     return entities;
   }
 
+  @Nullable
   @JsonIgnore
   public Map<Long, PolarisBaseEntity> getEntitiesAsMap() {
     return (this.getEntities() == null)

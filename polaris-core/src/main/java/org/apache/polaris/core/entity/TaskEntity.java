@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.core.entity;
 
+import jakarta.annotation.Nullable;
 import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.persistence.PolarisObjectMapperUtil;
@@ -31,7 +32,7 @@ public class TaskEntity extends PolarisEntity {
     super(sourceEntity);
   }
 
-  public static TaskEntity of(PolarisBaseEntity polarisEntity) {
+  public static @Nullable TaskEntity of(PolarisBaseEntity polarisEntity) {
     if (polarisEntity != null) {
       return new TaskEntity(polarisEntity);
     } else {

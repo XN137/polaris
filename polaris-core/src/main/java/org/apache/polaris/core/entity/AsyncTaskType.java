@@ -20,6 +20,7 @@ package org.apache.polaris.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import jakarta.annotation.Nullable;
 
 public enum AsyncTaskType {
   ENTITY_CLEANUP_SCHEDULER(1),
@@ -38,7 +39,7 @@ public enum AsyncTaskType {
   }
 
   @JsonCreator
-  public static AsyncTaskType fromTypeCode(int typeCode) {
+  public static @Nullable AsyncTaskType fromTypeCode(int typeCode) {
     for (AsyncTaskType taskType : AsyncTaskType.values()) {
       if (taskType.typeCode == typeCode) {
         return taskType;

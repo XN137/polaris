@@ -20,6 +20,7 @@ package org.apache.polaris.core.persistence.resolver;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import jakarta.annotation.Nullable;
 import jakarta.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -182,7 +183,7 @@ public class PolarisResolutionManifest implements PolarisResolutionManifestCatal
    *     "optional"
    */
   @Override
-  public PolarisResolvedPathWrapper getPassthroughResolvedPath(Object key) {
+  public @Nullable PolarisResolvedPathWrapper getPassthroughResolvedPath(Object key) {
     diagnostics.check(
         passthroughPaths.containsKey(key),
         "invalid_key_for_passthrough_resolved_path",
@@ -233,7 +234,7 @@ public class PolarisResolutionManifest implements PolarisResolutionManifestCatal
    *     "optional", or if it was resolved but the subType doesn't match the specified subType.
    */
   @Override
-  public PolarisResolvedPathWrapper getPassthroughResolvedPath(
+  public @Nullable PolarisResolvedPathWrapper getPassthroughResolvedPath(
       Object key, PolarisEntityType entityType, PolarisEntitySubType subType) {
     PolarisResolvedPathWrapper resolvedPath = getPassthroughResolvedPath(key);
     if (resolvedPath == null) {
@@ -273,7 +274,7 @@ public class PolarisResolutionManifest implements PolarisResolutionManifestCatal
     this.simulatedResolvedRootContainerEntity = simulatedResolvedRootContainerEntity;
   }
 
-  private ResolvedPolarisEntity getResolvedRootContainerEntity() {
+  private @Nullable ResolvedPolarisEntity getResolvedRootContainerEntity() {
     if (primaryResolverStatus.getStatus() != ResolverStatus.StatusEnum.SUCCESS) {
       return null;
     }
@@ -291,7 +292,7 @@ public class PolarisResolutionManifest implements PolarisResolutionManifestCatal
     return new PolarisResolvedPathWrapper(List.of(getResolvedRootContainerEntity()));
   }
 
-  public PolarisResolvedPathWrapper getResolvedReferenceCatalogEntity(
+  public @Nullable PolarisResolvedPathWrapper getResolvedReferenceCatalogEntity(
       boolean prependRootContainer) {
     // This is a server error instead of being able to legitimately return null, since this means
     // a callsite failed to incorporate a reference catalog into its authorization flow but is
@@ -335,7 +336,8 @@ public class PolarisResolutionManifest implements PolarisResolutionManifestCatal
    * @return null if the path resolved for {@code key} isn't fully-resolved when specified as
    *     "optional"
    */
-  public PolarisResolvedPathWrapper getResolvedPath(Object key, boolean prependRootContainer) {
+  public @Nullable PolarisResolvedPathWrapper getResolvedPath(
+      Object key, boolean prependRootContainer) {
     diagnostics.check(
         pathLookup.containsKey(key),
         "never_registered_key_for_resolved_path",
@@ -375,7 +377,7 @@ public class PolarisResolutionManifest implements PolarisResolutionManifestCatal
    * @return null if the path resolved for {@code key} isn't fully-resolved when specified as
    *     "optional", or if it was resolved but the subType doesn't match the specified subType.
    */
-  public PolarisResolvedPathWrapper getResolvedPath(
+  public @Nullable PolarisResolvedPathWrapper getResolvedPath(
       Object key,
       PolarisEntityType entityType,
       PolarisEntitySubType subType,
@@ -398,7 +400,7 @@ public class PolarisResolutionManifest implements PolarisResolutionManifestCatal
     return resolvedPath;
   }
 
-  public PolarisResolvedPathWrapper getResolvedTopLevelEntity(
+  public @Nullable PolarisResolvedPathWrapper getResolvedTopLevelEntity(
       String entityName, PolarisEntityType entityType) {
     // For now, all top-level entities will have the root container prepended so we don't have
     // a variation of this method that allows specifying whether to prepend the root container.
