@@ -18,6 +18,7 @@ package org.apache.polaris.docs.generator;
 import com.sun.source.doctree.DocCommentTree;
 import io.smallrye.config.ConfigMapping.NamingStrategy;
 import io.smallrye.config.ConfigMappingInterface;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -78,7 +79,8 @@ public final class SmallRyeConfigMappingInfo {
     return typeComment;
   }
 
-  private SmallRyeConfigPropertyInfo buildPropertyInfo(DocletEnvironment env, String methodName) {
+  private @Nullable SmallRyeConfigPropertyInfo buildPropertyInfo(
+      DocletEnvironment env, String methodName) {
     var property = methodNameToProperty.get(methodName);
     if (property == null) {
       return null;

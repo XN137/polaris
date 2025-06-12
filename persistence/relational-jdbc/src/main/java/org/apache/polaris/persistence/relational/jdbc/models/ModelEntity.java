@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.persistence.relational.jdbc.models;
 
+import jakarta.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -318,7 +319,7 @@ public class ModelEntity implements Converter<PolarisBaseEntity> {
         .build();
   }
 
-  public static PolarisBaseEntity toEntity(ModelEntity model) {
+  public static @Nullable PolarisBaseEntity toEntity(ModelEntity model) {
     if (model == null) {
       return null;
     }

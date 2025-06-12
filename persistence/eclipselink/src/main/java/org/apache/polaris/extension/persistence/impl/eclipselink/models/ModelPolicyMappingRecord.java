@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.extension.persistence.impl.eclipselink.models;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -144,7 +145,7 @@ public class ModelPolicyMappingRecord {
     this.parameters = record.getParameters();
   }
 
-  public static ModelPolicyMappingRecord fromPolicyMappingRecord(
+  public static @Nullable ModelPolicyMappingRecord fromPolicyMappingRecord(
       PolarisPolicyMappingRecord record) {
     if (record == null) return null;
 
@@ -158,7 +159,8 @@ public class ModelPolicyMappingRecord {
         .build();
   }
 
-  public static PolarisPolicyMappingRecord toPolicyMappingRecord(ModelPolicyMappingRecord model) {
+  public static @Nullable PolarisPolicyMappingRecord toPolicyMappingRecord(
+      ModelPolicyMappingRecord model) {
     if (model == null) return null;
 
     return new PolarisPolicyMappingRecord(

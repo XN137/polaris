@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.service.catalog.io;
 
+import jakarta.annotation.Nullable;
 import java.util.Map;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.InputFile;
@@ -39,7 +40,7 @@ public class WasbTranslatingFileIO implements FileIO {
     this.io = io;
   }
 
-  private static String translate(String path) {
+  private static @Nullable String translate(String path) {
     if (path == null) {
       return null;
     } else {

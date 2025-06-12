@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.core.entity;
 
+import jakarta.annotation.Nullable;
 import org.apache.polaris.core.admin.model.CatalogRole;
 
 /** Wrapper for translating between the REST CatalogRole object and the base PolarisEntity type. */
@@ -26,7 +27,7 @@ public class CatalogRoleEntity extends PolarisEntity {
     super(sourceEntity);
   }
 
-  public static CatalogRoleEntity of(PolarisBaseEntity sourceEntity) {
+  public static @Nullable CatalogRoleEntity of(PolarisBaseEntity sourceEntity) {
     if (sourceEntity != null) {
       return new CatalogRoleEntity(sourceEntity);
     }

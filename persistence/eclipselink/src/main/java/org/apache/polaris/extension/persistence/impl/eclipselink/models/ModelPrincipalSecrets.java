@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.extension.persistence.impl.eclipselink.models;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -109,7 +110,8 @@ public class ModelPrincipalSecrets {
     }
   }
 
-  public static ModelPrincipalSecrets fromPrincipalSecrets(PolarisPrincipalSecrets record) {
+  public static @Nullable ModelPrincipalSecrets fromPrincipalSecrets(
+      PolarisPrincipalSecrets record) {
     if (record == null) return null;
 
     return ModelPrincipalSecrets.builder()
@@ -121,7 +123,7 @@ public class ModelPrincipalSecrets {
         .build();
   }
 
-  public static PolarisPrincipalSecrets toPrincipalSecrets(ModelPrincipalSecrets model) {
+  public static @Nullable PolarisPrincipalSecrets toPrincipalSecrets(ModelPrincipalSecrets model) {
     if (model == null) return null;
 
     return new PolarisPrincipalSecrets(

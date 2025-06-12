@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.extension.persistence.impl.eclipselink.models;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -257,7 +258,7 @@ public class ModelEntity {
         .build();
   }
 
-  public static PolarisBaseEntity toEntity(ModelEntity model) {
+  public static @Nullable PolarisBaseEntity toEntity(ModelEntity model) {
     if (model == null) {
       return null;
     }

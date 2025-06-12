@@ -17,6 +17,7 @@ package org.apache.polaris.docs.generator;
 
 import com.sun.source.doctree.DocCommentTree;
 import io.smallrye.config.ConfigMappingInterface.Property;
+import jakarta.annotation.Nullable;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -233,7 +234,7 @@ public class SmallRyeConfigPropertyInfo implements PropertyInfo {
     return defaultValue(property);
   }
 
-  public static String defaultValue(Property property) {
+  public static @Nullable String defaultValue(Property property) {
     if (property.isOptional()) {
       var nested = property.asOptional().getNestedProperty();
       return defaultValue(nested);

@@ -84,7 +84,7 @@ public class LoadPolicyMappingsResult extends BaseResult {
   }
 
   @JsonIgnore
-  public Map<Long, PolarisBaseEntity> getEntitiesAsMap() {
+  public @Nullable Map<Long, PolarisBaseEntity> getEntitiesAsMap() {
     return entities == null
         ? null
         : entities.stream().collect(Collectors.toMap(PolarisBaseEntity::getId, entity -> entity));

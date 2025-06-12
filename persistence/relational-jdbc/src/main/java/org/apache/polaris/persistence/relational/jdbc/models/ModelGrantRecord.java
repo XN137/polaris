@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.persistence.relational.jdbc.models;
 
+import jakarta.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -140,7 +141,7 @@ public class ModelGrantRecord implements Converter<PolarisGrantRecord> {
     }
   }
 
-  public static ModelGrantRecord fromGrantRecord(PolarisGrantRecord record) {
+  public static @Nullable ModelGrantRecord fromGrantRecord(PolarisGrantRecord record) {
     if (record == null) return null;
 
     return ModelGrantRecord.builder()
@@ -152,7 +153,7 @@ public class ModelGrantRecord implements Converter<PolarisGrantRecord> {
         .build();
   }
 
-  public static PolarisGrantRecord toGrantRecord(ModelGrantRecord model) {
+  public static @Nullable PolarisGrantRecord toGrantRecord(ModelGrantRecord model) {
     if (model == null) return null;
 
     return new PolarisGrantRecord(

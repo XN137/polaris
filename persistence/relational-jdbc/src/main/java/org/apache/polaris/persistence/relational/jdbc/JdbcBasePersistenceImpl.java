@@ -502,7 +502,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   }
 
   @Override
-  public PolarisGrantRecord lookupGrantRecord(
+  public @Nullable PolarisGrantRecord lookupGrantRecord(
       @Nonnull PolarisCallContext callCtx,
       long securableCatalogId,
       long securableId,

@@ -587,7 +587,7 @@ public class PolarisAdminService {
   }
 
   /** Ensure a path is terminated with a `/` */
-  private String terminateWithSlash(String path) {
+  private @Nullable String terminateWithSlash(String path) {
     if (path == null) {
       return null;
     } else if (path.endsWith("/")) {

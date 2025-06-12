@@ -74,7 +74,7 @@ public class CatalogEntity extends PolarisEntity {
     super(sourceEntity);
   }
 
-  public static CatalogEntity of(PolarisBaseEntity sourceEntity) {
+  public static @Nullable CatalogEntity of(PolarisBaseEntity sourceEntity) {
     if (sourceEntity != null) {
       return new CatalogEntity(sourceEntity);
     }
@@ -128,7 +128,7 @@ public class CatalogEntity extends PolarisEntity {
             .build();
   }
 
-  private StorageConfigInfo getStorageInfo(Map<String, String> internalProperties) {
+  private @Nullable StorageConfigInfo getStorageInfo(Map<String, String> internalProperties) {
     if (internalProperties.containsKey(PolarisEntityConstants.getStorageConfigInfoPropertyName())) {
       PolarisStorageConfigurationInfo configInfo = getStorageConfigurationInfo();
       if (configInfo instanceof AwsStorageConfigurationInfo) {
@@ -170,7 +170,7 @@ public class CatalogEntity extends PolarisEntity {
     return null;
   }
 
-  private ConnectionConfigInfo getConnectionInfo(Map<String, String> internalProperties) {
+  private @Nullable ConnectionConfigInfo getConnectionInfo(Map<String, String> internalProperties) {
     if (internalProperties.containsKey(
         PolarisEntityConstants.getConnectionConfigInfoPropertyName())) {
       ConnectionConfigInfoDpo configInfo = getConnectionConfigInfoDpo();
@@ -197,7 +197,7 @@ public class CatalogEntity extends PolarisEntity {
     return null;
   }
 
-  public Catalog.TypeEnum getCatalogType() {
+  public @Nullable Catalog.TypeEnum getCatalogType() {
     return Optional.ofNullable(getInternalPropertiesAsMap().get(CATALOG_TYPE_PROPERTY))
         .map(Catalog.TypeEnum::valueOf)
         .orElse(null);
@@ -208,7 +208,7 @@ public class CatalogEntity extends PolarisEntity {
         .containsKey(PolarisEntityConstants.getConnectionConfigInfoPropertyName());
   }
 
-  public ConnectionConfigInfoDpo getConnectionConfigInfoDpo() {
+  public @Nullable ConnectionConfigInfoDpo getConnectionConfigInfoDpo() {
     String configStr =
         getInternalPropertiesAsMap()
             .get(PolarisEntityConstants.getConnectionConfigInfoPropertyName());

@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.core.entity;
 
+import jakarta.annotation.Nullable;
 import org.apache.polaris.core.admin.model.Principal;
 
 /** Wrapper for translating between the REST Principal object and the base PolarisEntity type. */
@@ -26,7 +27,7 @@ public class PrincipalEntity extends PolarisEntity {
     super(sourceEntity);
   }
 
-  public static PrincipalEntity of(PolarisBaseEntity sourceEntity) {
+  public static @Nullable PrincipalEntity of(PolarisBaseEntity sourceEntity) {
     if (sourceEntity != null) {
       return new PrincipalEntity(sourceEntity);
     }

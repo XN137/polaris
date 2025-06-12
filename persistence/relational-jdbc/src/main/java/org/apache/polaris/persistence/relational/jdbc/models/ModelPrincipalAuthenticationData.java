@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.persistence.relational.jdbc.models;
 
+import jakarta.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -137,7 +138,7 @@ public class ModelPrincipalAuthenticationData implements Converter<PolarisPrinci
     }
   }
 
-  public static ModelPrincipalAuthenticationData fromPrincipalAuthenticationData(
+  public static @Nullable ModelPrincipalAuthenticationData fromPrincipalAuthenticationData(
       PolarisPrincipalSecrets record) {
     if (record == null) return null;
 
@@ -150,7 +151,7 @@ public class ModelPrincipalAuthenticationData implements Converter<PolarisPrinci
         .build();
   }
 
-  public static PolarisPrincipalSecrets toPrincipalAuthenticationData(
+  public static @Nullable PolarisPrincipalSecrets toPrincipalAuthenticationData(
       ModelPrincipalAuthenticationData model) {
     if (model == null) return null;
 

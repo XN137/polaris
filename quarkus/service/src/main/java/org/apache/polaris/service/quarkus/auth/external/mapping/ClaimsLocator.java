@@ -127,7 +127,7 @@ class ClaimsLocator {
     return segments.toArray(new String[0]);
   }
 
-  private static Object convert(JsonValue jsonValue) {
+  private static @Nullable Object convert(JsonValue jsonValue) {
     return switch (jsonValue.getValueType()) {
       case TRUE -> true;
       case FALSE -> false;

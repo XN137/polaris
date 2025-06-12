@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -124,7 +125,7 @@ public abstract class PolarisStorageConfigurationInfo {
    * @param jsonStr a json string
    * @return the PolarisStorageConfiguration object
    */
-  public static PolarisStorageConfigurationInfo deserialize(
+  public static @Nullable PolarisStorageConfigurationInfo deserialize(
       @Nonnull PolarisDiagnostics diagnostics, final @Nonnull String jsonStr) {
     try {
       return DEFAULT_MAPPER.readValue(jsonStr, PolarisStorageConfigurationInfo.class);

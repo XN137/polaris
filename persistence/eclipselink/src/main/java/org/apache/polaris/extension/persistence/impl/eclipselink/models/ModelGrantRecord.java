@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.extension.persistence.impl.eclipselink.models;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
@@ -120,7 +121,7 @@ public class ModelGrantRecord {
     }
   }
 
-  public static ModelGrantRecord fromGrantRecord(PolarisGrantRecord record) {
+  public static @Nullable ModelGrantRecord fromGrantRecord(PolarisGrantRecord record) {
     if (record == null) return null;
 
     return ModelGrantRecord.builder()
@@ -132,7 +133,7 @@ public class ModelGrantRecord {
         .build();
   }
 
-  public static PolarisGrantRecord toGrantRecord(ModelGrantRecord model) {
+  public static @Nullable PolarisGrantRecord toGrantRecord(ModelGrantRecord model) {
     if (model == null) return null;
 
     return new PolarisGrantRecord(
