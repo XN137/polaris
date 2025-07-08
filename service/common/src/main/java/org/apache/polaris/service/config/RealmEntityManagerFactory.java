@@ -22,9 +22,14 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.polaris.core.config.PolarisConfigurationStore;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
 import org.apache.polaris.core.persistence.PolarisEntityManager;
+import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.cache.EntityCache;
+import org.apache.polaris.core.persistence.cache.InMemoryEntityCache;
+import org.apache.polaris.core.storage.cache.StorageCredentialCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,29 +39,34 @@ public class RealmEntityManagerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RealmEntityManagerFactory.class);
 
+  private final PolarisConfigurationStore configurationStore;
   private final MetaStoreManagerFactory metaStoreManagerFactory;
 
   // Key: realmIdentifier
   private final Map<String, PolarisEntityManager> cachedEntityManagers = new ConcurrentHashMap<>();
 
   @Inject
-  public RealmEntityManagerFactory(MetaStoreManagerFactory metaStoreManagerFactory) {
+  public RealmEntityManagerFactory(
+      PolarisConfigurationStore configurationStore,
+      MetaStoreManagerFactory metaStoreManagerFactory) {
+    this.configurationStore = configurationStore;
     this.metaStoreManagerFactory = metaStoreManagerFactory;
   }
 
   public PolarisEntityManager getOrCreateEntityManager(RealmContext context) {
     String realm = context.getRealmIdentifier();
-
     LOGGER.debug("Looking up PolarisEntityManager for realm {}", realm);
+    return cachedEntityManagers.computeIfAbsent(realm, r -> buildEntityManager(context));
+  }
 
-    return cachedEntityManagers.computeIfAbsent(
-        realm,
-        r -> {
-          LOGGER.info("Initializing new PolarisEntityManager for realm {}", r);
-          return new PolarisEntityManager(
-              metaStoreManagerFactory.getOrCreateMetaStoreManager(context),
-              metaStoreManagerFactory.getOrCreateStorageCredentialCache(context),
-              metaStoreManagerFactory.getOrCreateEntityCache(context));
-        });
+  private PolarisEntityManager buildEntityManager(RealmContext context) {
+    LOGGER.info("Initializing new PolarisEntityManager for realm {}", context.getRealmIdentifier());
+    PolarisMetaStoreManager metaStoreManager =
+        metaStoreManagerFactory.getOrCreateMetaStoreManager(context);
+    StorageCredentialCache storageCredentialsCache =
+        new StorageCredentialCache(context, configurationStore);
+    EntityCache entityCache =
+        new InMemoryEntityCache(context, configurationStore, metaStoreManager);
+    return new PolarisEntityManager(metaStoreManager, storageCredentialsCache, entityCache);
   }
 }

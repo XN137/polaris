@@ -155,9 +155,9 @@ public record TestServices(
               () -> GoogleCredentials.create(new AccessToken(GCP_ACCESS_TOKEN, new Date())));
       InMemoryPolarisMetaStoreManagerFactory metaStoreManagerFactory =
           new InMemoryPolarisMetaStoreManagerFactory(
-              storageIntegrationProvider, polarisDiagnostics, configurationStore);
+              storageIntegrationProvider, polarisDiagnostics);
       RealmEntityManagerFactory realmEntityManagerFactory =
-          new RealmEntityManagerFactory(metaStoreManagerFactory) {};
+          new RealmEntityManagerFactory(configurationStore, metaStoreManagerFactory);
       UserSecretsManagerFactory userSecretsManagerFactory =
           new UnsafeInMemorySecretsManagerFactory();
 

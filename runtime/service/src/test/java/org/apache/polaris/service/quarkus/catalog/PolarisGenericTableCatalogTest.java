@@ -302,16 +302,6 @@ public class PolarisGenericTableCatalogTest {
       }
 
       @Override
-      public StorageCredentialCache getOrCreateStorageCredentialCache(RealmContext realmContext) {
-        return new StorageCredentialCache(realmContext, configurationStore);
-      }
-
-      @Override
-      public InMemoryEntityCache getOrCreateEntityCache(RealmContext realmContext) {
-        return new InMemoryEntityCache(realmContext, configurationStore, metaStoreManager);
-      }
-
-      @Override
       public Map<String, PrincipalSecretsResult> bootstrapRealms(
           Iterable<String> realms, RootCredentialsSet rootCredentialsSet) {
         throw new NotImplementedException("Bootstrapping realms is not supported");
