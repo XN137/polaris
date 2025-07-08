@@ -313,11 +313,8 @@ public class CatalogEntity extends PolarisEntity implements LocationBasedEntity 
         CallContext callContext, Collection<String> allowedLocations) {
       int maxAllowedLocations =
           callContext
-              .getPolarisCallContext()
-              .getConfigurationStore()
-              .getConfiguration(
-                  callContext.getRealmContext(),
-                  BehaviorChangeConfiguration.STORAGE_CONFIGURATION_MAX_LOCATIONS);
+              .getRealmConfiguration()
+              .getConfiguration(BehaviorChangeConfiguration.STORAGE_CONFIGURATION_MAX_LOCATIONS);
       if (maxAllowedLocations != -1 && allowedLocations.size() > maxAllowedLocations) {
         throw new IllegalArgumentException(
             String.format(

@@ -603,11 +603,9 @@ public class PolarisAdminService {
    */
   private boolean catalogOverlapsWithExistingCatalog(CatalogEntity catalogEntity) {
     boolean allowOverlappingCatalogUrls =
-        getCurrentPolarisContext()
-            .getConfigurationStore()
-            .getConfiguration(
-                callContext.getRealmContext(), FeatureConfiguration.ALLOW_OVERLAPPING_CATALOG_URLS);
-
+        callContext
+            .getRealmConfiguration()
+            .getConfiguration(FeatureConfiguration.ALLOW_OVERLAPPING_CATALOG_URLS);
     if (allowOverlappingCatalogUrls) {
       return false;
     }
@@ -773,12 +771,10 @@ public class PolarisAdminService {
         findCatalogByName(name)
             .orElseThrow(() -> new NotFoundException("Catalog %s not found", name));
     // TODO: Handle return value in case of concurrent modification
-    PolarisCallContext polarisCallContext = callContext.getPolarisCallContext();
     boolean cleanup =
-        polarisCallContext
-            .getConfigurationStore()
-            .getConfiguration(
-                callContext.getRealmContext(), FeatureConfiguration.CLEANUP_ON_CATALOG_DROP);
+        callContext
+            .getRealmConfiguration()
+            .getConfiguration(FeatureConfiguration.CLEANUP_ON_CATALOG_DROP);
     DropEntityResult dropEntityResult =
         metaStoreManager.dropEntityIfExists(
             getCurrentPolarisContext(), null, entity, Map.of(), cleanup);

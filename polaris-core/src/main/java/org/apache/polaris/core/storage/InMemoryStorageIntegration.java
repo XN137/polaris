@@ -80,9 +80,7 @@ public abstract class InMemoryStorageIntegration<T extends PolarisStorageConfigu
         Optional.ofNullable(CallContext.getCurrentContext())
             .map(
                 ctx ->
-                    ctx.getPolarisCallContext()
-                        .getConfigurationStore()
-                        .getConfiguration(ctx.getRealmContext(), "ALLOW_WILDCARD_LOCATION", false))
+                    ctx.getRealmConfiguration().getConfiguration("ALLOW_WILDCARD_LOCATION", false))
             .orElse(false);
 
     if (allowWildcardLocation && allowedLocationStrings.contains("*")) {

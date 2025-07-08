@@ -59,6 +59,7 @@ import org.apache.polaris.core.auth.AuthenticatedPolarisPrincipal;
 import org.apache.polaris.core.auth.PolarisAuthorizerImpl;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.PolarisConfigurationStore;
+import org.apache.polaris.core.config.PolarisRealmConfiguration;
 import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.CatalogEntity;
@@ -203,8 +204,8 @@ public class PolicyCatalogTest {
     entityManager =
         new PolarisEntityManager(
             metaStoreManager,
-            new StorageCredentialCache(realmContext, configurationStore),
-            new InMemoryEntityCache(realmContext, configurationStore, metaStoreManager));
+            new StorageCredentialCache(polarisContext.getRealmConfiguration()),
+            new InMemoryEntityCache(polarisContext.getRealmConfiguration(), metaStoreManager));
 
     callContext = polarisContext;
 
@@ -235,7 +236,7 @@ public class PolicyCatalogTest {
             metaStoreManager,
             userSecretsManager,
             securityContext,
-            new PolarisAuthorizerImpl(new PolarisConfigurationStore() {}),
+            new PolarisAuthorizerImpl(),
             reservedProperties);
 
     String storageLocation = "s3://my-bucket/path/to/data";
@@ -269,9 +270,8 @@ public class PolicyCatalogTest {
             callContext, entityManager, securityContext, CATALOG_NAME);
     TaskExecutor taskExecutor = Mockito.mock();
     RealmEntityManagerFactory realmEntityManagerFactory =
-        new RealmEntityManagerFactory(createMockMetaStoreManagerFactory());
-    this.fileIOFactory =
-        new DefaultFileIOFactory(realmEntityManagerFactory, managerFactory, configurationStore);
+        new RealmEntityManagerFactory(createMockMetaStoreManagerFactory(), configurationStore);
+    this.fileIOFactory = new DefaultFileIOFactory(realmEntityManagerFactory, managerFactory);
 
     StsClient stsClient = Mockito.mock(StsClient.class);
     when(stsClient.assumeRole(isA(AssumeRoleRequest.class)))
@@ -326,13 +326,15 @@ public class PolicyCatalogTest {
       }
 
       @Override
-      public StorageCredentialCache getOrCreateStorageCredentialCache(RealmContext realmContext) {
-        return new StorageCredentialCache(realmContext, configurationStore);
+      public StorageCredentialCache getOrCreateStorageCredentialCache(
+          RealmContext realmContext, PolarisRealmConfiguration realmConfiguration) {
+        return new StorageCredentialCache(realmConfiguration);
       }
 
       @Override
-      public InMemoryEntityCache getOrCreateEntityCache(RealmContext realmContext) {
-        return new InMemoryEntityCache(realmContext, configurationStore, metaStoreManager);
+      public InMemoryEntityCache getOrCreateEntityCache(
+          RealmContext realmContext, PolarisRealmConfiguration realmConfiguration) {
+        return new InMemoryEntityCache(realmConfiguration, metaStoreManager);
       }
 
       @Override

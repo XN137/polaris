@@ -179,8 +179,8 @@ public class IcebergCatalogViewTest extends ViewCatalogTests<IcebergCatalog> {
     PolarisEntityManager entityManager =
         new PolarisEntityManager(
             metaStoreManager,
-            new StorageCredentialCache(realmContext, configurationStore),
-            new InMemoryEntityCache(realmContext, configurationStore, metaStoreManager));
+            new StorageCredentialCache(polarisContext.getRealmConfiguration()),
+            new InMemoryEntityCache(polarisContext.getRealmConfiguration(), metaStoreManager));
 
     CallContext.setCurrentContext(polarisContext);
 
@@ -211,7 +211,7 @@ public class IcebergCatalogViewTest extends ViewCatalogTests<IcebergCatalog> {
             metaStoreManager,
             userSecretsManager,
             securityContext,
-            new PolarisAuthorizerImpl(new PolarisConfigurationStore() {}),
+            new PolarisAuthorizerImpl(),
             reservedProperties);
     adminService.createCatalog(
         new CreateCatalogRequest(
@@ -236,7 +236,7 @@ public class IcebergCatalogViewTest extends ViewCatalogTests<IcebergCatalog> {
             polarisContext, entityManager, securityContext, CATALOG_NAME);
     FileIOFactory fileIOFactory =
         new DefaultFileIOFactory(
-            new RealmEntityManagerFactory(managerFactory), managerFactory, configurationStore);
+            new RealmEntityManagerFactory(managerFactory, configurationStore), managerFactory);
 
     testPolarisEventListener = (TestPolarisEventListener) polarisEventListener;
     this.catalog =

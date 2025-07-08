@@ -41,6 +41,7 @@ import org.apache.polaris.core.auth.AuthenticatedPolarisPrincipal;
 import org.apache.polaris.core.auth.PolarisAuthorizer;
 import org.apache.polaris.core.auth.PolarisAuthorizerImpl;
 import org.apache.polaris.core.config.PolarisConfigurationStore;
+import org.apache.polaris.core.config.PolarisRealmConfiguration;
 import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.persistence.BasePersistence;
@@ -101,14 +102,14 @@ public class QuarkusProducers {
   @Produces
   @ApplicationScoped
   public StorageCredentialCache storageCredentialCache(
-      RealmContext realmContext, PolarisConfigurationStore configurationStore) {
-    return new StorageCredentialCache(realmContext, configurationStore);
+      PolarisRealmConfiguration realmConfiguration) {
+    return new StorageCredentialCache(realmConfiguration);
   }
 
   @Produces
   @ApplicationScoped
-  public PolarisAuthorizer polarisAuthorizer(PolarisConfigurationStore configurationStore) {
-    return new PolarisAuthorizerImpl(configurationStore);
+  public PolarisAuthorizer polarisAuthorizer() {
+    return new PolarisAuthorizerImpl();
   }
 
   @Produces
@@ -137,6 +138,12 @@ public class QuarkusProducers {
         metaStoreManagerFactory.getOrCreateSessionSupplier(realmContext).get();
     return new PolarisCallContext(
         realmContext, metaStoreSession, diagServices, configurationStore, clock);
+  }
+
+  @Produces
+  @RequestScoped
+  public PolarisRealmConfiguration realmContext(CallContext callContext) {
+    return callContext.getRealmConfiguration();
   }
 
   // Polaris service beans - selected from @Identifier-annotated beans

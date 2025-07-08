@@ -163,12 +163,9 @@ public abstract class PolarisStorageConfigurationInfo {
               CatalogEntity catalog = CatalogEntity.of(entityPath.get(0));
               boolean allowEscape =
                   CallContext.getCurrentContext()
-                      .getPolarisCallContext()
-                      .getConfigurationStore()
+                      .getRealmConfiguration()
                       .getConfiguration(
-                          CallContext.getCurrentContext().getRealmContext(),
-                          catalog,
-                          FeatureConfiguration.ALLOW_UNSTRUCTURED_TABLE_LOCATION);
+                          catalog, FeatureConfiguration.ALLOW_UNSTRUCTURED_TABLE_LOCATION);
               if (!allowEscape
                   && catalog.getCatalogType() != Catalog.TypeEnum.EXTERNAL
                   && baseLocation != null) {
