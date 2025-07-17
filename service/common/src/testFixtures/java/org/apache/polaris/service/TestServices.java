@@ -45,6 +45,7 @@ import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
 import org.apache.polaris.core.persistence.PolarisEntityManager;
 import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.dao.entity.CreatePrincipalResult;
+import org.apache.polaris.core.persistence.resolver.ResolverFactory;
 import org.apache.polaris.core.secrets.UserSecretsManager;
 import org.apache.polaris.core.secrets.UserSecretsManagerFactory;
 import org.apache.polaris.core.storage.cache.StorageCredentialCache;
@@ -77,6 +78,8 @@ public record TestServices(
     IcebergRestConfigurationApi restConfigurationApi,
     IcebergCatalogAdapter catalogAdapter,
     PolarisConfigurationStore configurationStore,
+    StorageCredentialCache storageCredentialCache,
+    ResolverFactory resolverFactory,
     PolarisDiagnostics polarisDiagnostics,
     RealmEntityManagerFactory entityManagerFactory,
     MetaStoreManagerFactory metaStoreManagerFactory,
@@ -91,7 +94,7 @@ public record TestServices(
 
   @FunctionalInterface
   public interface FileIOFactorySupplier
-      extends BiFunction<RealmEntityManagerFactory, MetaStoreManagerFactory, FileIOFactory> {}
+      extends BiFunction<StorageCredentialCache, MetaStoreManagerFactory, FileIOFactory> {}
 
   private static class MockedConfigurationStore implements PolarisConfigurationStore {
     private final Map<String, Object> defaults;
@@ -157,9 +160,9 @@ public record TestServices(
       StorageCredentialCacheConfig storageCredentialCacheConfig = () -> 10_000;
       StorageCredentialCache storageCredentialCache =
           new StorageCredentialCache(storageCredentialCacheConfig);
+      ResolverFactory resolverFactory = Mockito.mock(ResolverFactory.class);
       RealmEntityManagerFactory realmEntityManagerFactory =
-          new RealmEntityManagerFactory(
-              metaStoreManagerFactory, configurationStore, storageCredentialCache);
+          new RealmEntityManagerFactory(metaStoreManagerFactory, resolverFactory);
       UserSecretsManagerFactory userSecretsManagerFactory =
           new UnsafeInMemorySecretsManagerFactory();
 
@@ -180,16 +183,16 @@ public record TestServices(
           userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
 
       FileIOFactory fileIOFactory =
-          fileIOFactorySupplier.apply(realmEntityManagerFactory, metaStoreManagerFactory);
+          fileIOFactorySupplier.apply(storageCredentialCache, metaStoreManagerFactory);
 
       TaskExecutor taskExecutor = Mockito.mock(TaskExecutor.class);
 
       PolarisEventListener polarisEventListener = new TestPolarisEventListener();
       CallContextCatalogFactory callContextFactory =
           new PolarisCallContextCatalogFactory(
-              realmEntityManagerFactory,
+              storageCredentialCache,
+              resolverFactory,
               metaStoreManagerFactory,
-              userSecretsManagerFactory,
               taskExecutor,
               fileIOFactory,
               polarisEventListener);
@@ -205,6 +208,7 @@ public record TestServices(
               callContext,
               callContextFactory,
               entityManager,
+              resolverFactory,
               metaStoreManager,
               userSecretsManager,
               authorizer,
@@ -267,6 +271,8 @@ public record TestServices(
           restConfigurationApi,
           catalogService,
           configurationStore,
+          storageCredentialCache,
+          resolverFactory,
           polarisDiagnostics,
           realmEntityManagerFactory,
           metaStoreManagerFactory,
