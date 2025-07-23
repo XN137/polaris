@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.auth.AuthenticatedPolarisPrincipal;
@@ -40,7 +40,6 @@ import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisEntity;
 import org.apache.polaris.core.entity.PrincipalEntity;
-import org.apache.polaris.core.persistence.BasePersistence;
 import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
 import org.apache.polaris.core.persistence.PolarisEntityManager;
 import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
@@ -95,8 +94,7 @@ public record TestServices(
   private static final String GCP_ACCESS_TOKEN = "abc";
 
   @FunctionalInterface
-  public interface FileIOFactorySupplier
-      extends BiFunction<StorageCredentialCache, MetaStoreManagerFactory, FileIOFactory> {}
+  public interface FileIOFactorySupplier extends Function<StorageCredentialCache, FileIOFactory> {}
 
   private static class MockedConfigurationStore implements PolarisConfigurationStore {
     private final Map<String, Object> defaults;
@@ -167,17 +165,15 @@ public record TestServices(
       UserSecretsManagerFactory userSecretsManagerFactory =
           new UnsafeInMemorySecretsManagerFactory();
 
-      BasePersistence metaStoreSession = metaStoreManagerFactory.getOrCreateSession(realmContext);
       CallContext callContext =
           new PolarisCallContext(
               realmContext,
-              metaStoreSession,
+              metaStoreManagerFactory,
               polarisDiagnostics,
               configurationStore,
               Clock.systemUTC());
 
-      PolarisMetaStoreManager metaStoreManager =
-          metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
+      PolarisMetaStoreManager metaStoreManager = callContext.getMetaStoreManager();
 
       EntityCache entityCache =
           metaStoreManagerFactory.getOrCreateEntityCache(
@@ -198,8 +194,7 @@ public record TestServices(
       UserSecretsManager userSecretsManager =
           userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
 
-      FileIOFactory fileIOFactory =
-          fileIOFactorySupplier.apply(storageCredentialCache, metaStoreManagerFactory);
+      FileIOFactory fileIOFactory = fileIOFactorySupplier.apply(storageCredentialCache);
 
       TaskExecutor taskExecutor = Mockito.mock(TaskExecutor.class);
 
@@ -275,7 +270,6 @@ public record TestServices(
           new PolarisCatalogsApi(
               new PolarisServiceImpl(
                   realmEntityManagerFactory,
-                  metaStoreManagerFactory,
                   userSecretsManagerFactory,
                   authorizer,
                   callContext,

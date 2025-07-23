@@ -44,7 +44,6 @@ import org.apache.polaris.core.admin.model.UpdateCatalogRequest;
 import org.apache.polaris.core.auth.AuthenticatedPolarisPrincipal;
 import org.apache.polaris.core.auth.PolarisAuthorizerImpl;
 import org.apache.polaris.core.context.CallContext;
-import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisEntity;
 import org.apache.polaris.core.entity.PolarisEntityConstants;
@@ -52,7 +51,6 @@ import org.apache.polaris.core.entity.PolarisEntitySubType;
 import org.apache.polaris.core.entity.PolarisEntityType;
 import org.apache.polaris.core.entity.PrincipalEntity;
 import org.apache.polaris.core.entity.PrincipalRoleEntity;
-import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
 import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.dao.entity.BaseResult;
 import org.apache.polaris.core.persistence.dao.entity.CreateCatalogResult;
@@ -79,7 +77,7 @@ public class ManagementServiceTest {
     PolarisCallContext polarisCallContext =
         new PolarisCallContext(
             fakeServices.realmContext(),
-            fakeServices.metaStoreManagerFactory().getOrCreateSession(fakeServices.realmContext()),
+            fakeServices.metaStoreManagerFactory(),
             fakeServices.polarisDiagnostics(),
             fakeServices.configurationStore(),
             Mockito.mock(Clock.class));
@@ -183,19 +181,9 @@ public class ManagementServiceTest {
         .hasMessage("Unsupported storage type: FILE");
   }
 
-  private PolarisMetaStoreManager setupMetaStoreManager() {
-    MetaStoreManagerFactory metaStoreManagerFactory = services.metaStoreManagerFactory();
-    RealmContext realmContext = services.realmContext();
-    return metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
-  }
-
-  private PolarisCallContext setupCallContext(PolarisMetaStoreManager metaStoreManager) {
-    MetaStoreManagerFactory metaStoreManagerFactory = services.metaStoreManagerFactory();
-    RealmContext realmContext = services.realmContext();
+  private PolarisCallContext setupCallContext() {
     return new PolarisCallContext(
-        realmContext,
-        metaStoreManagerFactory.getOrCreateSession(realmContext),
-        services.polarisDiagnostics());
+        services.realmContext(), services.metaStoreManagerFactory(), services.polarisDiagnostics());
   }
 
   private PolarisAdminService setupPolarisAdminService(
@@ -267,8 +255,8 @@ public class ManagementServiceTest {
 
   @Test
   public void testCannotAssignFederatedEntities() {
-    PolarisMetaStoreManager metaStoreManager = setupMetaStoreManager();
-    PolarisCallContext callContext = setupCallContext(metaStoreManager);
+    PolarisCallContext callContext = setupCallContext();
+    PolarisMetaStoreManager metaStoreManager = callContext.getMetaStoreManager();
     PolarisAdminService polarisAdminService =
         setupPolarisAdminService(metaStoreManager, callContext);
 
@@ -288,7 +276,7 @@ public class ManagementServiceTest {
   @Test
   public void testCatalogNotReturnedWhenDeletedAfterListBeforeGet() {
     TestPolarisMetaStoreManager metaStoreManager = new TestPolarisMetaStoreManager();
-    PolarisCallContext callContext = setupCallContext(metaStoreManager);
+    PolarisCallContext callContext = setupCallContext();
     PolarisAdminService polarisAdminService =
         setupPolarisAdminService(metaStoreManager, callContext);
 

@@ -40,7 +40,9 @@ public class ResolverTest extends BaseResolverTest {
       TreeMapMetaStore store = new TreeMapMetaStore(diagServices);
       TreeMapTransactionalPersistenceImpl metaStore =
           new TreeMapTransactionalPersistenceImpl(store, Mockito.mock(), RANDOM_SECRETS);
-      callCtx = new PolarisCallContext(() -> "testRealm", metaStore, diagServices);
+      callCtx =
+          new PolarisCallContext(
+              () -> "testRealm", () -> metaStore, this::metaStoreManager, diagServices);
     }
     return callCtx;
   }
@@ -57,7 +59,7 @@ public class ResolverTest extends BaseResolverTest {
   protected PolarisTestMetaStoreManager tm() {
     if (tm == null) {
       // bootstrap the mata store with our test schema
-      tm = new PolarisTestMetaStoreManager(metaStoreManager(), callCtx());
+      tm = new PolarisTestMetaStoreManager(callCtx());
     }
     return tm;
   }

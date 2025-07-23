@@ -79,9 +79,8 @@ public class PolarisTestMetaStoreManager {
   private boolean doRetry;
 
   // initialize the test
-  public PolarisTestMetaStoreManager(
-      PolarisMetaStoreManager polarisMetaStoreManager, PolarisCallContext polarisCallContext) {
-    this(polarisMetaStoreManager, polarisCallContext, System.currentTimeMillis(), true);
+  public PolarisTestMetaStoreManager(PolarisCallContext polarisCallContext) {
+    this(polarisCallContext, System.currentTimeMillis(), true);
 
     // bootstrap the Polaris service
     polarisMetaStoreManager.purge(polarisCallContext);
@@ -89,13 +88,10 @@ public class PolarisTestMetaStoreManager {
   }
 
   public PolarisTestMetaStoreManager(
-      PolarisMetaStoreManager polarisMetaStoreManager,
-      PolarisCallContext polarisCallContext,
-      long testStartTime,
-      boolean supportsChangeTracking) {
+      PolarisCallContext polarisCallContext, long testStartTime, boolean supportsChangeTracking) {
     this.testStartTime = testStartTime;
     this.polarisCallContext = polarisCallContext;
-    this.polarisMetaStoreManager = polarisMetaStoreManager;
+    this.polarisMetaStoreManager = polarisCallContext.getMetaStoreManager();
     this.supportsChangeTracking = supportsChangeTracking;
     this.doRetry = false;
   }

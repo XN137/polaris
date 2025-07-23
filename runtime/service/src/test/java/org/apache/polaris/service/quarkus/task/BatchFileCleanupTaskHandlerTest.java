@@ -68,9 +68,7 @@ public class BatchFileCleanupTaskHandlerTest {
   public void testMetadataFileCleanup() throws IOException {
     PolarisCallContext polarisCallContext =
         new PolarisCallContext(
-            realmContext,
-            metaStoreManagerFactory.getOrCreateSession(realmContext),
-            new PolarisDefaultDiagServiceImpl());
+            realmContext, metaStoreManagerFactory, new PolarisDefaultDiagServiceImpl());
     FileIO fileIO =
         new InMemoryFileIO() {
           @Override
@@ -181,9 +179,7 @@ public class BatchFileCleanupTaskHandlerTest {
   public void testMetadataFileCleanupIfFileNotExist() throws IOException {
     PolarisCallContext polarisCallContext =
         new PolarisCallContext(
-            realmContext,
-            metaStoreManagerFactory.getOrCreateSession(realmContext),
-            new PolarisDefaultDiagServiceImpl());
+            realmContext, metaStoreManagerFactory, new PolarisDefaultDiagServiceImpl());
     CallContext.setCurrentContext(polarisCallContext);
     FileIO fileIO = new InMemoryFileIO();
     TableIdentifier tableIdentifier = TableIdentifier.of(Namespace.of("db1", "schema1"), "table1");
@@ -226,9 +222,7 @@ public class BatchFileCleanupTaskHandlerTest {
   public void testCleanupWithRetries() throws IOException {
     PolarisCallContext polarisCallContext =
         new PolarisCallContext(
-            realmContext,
-            metaStoreManagerFactory.getOrCreateSession(realmContext),
-            new PolarisDefaultDiagServiceImpl());
+            realmContext, metaStoreManagerFactory, new PolarisDefaultDiagServiceImpl());
     CallContext.setCurrentContext(polarisCallContext);
     Map<String, AtomicInteger> retryCounter = new HashMap<>();
     FileIO fileIO =

@@ -60,9 +60,10 @@ public class JWTRSAKeyPairTest {
     final String clientId = "test-client-id";
     final String scope = "PRINCIPAL_ROLE:TEST";
 
-    PolarisCallContext polarisCallContext =
-        new PolarisCallContext(null, null, null, configurationStore, null);
     PolarisMetaStoreManager metastoreManager = Mockito.mock(PolarisMetaStoreManager.class);
+    PolarisCallContext polarisCallContext = Mockito.mock(PolarisCallContext.class);
+    Mockito.when(polarisCallContext.getMetaStoreManager()).thenReturn(metastoreManager);
+
     String mainSecret = "client-secret";
     PolarisPrincipalSecrets principalSecrets =
         new PolarisPrincipalSecrets(1L, clientId, mainSecret, "otherSecret");
@@ -80,7 +81,7 @@ public class JWTRSAKeyPairTest {
             metastoreManager.loadEntity(polarisCallContext, 0L, 1L, PolarisEntityType.PRINCIPAL))
         .thenReturn(new EntityResult(principal));
     KeyProvider provider = new LocalRSAKeyProvider(keyPair);
-    TokenBroker tokenBroker = new JWTRSAKeyPair(metastoreManager, 420, provider);
+    TokenBroker tokenBroker = new JWTRSAKeyPair(420, provider);
     TokenResponse token =
         tokenBroker.generateFromClientSecrets(
             clientId,

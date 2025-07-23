@@ -20,6 +20,7 @@ package org.apache.polaris.core.context;
 
 import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 
 /**
  * Stores elements associated with an individual REST request such as RealmContext, caller
@@ -56,4 +57,6 @@ public interface CallContext {
   PolarisCallContext getPolarisCallContext();
 
   RealmConfig getRealmConfig();
+
+  PolarisMetaStoreManager getMetaStoreManager();
 }

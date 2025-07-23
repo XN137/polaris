@@ -153,11 +153,16 @@ public class QuarkusProducers {
       RealmContext realmContext,
       PolarisDiagnostics diagServices,
       PolarisConfigurationStore configurationStore,
-      MetaStoreManagerFactory metaStoreManagerFactory,
+      BasePersistence metaStore,
+      PolarisMetaStoreManager metaStoreManager,
       Clock clock) {
-    BasePersistence metaStoreSession = metaStoreManagerFactory.getOrCreateSession(realmContext);
     return new PolarisCallContext(
-        realmContext, metaStoreSession, diagServices, configurationStore, clock);
+        realmContext,
+        () -> metaStore,
+        () -> metaStoreManager,
+        diagServices,
+        configurationStore,
+        clock);
   }
 
   @Produces

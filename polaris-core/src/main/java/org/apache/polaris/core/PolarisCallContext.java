@@ -18,15 +18,20 @@
  */
 package org.apache.polaris.core;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Suppliers;
 import jakarta.annotation.Nonnull;
 import java.time.Clock;
 import java.time.ZoneId;
+import java.util.function.Supplier;
 import org.apache.polaris.core.config.PolarisConfigurationStore;
 import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.config.RealmConfigImpl;
 import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.persistence.BasePersistence;
+import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
+import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 
 /**
  * The Call context is allocated each time a new REST request is processed. It contains instances of
@@ -34,28 +39,24 @@ import org.apache.polaris.core.persistence.BasePersistence;
  */
 public class PolarisCallContext implements CallContext {
 
-  // meta store which is used to persist Polaris entity metadata
-  private final BasePersistence metaStore;
-
-  // diag services
+  private final Supplier<? extends BasePersistence> metaStoreSupplier;
+  private final Supplier<PolarisMetaStoreManager> metaStoreManagerSupplier;
   private final PolarisDiagnostics diagServices;
-
   private final PolarisConfigurationStore configurationStore;
-
   private final Clock clock;
-
   private final RealmContext realmContext;
-
   private final RealmConfig realmConfig;
 
   public PolarisCallContext(
       @Nonnull RealmContext realmContext,
-      @Nonnull BasePersistence metaStore,
+      @Nonnull Supplier<? extends BasePersistence> metaStoreSupplier,
+      @Nonnull Supplier<PolarisMetaStoreManager> metaStoreManagerSupplier,
       @Nonnull PolarisDiagnostics diagServices,
       @Nonnull PolarisConfigurationStore configurationStore,
       @Nonnull Clock clock) {
     this.realmContext = realmContext;
-    this.metaStore = metaStore;
+    this.metaStoreSupplier = Suppliers.memoize(metaStoreSupplier::get);
+    this.metaStoreManagerSupplier = Suppliers.memoize(metaStoreManagerSupplier::get);
     this.diagServices = diagServices;
     this.configurationStore = configurationStore;
     this.clock = clock;
@@ -64,18 +65,53 @@ public class PolarisCallContext implements CallContext {
 
   public PolarisCallContext(
       @Nonnull RealmContext realmContext,
-      @Nonnull BasePersistence metaStore,
+      @Nonnull MetaStoreManagerFactory metaStoreManagerFactory,
+      @Nonnull PolarisDiagnostics diagServices,
+      @Nonnull PolarisConfigurationStore configurationStore,
+      @Nonnull Clock clock) {
+    this(
+        realmContext,
+        () -> metaStoreManagerFactory.getOrCreateSession(realmContext),
+        () -> metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext),
+        diagServices,
+        configurationStore,
+        clock);
+  }
+
+  public PolarisCallContext(
+      @Nonnull RealmContext realmContext,
+      @Nonnull Supplier<? extends BasePersistence> metaStoreSupplier,
+      @Nonnull Supplier<PolarisMetaStoreManager> metaStoreManagerSupplier,
       @Nonnull PolarisDiagnostics diagServices) {
     this(
         realmContext,
-        metaStore,
+        metaStoreSupplier,
+        metaStoreManagerSupplier,
+        diagServices,
+        new PolarisConfigurationStore() {},
+        Clock.system(ZoneId.systemDefault()));
+  }
+
+  @VisibleForTesting
+  public PolarisCallContext(
+      @Nonnull RealmContext realmContext,
+      @Nonnull MetaStoreManagerFactory metaStoreManagerFactory,
+      @Nonnull PolarisDiagnostics diagServices) {
+    this(
+        realmContext,
+        metaStoreManagerFactory,
         diagServices,
         new PolarisConfigurationStore() {},
         Clock.system(ZoneId.systemDefault()));
   }
 
   public BasePersistence getMetaStore() {
-    return metaStore;
+    return metaStoreSupplier.get();
+  }
+
+  @Override
+  public PolarisMetaStoreManager getMetaStoreManager() {
+    return metaStoreManagerSupplier.get();
   }
 
   public PolarisDiagnostics getDiagServices() {
@@ -111,6 +147,11 @@ public class PolarisCallContext implements CallContext {
     String realmId = this.realmContext.getRealmIdentifier();
     RealmContext realmContext = () -> realmId;
     return new PolarisCallContext(
-        realmContext, this.metaStore, this.diagServices, this.configurationStore, this.clock);
+        realmContext,
+        this.metaStoreSupplier,
+        this.metaStoreManagerSupplier,
+        this.diagServices,
+        this.configurationStore,
+        this.clock);
   }
 }

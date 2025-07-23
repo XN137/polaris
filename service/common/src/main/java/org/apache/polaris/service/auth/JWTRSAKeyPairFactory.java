@@ -27,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.service.auth.AuthenticationRealmConfiguration.TokenBrokerConfiguration.RSAKeyPairConfiguration;
 
 @ApplicationScoped
@@ -62,9 +61,7 @@ public class JWTRSAKeyPairFactory implements TokenBrokerFactory {
             .rsaKeyPair()
             .map(this::fileSystemKeyPair)
             .orElseGet(this::generateEphemeralKeyPair);
-    PolarisMetaStoreManager metaStoreManager =
-        metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
-    return new JWTRSAKeyPair(metaStoreManager, (int) maxTokenGeneration.toSeconds(), keyProvider);
+    return new JWTRSAKeyPair((int) maxTokenGeneration.toSeconds(), keyProvider);
   }
 
   private KeyProvider fileSystemKeyPair(RSAKeyPairConfiguration config) {

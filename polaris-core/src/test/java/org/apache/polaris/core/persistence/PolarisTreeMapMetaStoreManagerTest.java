@@ -35,14 +35,18 @@ public class PolarisTreeMapMetaStoreManagerTest extends BasePolarisMetaStoreMana
   public PolarisTestMetaStoreManager createPolarisTestMetaStoreManager() {
     PolarisDiagnostics diagServices = new PolarisDefaultDiagServiceImpl();
     TreeMapMetaStore store = new TreeMapMetaStore(diagServices);
+    TreeMapTransactionalPersistenceImpl treeMapTransactionalPersistence =
+        new TreeMapTransactionalPersistenceImpl(store, Mockito.mock(), RANDOM_SECRETS);
+    TransactionalMetaStoreManagerImpl metaStoreManager = new TransactionalMetaStoreManagerImpl();
     PolarisCallContext callCtx =
         new PolarisCallContext(
             () -> "testRealm",
-            new TreeMapTransactionalPersistenceImpl(store, Mockito.mock(), RANDOM_SECRETS),
+            () -> treeMapTransactionalPersistence,
+            () -> metaStoreManager,
             diagServices,
             new PolarisConfigurationStore() {},
             timeSource.withZone(ZoneId.systemDefault()));
 
-    return new PolarisTestMetaStoreManager(new TransactionalMetaStoreManagerImpl(), callCtx);
+    return new PolarisTestMetaStoreManager(callCtx);
   }
 }

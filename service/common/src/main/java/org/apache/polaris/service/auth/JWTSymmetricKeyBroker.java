@@ -20,17 +20,13 @@ package org.apache.polaris.service.auth;
 
 import com.auth0.jwt.algorithms.Algorithm;
 import java.util.function.Supplier;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 
 /** Generates a JWT using a Symmetric Key. */
 public class JWTSymmetricKeyBroker extends JWTBroker {
   private final Supplier<String> secretSupplier;
 
-  public JWTSymmetricKeyBroker(
-      PolarisMetaStoreManager metaStoreManager,
-      int maxTokenGenerationInSeconds,
-      Supplier<String> secretSupplier) {
-    super(metaStoreManager, maxTokenGenerationInSeconds);
+  public JWTSymmetricKeyBroker(int maxTokenGenerationInSeconds, Supplier<String> secretSupplier) {
+    super(maxTokenGenerationInSeconds);
     this.secretSupplier = secretSupplier;
   }
 

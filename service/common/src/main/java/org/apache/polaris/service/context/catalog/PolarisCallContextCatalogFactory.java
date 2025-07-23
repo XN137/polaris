@@ -86,7 +86,7 @@ public class PolarisCallContextCatalogFactory implements CallContextCatalogFacto
         new IcebergCatalog(
             storageCredentialCache,
             resolverFactory,
-            metaStoreManagerFactory.getOrCreateMetaStoreManager(context.getRealmContext()),
+            context.getMetaStoreManager(),
             context,
             resolvedManifest,
             securityContext,

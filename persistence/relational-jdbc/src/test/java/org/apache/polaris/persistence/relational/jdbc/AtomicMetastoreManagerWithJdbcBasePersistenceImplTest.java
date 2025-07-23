@@ -69,11 +69,12 @@ public class AtomicMetastoreManagerWithJdbcBasePersistenceImplTest
             RANDOM_SECRETS,
             Mockito.mock(),
             realmContext.getRealmIdentifier());
+    AtomicOperationMetaStoreManager metaStoreManager = new AtomicOperationMetaStoreManager();
     return new PolarisTestMetaStoreManager(
-        new AtomicOperationMetaStoreManager(),
         new PolarisCallContext(
             realmContext,
-            basePersistence,
+            () -> basePersistence,
+            () -> metaStoreManager,
             diagServices,
             new PolarisConfigurationStore() {},
             timeSource.withZone(ZoneId.systemDefault())));

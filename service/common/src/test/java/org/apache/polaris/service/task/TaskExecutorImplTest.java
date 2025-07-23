@@ -22,7 +22,6 @@ import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.TaskEntity;
-import org.apache.polaris.core.persistence.BasePersistence;
 import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
 import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.service.TestServices;
@@ -45,12 +44,11 @@ public class TaskExecutorImplTest {
         (TestPolarisEventListener) testServices.polarisEventListener();
 
     MetaStoreManagerFactory metaStoreManagerFactory = testServices.metaStoreManagerFactory();
-    PolarisMetaStoreManager metaStoreManager =
-        metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
-    BasePersistence bp = metaStoreManagerFactory.getOrCreateSession(realmContext);
 
     PolarisCallContext polarisCallCtx =
-        new PolarisCallContext(realmContext, bp, testServices.polarisDiagnostics());
+        new PolarisCallContext(
+            realmContext, metaStoreManagerFactory, testServices.polarisDiagnostics());
+    PolarisMetaStoreManager metaStoreManager = polarisCallCtx.getMetaStoreManager();
 
     // This task doesn't have a type so it won't be handle-able by a real handler. We register a
     // test TaskHandler below that can handle any task.

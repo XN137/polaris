@@ -272,15 +272,15 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
     RealmContext realmContext = () -> realmName;
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
-    metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
     userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
     polarisContext =
         new PolarisCallContext(
             realmContext,
-            metaStoreManagerFactory.getOrCreateSession(realmContext),
+            metaStoreManagerFactory,
             diagServices,
             configurationStore,
             Clock.systemDefaultZone());
+    metaStoreManager = polarisContext.getMetaStoreManager();
 
     EntityCache entityCache = createEntityCache(polarisContext.getRealmConfig(), metaStoreManager);
     resolverFactory =
@@ -358,7 +358,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
                     .build()
                     .asCatalog()));
 
-    this.fileIOFactory = new DefaultFileIOFactory(storageCredentialCache, metaStoreManagerFactory);
+    this.fileIOFactory = new DefaultFileIOFactory(storageCredentialCache);
 
     StsClient stsClient = Mockito.mock(StsClient.class);
     when(stsClient.assumeRole(isA(AssumeRoleRequest.class)))
@@ -998,8 +998,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     // filename.
     final String tableLocation = "s3://externally-owned-bucket/validate_table/";
     final String tableMetadataLocation = tableLocation + "metadata/";
-    FileIOFactory fileIOFactory =
-        spy(new DefaultFileIOFactory(storageCredentialCache, metaStoreManagerFactory));
+    FileIOFactory fileIOFactory = spy(new DefaultFileIOFactory(storageCredentialCache));
     IcebergCatalog catalog = newIcebergCatalog(catalog().name(), metaStoreManager, fileIOFactory);
     catalog.initialize(
         CATALOG_NAME,
@@ -1851,8 +1850,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
         .containsEntry(StorageAccessProperty.AWS_SECRET_KEY, SECRET_ACCESS_KEY)
         .containsEntry(StorageAccessProperty.AWS_TOKEN, SESSION_TOKEN);
     FileIO fileIO =
-        new TaskFileIOSupplier(
-                new DefaultFileIOFactory(storageCredentialCache, metaStoreManagerFactory))
+        new TaskFileIOSupplier(new DefaultFileIOFactory(storageCredentialCache))
             .apply(taskEntity, polarisContext);
     Assertions.assertThat(fileIO).isNotNull().isInstanceOf(ExceptionMappingFileIO.class);
     Assertions.assertThat(((ExceptionMappingFileIO) fileIO).getInnerIo())
@@ -1978,8 +1976,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
   @Test
   public void testFileIOWrapper() {
-    MeasuredFileIOFactory measured =
-        new MeasuredFileIOFactory(storageCredentialCache, metaStoreManagerFactory);
+    MeasuredFileIOFactory measured = new MeasuredFileIOFactory(storageCredentialCache);
     IcebergCatalog catalog = newIcebergCatalog(CATALOG_NAME, metaStoreManager, measured);
     catalog.initialize(
         CATALOG_NAME,

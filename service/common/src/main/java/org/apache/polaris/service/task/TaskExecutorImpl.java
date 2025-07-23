@@ -125,8 +125,7 @@ public class TaskExecutorImpl implements TaskExecutor {
       // set the call context INSIDE the async task
       CallContext.setCurrentContext(ctx);
       LOGGER.info("Handling task entity id {}", taskEntityId);
-      PolarisMetaStoreManager metaStoreManager =
-          metaStoreManagerFactory.getOrCreateMetaStoreManager(ctx.getRealmContext());
+      PolarisMetaStoreManager metaStoreManager = ctx.getMetaStoreManager();
       PolarisBaseEntity taskEntity =
           metaStoreManager
               .loadEntity(ctx.getPolarisCallContext(), 0L, taskEntityId, PolarisEntityType.TASK)

@@ -154,18 +154,18 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
             .formatted(
                 testInfo.getTestMethod().map(Method::getName).orElse("test"), System.nanoTime());
     bootstrapRealm(realmName);
+
     RealmContext realmContext = () -> realmName;
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
-
-    metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
     userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
     polarisContext =
         new PolarisCallContext(
             realmContext,
-            metaStoreManagerFactory.getOrCreateSession(realmContext),
+            metaStoreManagerFactory,
             diagServices,
             configurationStore,
             Clock.systemDefaultZone());
+    metaStoreManager = polarisContext.getMetaStoreManager();
 
     PolarisEntityManager entityManager =
         new PolarisEntityManager(metaStoreManager, resolverFactory);
@@ -222,8 +222,7 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
     PolarisPassthroughResolutionView passthroughView =
         new PolarisPassthroughResolutionView(
             polarisContext, entityManager, securityContext, CATALOG_NAME);
-    FileIOFactory fileIOFactory =
-        new DefaultFileIOFactory(storageCredentialCache, metaStoreManagerFactory);
+    FileIOFactory fileIOFactory = new DefaultFileIOFactory(storageCredentialCache);
 
     testPolarisEventListener = (TestPolarisEventListener) polarisEventListener;
     this.catalog =

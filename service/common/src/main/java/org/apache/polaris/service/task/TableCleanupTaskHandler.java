@@ -78,8 +78,7 @@ public class TableCleanupTaskHandler implements TaskHandler {
   @Override
   public boolean handleTask(TaskEntity cleanupTask, CallContext callContext) {
     PolarisBaseEntity entity = cleanupTask.readData(PolarisBaseEntity.class);
-    PolarisMetaStoreManager metaStoreManager =
-        metaStoreManagerFactory.getOrCreateMetaStoreManager(callContext.getRealmContext());
+    PolarisMetaStoreManager metaStoreManager = callContext.getMetaStoreManager();
     IcebergTableLikeEntity tableEntity = IcebergTableLikeEntity.of(entity);
     PolarisCallContext polarisCallContext = callContext.getPolarisCallContext();
     LOGGER

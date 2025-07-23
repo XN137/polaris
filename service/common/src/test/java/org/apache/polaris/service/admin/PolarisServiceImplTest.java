@@ -36,7 +36,6 @@ import org.apache.polaris.core.auth.PolarisAuthorizer;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.CallContext;
-import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
 import org.apache.polaris.core.secrets.UserSecretsManagerFactory;
 import org.apache.polaris.service.config.RealmEntityManagerFactory;
 import org.apache.polaris.service.config.ReservedProperties;
@@ -47,7 +46,6 @@ import org.mockito.Mockito;
 public class PolarisServiceImplTest {
 
   private RealmEntityManagerFactory entityManagerFactory;
-  private MetaStoreManagerFactory metaStoreManagerFactory;
   private UserSecretsManagerFactory userSecretsManagerFactory;
   private PolarisAuthorizer polarisAuthorizer;
   private CallContext callContext;
@@ -59,7 +57,6 @@ public class PolarisServiceImplTest {
   @BeforeEach
   void setUp() {
     entityManagerFactory = Mockito.mock(RealmEntityManagerFactory.class);
-    metaStoreManagerFactory = Mockito.mock(MetaStoreManagerFactory.class);
     userSecretsManagerFactory = Mockito.mock(UserSecretsManagerFactory.class);
     polarisAuthorizer = Mockito.mock(PolarisAuthorizer.class);
     callContext = Mockito.mock(CallContext.class);
@@ -76,7 +73,6 @@ public class PolarisServiceImplTest {
     polarisService =
         new PolarisServiceImpl(
             entityManagerFactory,
-            metaStoreManagerFactory,
             userSecretsManagerFactory,
             polarisAuthorizer,
             callContext,

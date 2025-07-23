@@ -175,8 +175,9 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
       RealmContext realmContext = () -> realm;
       PolarisMetaStoreManager metaStoreManager = getOrCreateMetaStoreManager(realmContext);
       BasePersistence session = getOrCreateSession(realmContext);
+      PolarisCallContext callContext =
+          new PolarisCallContext(realmContext, () -> session, () -> metaStoreManager, diagServices);
 
-      PolarisCallContext callContext = new PolarisCallContext(realmContext, session, diagServices);
       BaseResult result = metaStoreManager.purge(callContext);
       results.put(realm, result);
 
@@ -233,7 +234,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
         metaStoreManagerMap.get(realmContext.getRealmIdentifier());
     BasePersistence metaStore = sessionSupplierMap.get(realmContext.getRealmIdentifier()).get();
     PolarisCallContext polarisContext =
-        new PolarisCallContext(realmContext, metaStore, diagServices);
+        new PolarisCallContext(realmContext, () -> metaStore, () -> metaStoreManager, diagServices);
     if (CallContext.getCurrentContext() == null) {
       CallContext.setCurrentContext(polarisContext);
     }
@@ -281,7 +282,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
         metaStoreManagerMap.get(realmContext.getRealmIdentifier());
     BasePersistence metaStore = sessionSupplierMap.get(realmContext.getRealmIdentifier()).get();
     PolarisCallContext polarisContext =
-        new PolarisCallContext(realmContext, metaStore, diagServices);
+        new PolarisCallContext(realmContext, () -> metaStore, () -> metaStoreManager, diagServices);
     if (CallContext.getCurrentContext() == null) {
       CallContext.setCurrentContext(polarisContext);
     }

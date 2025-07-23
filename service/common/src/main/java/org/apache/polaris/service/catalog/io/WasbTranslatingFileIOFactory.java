@@ -27,7 +27,6 @@ import java.util.Set;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.io.FileIO;
 import org.apache.polaris.core.context.CallContext;
-import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
 import org.apache.polaris.core.persistence.PolarisResolvedPathWrapper;
 import org.apache.polaris.core.storage.PolarisStorageActions;
 import org.apache.polaris.core.storage.cache.StorageCredentialCache;
@@ -40,11 +39,8 @@ public class WasbTranslatingFileIOFactory implements FileIOFactory {
   private final FileIOFactory defaultFileIOFactory;
 
   @Inject
-  public WasbTranslatingFileIOFactory(
-      StorageCredentialCache storageCredentialCache,
-      MetaStoreManagerFactory metaStoreManagerFactory) {
-    defaultFileIOFactory =
-        new DefaultFileIOFactory(storageCredentialCache, metaStoreManagerFactory);
+  public WasbTranslatingFileIOFactory(StorageCredentialCache storageCredentialCache) {
+    defaultFileIOFactory = new DefaultFileIOFactory(storageCredentialCache);
   }
 
   @Override

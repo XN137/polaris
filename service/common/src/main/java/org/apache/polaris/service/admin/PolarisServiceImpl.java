@@ -69,9 +69,7 @@ import org.apache.polaris.core.entity.CatalogRoleEntity;
 import org.apache.polaris.core.entity.PolarisPrivilege;
 import org.apache.polaris.core.entity.PrincipalEntity;
 import org.apache.polaris.core.entity.PrincipalRoleEntity;
-import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
 import org.apache.polaris.core.persistence.PolarisEntityManager;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.secrets.UserSecretsManager;
 import org.apache.polaris.core.secrets.UserSecretsManagerFactory;
 import org.apache.polaris.service.admin.api.PolarisCatalogsApiService;
@@ -92,7 +90,6 @@ public class PolarisServiceImpl
   private static final Logger LOGGER = LoggerFactory.getLogger(PolarisServiceImpl.class);
   private final RealmEntityManagerFactory entityManagerFactory;
   private final PolarisAuthorizer polarisAuthorizer;
-  private final MetaStoreManagerFactory metaStoreManagerFactory;
   private final UserSecretsManagerFactory userSecretsManagerFactory;
   private final CallContext callContext;
   private final ReservedProperties reservedProperties;
@@ -100,13 +97,11 @@ public class PolarisServiceImpl
   @Inject
   public PolarisServiceImpl(
       RealmEntityManagerFactory entityManagerFactory,
-      MetaStoreManagerFactory metaStoreManagerFactory,
       UserSecretsManagerFactory userSecretsManagerFactory,
       PolarisAuthorizer polarisAuthorizer,
       CallContext callContext,
       ReservedProperties reservedProperties) {
     this.entityManagerFactory = entityManagerFactory;
-    this.metaStoreManagerFactory = metaStoreManagerFactory;
     this.userSecretsManagerFactory = userSecretsManagerFactory;
     this.polarisAuthorizer = polarisAuthorizer;
     this.callContext = callContext;
@@ -125,14 +120,12 @@ public class PolarisServiceImpl
 
     PolarisEntityManager entityManager =
         entityManagerFactory.getOrCreateEntityManager(realmContext);
-    PolarisMetaStoreManager metaStoreManager =
-        metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
     UserSecretsManager userSecretsManager =
         userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
     return new PolarisAdminService(
         callContext,
         entityManager,
-        metaStoreManager,
+        callContext.getMetaStoreManager(),
         userSecretsManager,
         securityContext,
         polarisAuthorizer,

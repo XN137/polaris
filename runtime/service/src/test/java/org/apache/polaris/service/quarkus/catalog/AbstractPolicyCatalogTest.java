@@ -171,15 +171,15 @@ public abstract class AbstractPolicyCatalogTest {
 
     RealmContext realmContext = () -> realmName;
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
-    metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
     userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
     polarisContext =
         new PolarisCallContext(
             realmContext,
-            metaStoreManagerFactory.getOrCreateSession(realmContext),
+            metaStoreManagerFactory,
             diagServices,
             configurationStore,
             Clock.systemDefaultZone());
+    metaStoreManager = polarisContext.getMetaStoreManager();
 
     entityManager = new PolarisEntityManager(metaStoreManager, resolverFactory);
 
@@ -245,7 +245,7 @@ public abstract class AbstractPolicyCatalogTest {
         new PolarisPassthroughResolutionView(
             callContext, entityManager, securityContext, CATALOG_NAME);
     TaskExecutor taskExecutor = Mockito.mock();
-    this.fileIOFactory = new DefaultFileIOFactory(storageCredentialCache, metaStoreManagerFactory);
+    this.fileIOFactory = new DefaultFileIOFactory(storageCredentialCache);
 
     StsClient stsClient = Mockito.mock(StsClient.class);
     when(stsClient.assumeRole(isA(AssumeRoleRequest.class)))
