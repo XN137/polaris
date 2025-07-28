@@ -273,7 +273,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
     runActionInTransaction(
         () ->
             this.deleteAllEntityGrantRecordsInCurrentTxn(
-                callCtx, entity, grantsOnGrantee, grantsOnSecurable));
+                entity, grantsOnGrantee, grantsOnSecurable));
   }
 
   /** {@inheritDoc} */

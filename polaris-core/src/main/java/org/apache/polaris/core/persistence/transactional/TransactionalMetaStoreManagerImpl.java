@@ -178,7 +178,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     final List<PolarisGrantRecord> grantsOnSecurable =
         ms.loadAllGrantRecordsOnSecurableInCurrentTxn(
             callCtx, entity.getCatalogId(), entity.getId());
-    ms.deleteAllEntityGrantRecordsInCurrentTxn(callCtx, entity, grantsOnGrantee, grantsOnSecurable);
+    ms.deleteAllEntityGrantRecordsInCurrentTxn(entity, grantsOnGrantee, grantsOnSecurable);
 
     // Now determine the set of entities on the other side of the grants we just removed. Grants
     // from/to these entities has been removed, hence we need to update the grant version of
