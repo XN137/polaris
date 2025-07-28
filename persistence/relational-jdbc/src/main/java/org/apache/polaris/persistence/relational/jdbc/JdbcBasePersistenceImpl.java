@@ -137,8 +137,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
               // first, check if the entity has already been created, in which case we will simply
               // return it.
               PolarisBaseEntity entityFound =
-                  lookupEntity(
-                      callCtx, entity.getCatalogId(), entity.getId(), entity.getTypeCode());
+                  lookupEntity(entity.getCatalogId(), entity.getId(), entity.getTypeCode());
               if (entityFound != null && originalEntity == null) {
                 // probably the client retried, simply return it
                 // TODO: Check correctness of returning entityFound vs entity here. It may have
@@ -324,8 +323,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   }
 
   @Override
-  public PolarisBaseEntity lookupEntity(
-      @Nonnull PolarisCallContext callCtx, long catalogId, long entityId, int typeCode) {
+  public PolarisBaseEntity lookupEntity(long catalogId, long entityId, int typeCode) {
     Map<String, Object> params =
         Map.of("catalog_id", catalogId, "id", entityId, "type_code", typeCode, "realm_id", realmId);
     return getPolarisBaseEntity(

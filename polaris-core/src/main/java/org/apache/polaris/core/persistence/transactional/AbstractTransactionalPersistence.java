@@ -281,8 +281,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /** {@inheritDoc} */
   @Override
   @Nullable
-  public PolarisBaseEntity lookupEntity(
-      @Nonnull PolarisCallContext callCtx, long catalogId, long entityId, int typeCode) {
+  public PolarisBaseEntity lookupEntity(long catalogId, long entityId, int typeCode) {
     return runInReadTransaction(() -> this.lookupEntityInCurrentTxn(catalogId, entityId, typeCode));
   }
 
