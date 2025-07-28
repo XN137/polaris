@@ -131,9 +131,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
 
   /** Helper to perform the compare-and-swap semantics of a single writeEntity call. */
   private void checkConditionsForWriteEntityInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
-      @Nonnull PolarisBaseEntity entity,
-      @Nullable PolarisBaseEntity originalEntity) {
+      @Nonnull PolarisBaseEntity entity, @Nullable PolarisBaseEntity originalEntity) {
     PolarisBaseEntity refreshedEntity =
         this.lookupEntityInCurrentTxn(entity.getCatalogId(), entity.getId(), entity.getTypeCode());
 
@@ -186,7 +184,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nullable PolarisBaseEntity originalEntity) {
     runActionInTransaction(
         () -> {
-          this.checkConditionsForWriteEntityInCurrentTxn(callCtx, entity, originalEntity);
+          this.checkConditionsForWriteEntityInCurrentTxn(entity, originalEntity);
           this.writeEntityInCurrentTxn(entity, nameOrParentChanged, originalEntity);
         });
   }
@@ -226,7 +224,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
                     || !entity.getName().equals(originalEntity.getName())
                     || entity.getParentId() != originalEntity.getParentId();
             try {
-              this.checkConditionsForWriteEntityInCurrentTxn(callCtx, entity, originalEntity);
+              this.checkConditionsForWriteEntityInCurrentTxn(entity, originalEntity);
             } catch (EntityAlreadyExistsException e) {
               // If the ids are equal then it is an idempotent-create-retry error, which counts
               // as a "success" for multi-entity commit purposes; name-collisions on different
