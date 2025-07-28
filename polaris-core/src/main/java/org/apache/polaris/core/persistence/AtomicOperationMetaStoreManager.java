@@ -96,7 +96,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
       @Nonnull BasePersistence ms,
       @Nonnull PolarisBaseEntity entity) {
     // Invoke shared logic for validation and filling out remaining fields.
-    entity = prepareToPersistNewEntity(callCtx, ms, entity);
+    entity = prepareToPersistNewEntity(callCtx.getDiagServices(), ms, entity);
 
     try {
       // write it
@@ -924,7 +924,8 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     List<PolarisBaseEntity> createdEntities = new ArrayList<>(entities.size());
     for (PolarisBaseEntity entity : entities) {
       PolarisBaseEntity entityToCreate =
-          prepareToPersistNewEntity(callCtx, ms, new PolarisBaseEntity.Builder(entity).build());
+          prepareToPersistNewEntity(
+              callCtx.getDiagServices(), ms, new PolarisBaseEntity.Builder(entity).build());
       createdEntities.add(entityToCreate);
     }
 
