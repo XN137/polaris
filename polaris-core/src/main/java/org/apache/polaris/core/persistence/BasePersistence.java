@@ -244,14 +244,12 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * Get change tracking versions for all specified entity ids.
    *
-   * @param callCtx call context
    * @param entityIds list of entity id
    * @return list parallel to the input list of entity versions. If an entity cannot be found, the
    *     corresponding element in the list will be null
    */
   @Nonnull
-  List<PolarisChangeTrackingVersions> lookupEntityVersions(
-      @Nonnull PolarisCallContext callCtx, List<PolarisEntityId> entityIds);
+  List<PolarisChangeTrackingVersions> lookupEntityVersions(List<PolarisEntityId> entityIds);
 
   /**
    * List all entities of the specified type which are child entities of the specified parent

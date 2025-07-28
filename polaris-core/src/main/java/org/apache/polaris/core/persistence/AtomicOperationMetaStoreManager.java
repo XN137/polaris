@@ -1449,8 +1449,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // get metastore we should be using
     BasePersistence ms = callCtx.getMetaStore();
 
-    List<PolarisChangeTrackingVersions> changeTracking =
-        ms.lookupEntityVersions(callCtx, entityIds);
+    List<PolarisChangeTrackingVersions> changeTracking = ms.lookupEntityVersions(entityIds);
     return new ChangeTrackingResult(changeTracking);
   }
 
@@ -1751,8 +1750,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
 
     // load version information
     PolarisChangeTrackingVersions entityVersions =
-        ms.lookupEntityVersions(callCtx, List.of(new PolarisEntityId(entityCatalogId, entityId)))
-            .get(0);
+        ms.lookupEntityVersions(List.of(new PolarisEntityId(entityCatalogId, entityId))).get(0);
 
     // if null, the entity has been purged
     if (entityVersions == null) {
