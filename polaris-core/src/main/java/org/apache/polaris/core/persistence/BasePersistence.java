@@ -311,13 +311,11 @@ public interface BasePersistence extends PolicyMappingPersistence {
    * Lookup the current entityGrantRecordsVersion for the specified entity. That version is changed
    * everytime a grant record is added or removed on a base securable or added to a grantee.
    *
-   * @param callCtx call context
    * @param catalogId catalog id or NULL_ID
    * @param entityId unique entity id
    * @return current grant records version for that entity.
    */
-  int lookupEntityGrantRecordsVersion(
-      @Nonnull PolarisCallContext callCtx, long catalogId, long entityId);
+  int lookupEntityGrantRecordsVersion(long catalogId, long entityId);
 
   /**
    * Lookup the specified grant record from the grant_records table. Return NULL if not found

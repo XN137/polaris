@@ -1366,8 +1366,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // or if it's actually safe as two independent lookups.
 
     // lookup grants version for this securable entity
-    int grantsVersion =
-        ms.lookupEntityGrantRecordsVersion(callCtx, securableCatalogId, securableId);
+    int grantsVersion = ms.lookupEntityGrantRecordsVersion(securableCatalogId, securableId);
 
     // return null if securable does not exists
     if (grantsVersion == 0) {
@@ -1412,7 +1411,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // or if it's actually safe as two independent lookups.
 
     // lookup grants version for this grantee entity
-    int grantsVersion = ms.lookupEntityGrantRecordsVersion(callCtx, granteeCatalogId, granteeId);
+    int grantsVersion = ms.lookupEntityGrantRecordsVersion(granteeCatalogId, granteeId);
 
     // return null if grantee does not exists
     if (grantsVersion == 0) {

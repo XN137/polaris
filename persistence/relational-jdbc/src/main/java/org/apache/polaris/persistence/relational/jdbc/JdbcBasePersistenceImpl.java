@@ -485,8 +485,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   }
 
   @Override
-  public int lookupEntityGrantRecordsVersion(
-      @Nonnull PolarisCallContext callCtx, long catalogId, long entityId) {
+  public int lookupEntityGrantRecordsVersion(long catalogId, long entityId) {
 
     Map<String, Object> params =
         Map.of("catalog_id", catalogId, "id", entityId, "realm_id", realmId);
