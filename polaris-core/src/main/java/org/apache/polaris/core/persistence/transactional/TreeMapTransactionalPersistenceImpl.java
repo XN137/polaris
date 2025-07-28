@@ -301,7 +301,6 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
   @Override
   @Nonnull
   public List<EntityNameLookupRecord> lookupEntityActiveBatchInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull List<PolarisEntitiesActiveKey> entityActiveKeys) {
     // now build a list to quickly verify that nothing has changed
     return entityActiveKeys.stream()

@@ -98,7 +98,7 @@ public interface TransactionalPersistence
    */
   @Nonnull
   List<EntityNameLookupRecord> lookupEntityActiveBatchInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, List<PolarisEntitiesActiveKey> entityActiveKeys);
+      List<PolarisEntitiesActiveKey> entityActiveKeys);
 
   /** Rollback the current transaction */
   void rollback();
