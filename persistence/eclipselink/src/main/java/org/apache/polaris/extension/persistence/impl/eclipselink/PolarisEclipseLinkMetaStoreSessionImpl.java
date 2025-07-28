@@ -355,7 +355,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
 
   /** {@inheritDoc} */
   @Override
-  public void deleteAllInCurrentTxn(@Nonnull PolarisCallContext callCtx) {
+  public void deleteAllInCurrentTxn() {
     this.store.deleteAll(localSession.get());
   }
 

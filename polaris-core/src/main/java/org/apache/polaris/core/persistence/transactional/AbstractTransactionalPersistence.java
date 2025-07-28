@@ -279,7 +279,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /** {@inheritDoc} */
   @Override
   public void deleteAll(@Nonnull PolarisCallContext callCtx) {
-    runActionInTransaction(() -> this.deleteAllInCurrentTxn(callCtx));
+    runActionInTransaction(this::deleteAllInCurrentTxn);
   }
 
   /** {@inheritDoc} */

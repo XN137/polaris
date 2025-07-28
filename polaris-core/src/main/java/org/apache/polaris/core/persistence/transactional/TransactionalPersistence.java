@@ -150,7 +150,7 @@ public interface TransactionalPersistence
       @Nonnull List<PolarisGrantRecord> grantsOnSecurable);
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#deleteAll} */
-  void deleteAllInCurrentTxn(@Nonnull PolarisCallContext callCtx);
+  void deleteAllInCurrentTxn();
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#lookupEntity} */
   @Nullable

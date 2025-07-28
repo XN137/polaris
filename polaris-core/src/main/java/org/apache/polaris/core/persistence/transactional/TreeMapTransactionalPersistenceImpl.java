@@ -215,7 +215,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
 
   /** {@inheritDoc} */
   @Override
-  public void deleteAllInCurrentTxn(@Nonnull PolarisCallContext callCtx) {
+  public void deleteAllInCurrentTxn() {
     // clear all slices
     this.store.deleteAll();
   }

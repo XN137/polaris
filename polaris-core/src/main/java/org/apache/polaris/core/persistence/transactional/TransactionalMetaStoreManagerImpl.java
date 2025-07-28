@@ -620,7 +620,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // run operation in a read/write transaction
     LOGGER.warn("Deleting all metadata in the metastore...");
-    ms.runActionInTransaction(() -> ms.deleteAllInCurrentTxn(callCtx));
+    ms.runActionInTransaction(ms::deleteAllInCurrentTxn);
     LOGGER.warn("Finished deleting all metadata in the metastore");
 
     // all good
