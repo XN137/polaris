@@ -448,7 +448,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public PolarisPrincipalSecrets generateNewPrincipalSecrets(
       @Nonnull PolarisCallContext callCtx, @Nonnull String principalName, long principalId) {
     return runInTransaction(
-        () -> this.generateNewPrincipalSecretsInCurrentTxn(callCtx, principalName, principalId));
+        () -> this.generateNewPrincipalSecretsInCurrentTxn(principalName, principalId));
   }
 
   /** {@inheritDoc} */

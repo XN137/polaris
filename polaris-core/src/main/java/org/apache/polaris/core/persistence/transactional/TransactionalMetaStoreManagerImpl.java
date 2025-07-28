@@ -800,7 +800,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // generate new secrets for this principal
     PolarisPrincipalSecrets principalSecrets =
-        ms.generateNewPrincipalSecretsInCurrentTxn(callCtx, principal.getName(), principal.getId());
+        ms.generateNewPrincipalSecretsInCurrentTxn(principal.getName(), principal.getId());
 
     // generate properties
     Map<String, String> internalProperties = getInternalPropertyMap(principal);

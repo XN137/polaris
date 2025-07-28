@@ -246,7 +246,7 @@ public interface TransactionalPersistence
    */
   @Nonnull
   PolarisPrincipalSecrets generateNewPrincipalSecretsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull String principalName, long principalId);
+      @Nonnull String principalName, long principalId);
 
   /**
    * See {@link org.apache.polaris.core.persistence.IntegrationPersistence#rotatePrincipalSecrets}
