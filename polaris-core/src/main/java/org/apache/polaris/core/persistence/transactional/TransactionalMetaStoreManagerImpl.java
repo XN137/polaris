@@ -237,7 +237,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       String clientId = properties.get(PolarisEntityConstants.getClientIdPropertyName());
 
       // delete it from the secret slice
-      ms.deletePrincipalSecretsInCurrentTxn(callCtx, clientId, entity.getId());
+      ms.deletePrincipalSecretsInCurrentTxn(clientId, entity.getId());
     }
     // TODO: Also, if an entity contains a storage integration, delete the storage integration
     // and other things of that nature.

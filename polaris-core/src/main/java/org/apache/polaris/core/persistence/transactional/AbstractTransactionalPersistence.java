@@ -468,8 +468,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   public void deletePrincipalSecrets(
       @Nonnull PolarisCallContext callCtx, @Nonnull String clientId, long principalId) {
-    runActionInTransaction(
-        () -> this.deletePrincipalSecretsInCurrentTxn(callCtx, clientId, principalId));
+    runActionInTransaction(() -> this.deletePrincipalSecretsInCurrentTxn(clientId, principalId));
   }
 
   /** {@inheritDoc} */

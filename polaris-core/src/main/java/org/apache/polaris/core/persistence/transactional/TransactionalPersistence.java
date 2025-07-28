@@ -258,8 +258,7 @@ public interface TransactionalPersistence
   /**
    * See {@link org.apache.polaris.core.persistence.IntegrationPersistence#deletePrincipalSecrets}
    */
-  void deletePrincipalSecretsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull String clientId, long principalId);
+  void deletePrincipalSecretsInCurrentTxn(@Nonnull String clientId, long principalId);
 
   /**
    * See {@link org.apache.polaris.core.persistence.IntegrationPersistence#createStorageIntegration}
