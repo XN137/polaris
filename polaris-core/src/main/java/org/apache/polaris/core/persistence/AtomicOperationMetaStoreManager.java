@@ -496,7 +496,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     }
 
     // create the catalog admin role for this new catalog
-    long adminRoleId = ms.generateNewId(callCtx);
+    long adminRoleId = ms.generateNewId();
     PolarisBaseEntity adminRole =
         new PolarisBaseEntity(
             catalog.getId(),
@@ -581,7 +581,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // Now bootstrap the service by creating the root principal and the service_admin principal
     // role. The principal role will be granted to that root principal and the root catalog admin
     // of the root catalog will be granted to that principal role.
-    long rootPrincipalId = ms.generateNewId(callCtx);
+    long rootPrincipalId = ms.generateNewId();
     PolarisBaseEntity rootPrincipal =
         new PolarisBaseEntity(
             PolarisEntityConstants.getNullId(),
@@ -595,7 +595,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     this.createPrincipal(callCtx, rootPrincipal);
 
     // now create the account admin principal role
-    long serviceAdminPrincipalRoleId = ms.generateNewId(callCtx);
+    long serviceAdminPrincipalRoleId = ms.generateNewId();
     PolarisBaseEntity serviceAdminPrincipalRole =
         new PolarisBaseEntity(
             PolarisEntityConstants.getNullId(),
@@ -1229,7 +1229,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
       PolarisBaseEntity.Builder taskEntityBuilder =
           new PolarisBaseEntity.Builder()
               .properties(PolarisObjectMapperUtil.serializeProperties(properties))
-              .id(ms.generateNewId(callCtx))
+              .id(ms.generateNewId())
               .catalogId(0L)
               .name("entityCleanup_" + entityToDrop.getId())
               .typeCode(PolarisEntityType.TASK.getCode())

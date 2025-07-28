@@ -98,7 +98,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   }
 
   @Override
-  public long generateNewId(@Nonnull PolarisCallContext callCtx) {
+  public long generateNewId() {
     return IdGenerator.getIdGenerator().nextId();
   }
 

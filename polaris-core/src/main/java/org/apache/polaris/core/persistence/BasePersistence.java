@@ -56,10 +56,9 @@ public interface BasePersistence extends PolicyMappingPersistence {
    * The returned id must be fully unique within a realm and never reused once generated, whether or
    * not anything ends up committing an entity with the generated id.
    *
-   * @param callCtx call context
    * @return new unique entity identifier
    */
-  long generateNewId(@Nonnull PolarisCallContext callCtx);
+  long generateNewId();
 
   /**
    * Write this entity to the persistence backend. If successful, the write must be durable and
