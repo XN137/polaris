@@ -704,7 +704,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
             : entity -> true;
 
     Page<EntityNameLookupRecord> resultPage =
-        ms.listEntities(callCtx, catalogId, parentId, entityType, filter, pageToken);
+        ms.listEntities(catalogId, parentId, entityType, filter, pageToken);
 
     // TODO: Use post-validation to enforce consistent view against catalogPath. In the
     // meantime, happens-before ordering semantics aren't guaranteed during high-concurrency
@@ -1159,7 +1159,6 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
       // get the list of catalog roles, at most 2
       List<PolarisBaseEntity> catalogRoles =
           ms.listEntities(
-                  callCtx,
                   catalogId,
                   catalogId,
                   PolarisEntityType.CATALOG_ROLE,
@@ -1478,7 +1477,6 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // find all available tasks
     Page<PolarisBaseEntity> availableTasks =
         ms.listEntities(
-            callCtx,
             PolarisEntityConstants.getRootEntityId(),
             PolarisEntityConstants.getRootEntityId(),
             PolarisEntityType.TASK,

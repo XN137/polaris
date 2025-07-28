@@ -404,44 +404,29 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   @Nonnull
   @Override
   public Page<EntityNameLookupRecord> listEntities(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,
       @Nonnull PageToken pageToken) {
     return listEntities(
-        callCtx,
-        catalogId,
-        parentId,
-        entityType,
-        entity -> true,
-        EntityNameLookupRecord::new,
-        pageToken);
+        catalogId, parentId, entityType, entity -> true, EntityNameLookupRecord::new, pageToken);
   }
 
   @Nonnull
   @Override
   public Page<EntityNameLookupRecord> listEntities(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,
       @Nonnull Predicate<PolarisBaseEntity> entityFilter,
       @Nonnull PageToken pageToken) {
     return listEntities(
-        callCtx,
-        catalogId,
-        parentId,
-        entityType,
-        entityFilter,
-        EntityNameLookupRecord::new,
-        pageToken);
+        catalogId, parentId, entityType, entityFilter, EntityNameLookupRecord::new, pageToken);
   }
 
   @Nonnull
   @Override
   public <T> Page<T> listEntities(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       PolarisEntityType entityType,

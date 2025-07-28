@@ -321,7 +321,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   @Nonnull
   public Page<EntityNameLookupRecord> listEntities(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,
@@ -334,7 +333,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   @Nonnull
   public Page<EntityNameLookupRecord> listEntities(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,
@@ -350,7 +348,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   @Nonnull
   public <T> Page<T> listEntities(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,

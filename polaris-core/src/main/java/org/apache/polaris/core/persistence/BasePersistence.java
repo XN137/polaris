@@ -254,7 +254,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * List all entities of the specified type which are child entities of the specified parent
    *
-   * @param callCtx call context
    * @param catalogId catalog id for that entity, NULL_ID if the entity is top-level
    * @param parentId id of the parent, can be the special 0 value representing the root entity
    * @param entityType type of entities to list
@@ -263,7 +262,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
    */
   @Nonnull
   Page<EntityNameLookupRecord> listEntities(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,
@@ -272,7 +270,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * List entities where some predicate returns true
    *
-   * @param callCtx call context
    * @param catalogId catalog id for that entity, NULL_ID if the entity is top-level
    * @param parentId id of the parent, can be the special 0 value representing the root entity
    * @param entityType type of entities to list
@@ -283,7 +280,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
    */
   @Nonnull
   Page<EntityNameLookupRecord> listEntities(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,
@@ -293,7 +289,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * List entities where some predicate returns true and transform the entities with a function
    *
-   * @param callCtx call context
    * @param catalogId catalog id for that entity, NULL_ID if the entity is top-level
    * @param parentId id of the parent, can be the special 0 value representing the root entity
    * @param entityType type of entities to list
@@ -305,7 +300,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
    */
   @Nonnull
   <T> Page<T> listEntities(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,
