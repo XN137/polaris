@@ -223,7 +223,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
   /** {@inheritDoc} */
   @Override
   public @Nullable PolarisBaseEntity lookupEntityInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, long catalogId, long entityId, int typeCode) {
+      long catalogId, long entityId, int typeCode) {
     PolarisBaseEntity entity =
         this.store.getSliceEntities().read(this.store.buildKeyComposite(catalogId, entityId));
     if (entity != null && entity.getTypeCode() != typeCode) {
@@ -362,7 +362,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
             .map(
                 nameRecord ->
                     this.lookupEntityInCurrentTxn(
-                        callCtx, catalogId, nameRecord.getId(), entityType.getCode()));
+                        catalogId, nameRecord.getId(), entityType.getCode()));
 
     Predicate<PolarisBaseEntity> tokenFilter =
         pageToken

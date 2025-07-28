@@ -154,8 +154,7 @@ public interface TransactionalPersistence
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#lookupEntity} */
   @Nullable
-  PolarisBaseEntity lookupEntityInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, long catalogId, long entityId, int typeCode);
+  PolarisBaseEntity lookupEntityInCurrentTxn(long catalogId, long entityId, int typeCode);
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#lookupEntityByName} */
   @Nullable

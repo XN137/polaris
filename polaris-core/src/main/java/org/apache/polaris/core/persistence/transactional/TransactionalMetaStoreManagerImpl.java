@@ -288,8 +288,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // load the grantee (either a catalog/principal role or a principal) and increment its grants
     // version
     PolarisBaseEntity granteeEntity =
-        ms.lookupEntityInCurrentTxn(
-            callCtx, grantee.getCatalogId(), grantee.getId(), grantee.getTypeCode());
+        ms.lookupEntityInCurrentTxn(grantee.getCatalogId(), grantee.getId(), grantee.getTypeCode());
     callCtx
         .getDiagServices()
         .checkNotNull(granteeEntity, "grantee_not_found", "grantee={}", grantee);
@@ -302,7 +301,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // load the securable and increment its grants version
     PolarisBaseEntity securableEntity =
         ms.lookupEntityInCurrentTxn(
-            callCtx, securable.getCatalogId(), securable.getId(), securable.getTypeCode());
+            securable.getCatalogId(), securable.getId(), securable.getTypeCode());
     callCtx
         .getDiagServices()
         .checkNotNull(securableEntity, "securable_not_found", "securable={}", securable);
@@ -369,8 +368,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // load the grantee and increment its grants version
     PolarisBaseEntity refreshGrantee =
-        ms.lookupEntityInCurrentTxn(
-            callCtx, grantee.getCatalogId(), grantee.getId(), grantee.getTypeCode());
+        ms.lookupEntityInCurrentTxn(grantee.getCatalogId(), grantee.getId(), grantee.getTypeCode());
     callCtx
         .getDiagServices()
         .checkNotNull(
@@ -384,7 +382,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // load the securable and increment its grants version
     PolarisBaseEntity refreshSecurable =
         ms.lookupEntityInCurrentTxn(
-            callCtx, securable.getCatalogId(), securable.getId(), securable.getTypeCode());
+            securable.getCatalogId(), securable.getId(), securable.getTypeCode());
     callCtx
         .getDiagServices()
         .checkNotNull(
@@ -428,8 +426,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // check if that catalog has already been created
     PolarisBaseEntity refreshCatalog =
-        ms.lookupEntityInCurrentTxn(
-            callCtx, catalog.getCatalogId(), catalog.getId(), catalog.getTypeCode());
+        ms.lookupEntityInCurrentTxn(catalog.getCatalogId(), catalog.getId(), catalog.getTypeCode());
 
     // if found, probably a retry, simply return the previously created catalog
     if (refreshCatalog != null) {
@@ -750,7 +747,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // check if that catalog has already been created
     PolarisBaseEntity refreshPrincipal =
         ms.lookupEntityInCurrentTxn(
-            callCtx, principal.getCatalogId(), principal.getId(), principal.getTypeCode());
+            principal.getCatalogId(), principal.getId(), principal.getTypeCode());
 
     // if found, probably a retry, simply return the previously created principal
     if (refreshPrincipal != null) {
@@ -997,8 +994,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // first, check if the entity has already been created, in which case we will simply return it
     PolarisBaseEntity entityFound =
-        ms.lookupEntityInCurrentTxn(
-            callCtx, entity.getCatalogId(), entity.getId(), entity.getTypeCode());
+        ms.lookupEntityInCurrentTxn(entity.getCatalogId(), entity.getId(), entity.getTypeCode());
     if (entityFound != null) {
       // probably the client retried, simply return it
       // TODO: Check correctness of returning entityFound vs entity here. It may have already
@@ -1096,8 +1092,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // lookup the entity, cannot be null
     PolarisBaseEntity entityRefreshed =
-        ms.lookupEntityInCurrentTxn(
-            callCtx, entity.getCatalogId(), entity.getId(), entity.getTypeCode());
+        ms.lookupEntityInCurrentTxn(entity.getCatalogId(), entity.getId(), entity.getTypeCode());
     callCtx
         .getDiagServices()
         .checkNotNull(entityRefreshed, "unexpected_entity_not_found", "entity={}", entity);
@@ -1231,10 +1226,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // find the entity to rename
     PolarisBaseEntity refreshEntityToRename =
         ms.lookupEntityInCurrentTxn(
-            callCtx,
-            entityToRename.getCatalogId(),
-            entityToRename.getId(),
-            entityToRename.getTypeCode());
+            entityToRename.getCatalogId(), entityToRename.getId(), entityToRename.getTypeCode());
 
     // if this entity was not found, return failure. Not expected here because it was
     // resolved successfully (see above)
@@ -1346,7 +1338,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // first find the entity to drop
     PolarisBaseEntity refreshEntityToDrop =
         ms.lookupEntityInCurrentTxn(
-            callCtx, entityToDrop.getCatalogId(), entityToDrop.getId(), entityToDrop.getTypeCode());
+            entityToDrop.getCatalogId(), entityToDrop.getId(), entityToDrop.getTypeCode());
 
     // if this entity was not found, return failure
     if (refreshEntityToDrop == null) {
@@ -1909,7 +1901,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       int entityTypeCode) {
     // this is an easy one
     PolarisBaseEntity entity =
-        ms.lookupEntityInCurrentTxn(callCtx, entityCatalogId, entityId, entityTypeCode);
+        ms.lookupEntityInCurrentTxn(entityCatalogId, entityId, entityTypeCode);
     return (entity != null)
         ? new EntityResult(entity)
         : new EntityResult(BaseResult.ReturnStatus.ENTITY_NOT_FOUND, null);
@@ -2087,8 +2079,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       int typeCode) {
 
     // load that entity
-    PolarisBaseEntity entity =
-        ms.lookupEntityInCurrentTxn(callCtx, entityCatalogId, entityId, typeCode);
+    PolarisBaseEntity entity = ms.lookupEntityInCurrentTxn(entityCatalogId, entityId, typeCode);
 
     // if entity not found, return null
     if (entity == null) {
@@ -2252,8 +2243,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // load the entity if something changed
     final PolarisBaseEntity entity;
     if (entityVersion != entityVersions.getEntityVersion()) {
-      entity =
-          ms.lookupEntityInCurrentTxn(callCtx, entityCatalogId, entityId, entityType.getCode());
+      entity = ms.lookupEntityInCurrentTxn(entityCatalogId, entityId, entityType.getCode());
 
       // if not found, return null
       if (entity == null) {
@@ -2428,8 +2418,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       @Nonnull TransactionalPersistence ms,
       @Nonnull PolarisEntityCore target) {
     PolarisBaseEntity entity =
-        ms.lookupEntityInCurrentTxn(
-            callCtx, target.getCatalogId(), target.getId(), target.getTypeCode());
+        ms.lookupEntityInCurrentTxn(target.getCatalogId(), target.getId(), target.getTypeCode());
     if (entity == null) {
       // Target entity does not exists
       return new LoadPolicyMappingsResult(BaseResult.ReturnStatus.ENTITY_NOT_FOUND, null);
@@ -2461,8 +2450,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       @Nonnull PolarisEntityCore target,
       @Nonnull PolicyType policyType) {
     PolarisBaseEntity entity =
-        ms.lookupEntityInCurrentTxn(
-            callCtx, target.getCatalogId(), target.getId(), target.getTypeCode());
+        ms.lookupEntityInCurrentTxn(target.getCatalogId(), target.getId(), target.getTypeCode());
     if (entity == null) {
       // Target entity does not exists
       return new LoadPolicyMappingsResult(BaseResult.ReturnStatus.ENTITY_NOT_FOUND, null);
