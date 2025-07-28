@@ -465,7 +465,6 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
       // lookup catalog admin role, should exist
       PolarisBaseEntity catalogAdminRole =
           ms.lookupEntityByName(
-              callCtx,
               refreshCatalog.getId(),
               refreshCatalog.getId(),
               PolarisEntityType.CATALOG_ROLE.getCode(),
@@ -519,7 +518,6 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
       // lookup service admin role, should exist
       PolarisBaseEntity serviceAdminRole =
           ms.lookupEntityByName(
-              callCtx,
               PolarisEntityConstants.getNullId(),
               PolarisEntityConstants.getRootEntityId(),
               PolarisEntityType.PRINCIPAL_ROLE.getCode(),
@@ -660,7 +658,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
             ? 0l
             : catalogPath.get(catalogPath.size() - 1).getId();
     PolarisBaseEntity entity =
-        ms.lookupEntityByName(callCtx, catalogId, parentId, entityType.getCode(), name);
+        ms.lookupEntityByName(catalogId, parentId, entityType.getCode(), name);
 
     // if found, check if subType really matches
     if (entity != null
@@ -1681,7 +1679,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
 
     // load that entity
     PolarisBaseEntity entity =
-        ms.lookupEntityByName(callCtx, entityCatalogId, parentId, entityType.getCode(), entityName);
+        ms.lookupEntityByName(entityCatalogId, parentId, entityType.getCode(), entityName);
 
     // null if entity not found
     if (entity == null) {
@@ -1721,7 +1719,6 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
       if (backfillResult.isSuccess()) {
         PolarisBaseEntity serviceAdminRole =
             ms.lookupEntityByName(
-                callCtx,
                 0L,
                 0L,
                 PolarisEntityType.PRINCIPAL_ROLE.getCode(),

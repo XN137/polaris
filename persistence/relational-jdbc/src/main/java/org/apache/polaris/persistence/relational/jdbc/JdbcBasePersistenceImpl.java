@@ -177,7 +177,6 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
         if (datasourceOperations.isConstraintViolation(e)) {
           PolarisBaseEntity existingEntity =
               lookupEntityByName(
-                  callCtx,
                   entity.getCatalogId(),
                   entity.getParentId(),
                   entity.getTypeCode(),
@@ -333,11 +332,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
 
   @Override
   public PolarisBaseEntity lookupEntityByName(
-      @Nonnull PolarisCallContext callCtx,
-      long catalogId,
-      long parentId,
-      int typeCode,
-      @Nonnull String name) {
+      long catalogId, long parentId, int typeCode, @Nonnull String name) {
     Map<String, Object> params =
         Map.of(
             "catalog_id",

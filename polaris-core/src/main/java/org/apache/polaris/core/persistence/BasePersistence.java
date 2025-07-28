@@ -198,7 +198,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * Lookup an entity given its catalogId, parentId, typeCode, and name.
    *
-   * @param callCtx call context
    * @param catalogId catalog id or {@link
    *     org.apache.polaris.core.entity.PolarisEntityConstants#NULL_ID} for top-level entities like
    *     CATALOG, PRINCIPAL and PRINCIPAL_ROLE. Note that by convention, a catalog itself has
@@ -211,11 +210,7 @@ public interface BasePersistence extends PolicyMappingPersistence {
    */
   @Nullable
   PolarisBaseEntity lookupEntityByName(
-      @Nonnull PolarisCallContext callCtx,
-      long catalogId,
-      long parentId,
-      int typeCode,
-      @Nonnull String name);
+      long catalogId, long parentId, int typeCode, @Nonnull String name);
 
   /**
    * Looks up just the entity's subType and id given it catalogId, parentId, typeCode, and name.
@@ -234,7 +229,7 @@ public interface BasePersistence extends PolicyMappingPersistence {
       long parentId,
       int typeCode,
       @Nonnull String name) {
-    PolarisBaseEntity baseEntity = lookupEntityByName(callCtx, catalogId, parentId, typeCode, name);
+    PolarisBaseEntity baseEntity = lookupEntityByName(catalogId, parentId, typeCode, name);
     if (baseEntity == null) {
       return null;
     }
