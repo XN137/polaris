@@ -1152,7 +1152,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
       // where dropping a namespace or container is effectively "recursive" in deleting its
       // children as well if those child entities were created within the short window of
       // the race condition.
-      if (ms.hasChildren(callCtx, PolarisEntityType.NAMESPACE, catalogId, catalogId)) {
+      if (ms.hasChildren(PolarisEntityType.NAMESPACE, catalogId, catalogId)) {
         return new DropEntityResult(BaseResult.ReturnStatus.NAMESPACE_NOT_EMPTY, null);
       }
 
@@ -1178,8 +1178,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
         this.dropEntity(callCtx, ms, catalogRoles.get(0));
       }
     } else if (refreshEntityToDrop.getType() == PolarisEntityType.NAMESPACE) {
-      if (ms.hasChildren(
-          callCtx, null, refreshEntityToDrop.getCatalogId(), refreshEntityToDrop.getId())) {
+      if (ms.hasChildren(null, refreshEntityToDrop.getCatalogId(), refreshEntityToDrop.getId())) {
         return new DropEntityResult(BaseResult.ReturnStatus.NAMESPACE_NOT_EMPTY, null);
       }
     } else if (refreshEntityToDrop.getType() == PolarisEntityType.POLICY && !cleanup) {

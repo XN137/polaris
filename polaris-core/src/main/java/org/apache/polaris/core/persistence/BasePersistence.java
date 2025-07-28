@@ -363,7 +363,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
    *
    * <p>TODO: Figure out if this is needed vs listEntities with limit.
    *
-   * @param callContext the polaris call context
    * @param optionalEntityType if not null, only check for the specified type, else check for all
    *     types of children entities
    * @param catalogId id of the catalog
@@ -371,10 +370,7 @@ public interface BasePersistence extends PolicyMappingPersistence {
    * @return true if the parent entity has children
    */
   boolean hasChildren(
-      @Nonnull PolarisCallContext callContext,
-      @Nullable PolarisEntityType optionalEntityType,
-      long catalogId,
-      long parentId);
+      @Nullable PolarisEntityType optionalEntityType, long catalogId, long parentId);
 
   /**
    * Check if the specified IcebergTableLikeEntity / NamespaceEntity has any sibling entities which

@@ -403,10 +403,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /** {@inheritDoc} */
   @Override
   public boolean hasChildren(
-      @Nonnull PolarisCallContext callCtx,
-      @Nullable PolarisEntityType optionalEntityType,
-      long catalogId,
-      long parentId) {
+      @Nullable PolarisEntityType optionalEntityType, long catalogId, long parentId) {
     return runInReadTransaction(
         () -> this.hasChildrenInCurrentTxn(optionalEntityType, catalogId, parentId));
   }

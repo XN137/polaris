@@ -589,11 +589,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   }
 
   @Override
-  public boolean hasChildren(
-      @Nonnull PolarisCallContext callContext,
-      PolarisEntityType optionalEntityType,
-      long catalogId,
-      long parentId) {
+  public boolean hasChildren(PolarisEntityType optionalEntityType, long catalogId, long parentId) {
     Map<String, Object> params = new HashMap<>();
     params.put("realm_id", realmId);
     params.put("catalog_id", catalogId);
