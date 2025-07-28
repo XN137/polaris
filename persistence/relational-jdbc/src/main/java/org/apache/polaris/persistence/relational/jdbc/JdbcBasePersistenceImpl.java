@@ -369,8 +369,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
 
   @Nonnull
   @Override
-  public List<PolarisBaseEntity> lookupEntities(
-      @Nonnull PolarisCallContext callCtx, List<PolarisEntityId> entityIds) {
+  public List<PolarisBaseEntity> lookupEntities(List<PolarisEntityId> entityIds) {
     if (entityIds == null || entityIds.isEmpty()) return new ArrayList<>();
     PreparedQuery query = QueryGenerator.generateSelectQueryWithEntityIds(realmId, entityIds);
     try {
@@ -386,7 +385,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   public List<PolarisChangeTrackingVersions> lookupEntityVersions(
       @Nonnull PolarisCallContext callCtx, List<PolarisEntityId> entityIds) {
     Map<PolarisEntityId, ModelEntity> idToEntityMap =
-        lookupEntities(callCtx, entityIds).stream()
+        lookupEntities(entityIds).stream()
             .collect(
                 Collectors.toMap(
                     entry -> new PolarisEntityId(entry.getCatalogId(), entry.getId()),

@@ -234,14 +234,12 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * Lookup a set of entities given their catalog id/entity id unique identifier
    *
-   * @param callCtx call context
    * @param entityIds list of entity ids
    * @return list of polaris base entities, parallel to the input list of ids. An entity in the list
    *     will be null if the corresponding entity could not be found.
    */
   @Nonnull
-  List<PolarisBaseEntity> lookupEntities(
-      @Nonnull PolarisCallContext callCtx, List<PolarisEntityId> entityIds);
+  List<PolarisBaseEntity> lookupEntities(List<PolarisEntityId> entityIds);
 
   /**
    * Get change tracking versions for all specified entity ids.
