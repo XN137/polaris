@@ -570,11 +570,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   /** {@inheritDoc} */
   @Override
   public @Nonnull PolarisPrincipalSecrets rotatePrincipalSecretsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
-      @Nonnull String clientId,
-      long principalId,
-      boolean reset,
-      @Nonnull String oldSecretHash) {
+      @Nonnull String clientId, long principalId, boolean reset, @Nonnull String oldSecretHash) {
 
     // load the existing secrets
     PolarisPrincipalSecrets principalSecrets =

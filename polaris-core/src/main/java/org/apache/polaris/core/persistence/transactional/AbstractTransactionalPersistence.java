@@ -461,9 +461,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       boolean reset,
       @Nonnull String oldSecretHash) {
     return runInTransaction(
-        () ->
-            this.rotatePrincipalSecretsInCurrentTxn(
-                callCtx, clientId, principalId, reset, oldSecretHash));
+        () -> this.rotatePrincipalSecretsInCurrentTxn(clientId, principalId, reset, oldSecretHash));
   }
 
   /** {@inheritDoc} */

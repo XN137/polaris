@@ -885,8 +885,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
                     PolarisEntityConstants.PRINCIPAL_CREDENTIAL_ROTATION_REQUIRED_STATE)
                 != null;
     PolarisPrincipalSecrets secrets =
-        ms.rotatePrincipalSecretsInCurrentTxn(
-            callCtx, clientId, principalId, doReset, oldSecretHash);
+        ms.rotatePrincipalSecretsInCurrentTxn(clientId, principalId, doReset, oldSecretHash);
 
     if (reset
         && !internalProps.containsKey(

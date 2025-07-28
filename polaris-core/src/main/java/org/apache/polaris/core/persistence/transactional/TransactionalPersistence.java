@@ -253,11 +253,7 @@ public interface TransactionalPersistence
    */
   @Nullable
   PolarisPrincipalSecrets rotatePrincipalSecretsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
-      @Nonnull String clientId,
-      long principalId,
-      boolean reset,
-      @Nonnull String oldSecretHash);
+      @Nonnull String clientId, long principalId, boolean reset, @Nonnull String oldSecretHash);
 
   /**
    * See {@link org.apache.polaris.core.persistence.IntegrationPersistence#deletePrincipalSecrets}
