@@ -138,11 +138,9 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * Delete the specified grantRecord to the grant_records table.
    *
-   * @param callCtx call context
    * @param grantRec entity record to delete.
    */
-  void deleteFromGrantRecords(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec);
+  void deleteFromGrantRecords(@Nonnull PolarisGrantRecord grantRec);
 
   /**
    * Delete the all grant records in the grant_records table for the specified entity. This method
