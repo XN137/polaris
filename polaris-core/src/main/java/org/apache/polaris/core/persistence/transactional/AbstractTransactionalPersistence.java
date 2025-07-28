@@ -483,7 +483,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
     return runInTransaction(
         () ->
             this.createStorageIntegrationInCurrentTxn(
-                callCtx, catalogId, entityId, polarisStorageConfigurationInfo));
+                catalogId, entityId, polarisStorageConfigurationInfo));
   }
 
   /** {@inheritDoc} */

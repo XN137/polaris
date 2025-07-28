@@ -950,7 +950,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     if (storageConfigInfoStr != null && integrationIdentifierOrId == null) {
       integration =
           ms.createStorageIntegrationInCurrentTxn(
-              callCtx,
               catalog.getCatalogId(),
               catalog.getId(),
               PolarisStorageConfigurationInfo.deserialize(storageConfigInfoStr));
