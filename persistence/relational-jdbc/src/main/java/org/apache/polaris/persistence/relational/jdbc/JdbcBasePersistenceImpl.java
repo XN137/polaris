@@ -122,9 +122,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
 
   @Override
   public void writeEntities(
-      @Nonnull PolarisCallContext callCtx,
-      @Nonnull List<PolarisBaseEntity> entities,
-      List<PolarisBaseEntity> originalEntities) {
+      @Nonnull List<PolarisBaseEntity> entities, List<PolarisBaseEntity> originalEntities) {
     try {
       datasourceOperations.runWithinTransaction(
           connection -> {

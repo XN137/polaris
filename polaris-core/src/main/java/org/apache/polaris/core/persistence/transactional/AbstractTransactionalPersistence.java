@@ -191,7 +191,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /** {@inheritDoc} */
   @Override
   public void writeEntities(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull List<PolarisBaseEntity> entities,
       @Nullable List<PolarisBaseEntity> originalEntities) {
     if (originalEntities != null) {

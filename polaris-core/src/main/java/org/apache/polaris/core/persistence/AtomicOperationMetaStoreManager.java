@@ -929,7 +929,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     }
 
     try {
-      ms.writeEntities(callCtx, createdEntities, null);
+      ms.writeEntities(createdEntities, null);
       // TODO: Use post-validation to enforce consistent view against catalogPath. In the
       // meantime, happens-before ordering semantics aren't guaranteed during high-concurrency
       // race conditions, such as first revoking a grant on a namespace before adding sensitive
@@ -1001,7 +1001,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     }
 
     try {
-      ms.writeEntities(callCtx, updatedEntities, originalEntities);
+      ms.writeEntities(updatedEntities, originalEntities);
     } catch (RetryOnConcurrencyException e) {
       return new EntitiesResult(
           BaseResult.ReturnStatus.TARGET_ENTITY_CONCURRENTLY_MODIFIED, e.getMessage());

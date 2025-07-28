@@ -108,7 +108,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
    * through correctly, in particular for values the PolarisMetaStoreManagerImpl doesn't have access
    * to such as the original name and parentId in renames.
    *
-   * @param callCtx call context
    * @param entities entities to persist
    * @param originalEntities original states of the entity to use for compare-and-swap purposes, or
    *     null if this is expected to be a brand-new entity; must contain exactly as many elements as
@@ -117,7 +116,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
    *     there is no mix-and-match "create" and "update" in a single batch.
    */
   void writeEntities(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull List<PolarisBaseEntity> entities,
       @Nullable List<PolarisBaseEntity> originalEntities);
 
