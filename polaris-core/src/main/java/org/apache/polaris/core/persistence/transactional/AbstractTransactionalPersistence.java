@@ -212,8 +212,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull List<PolarisBaseEntity> entities,
       @Nullable List<PolarisBaseEntity> originalEntities) {
     if (originalEntities != null) {
-      callCtx
-          .getDiagServices()
+      getDiagnostics()
           .check(
               entities.size() == originalEntities.size(),
               "mismatched_entities_and_original_entities_size",
@@ -588,8 +587,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull List<PolarisBaseEntity> entities,
       @Nullable List<PolarisBaseEntity> originalEntities) {
     if (originalEntities != null) {
-      callCtx
-          .getDiagServices()
+      getDiagnostics()
           .check(
               entities.size() == originalEntities.size(),
               "mismatched_entities_and_original_entities_size",
@@ -651,8 +649,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
             entityActiveRecord.getCatalogId(),
             entityActiveRecord.getId(),
             entityActiveRecord.getTypeCode());
-    callCtx
-        .getDiagServices()
+    getDiagnostics()
         .checkNotNull(
             entity, "unexpected_not_found_entity", "entityActiveRecord={}", entityActiveRecord);
 

@@ -168,7 +168,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   @Override
   public <T> T runInTransaction(
       @Nonnull PolarisCallContext callCtx, @Nonnull Supplier<T> transactionCode) {
-    callCtx.getDiagServices().check(localSession.get() == null, "cannot nest transaction");
+    getDiagnostics().check(localSession.get() == null, "cannot nest transaction");
 
     try (EntityManager session = emf.createEntityManager()) {
       localSession.set(session);
@@ -215,7 +215,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   @Override
   public void runActionInTransaction(
       @Nonnull PolarisCallContext callCtx, @Nonnull Runnable transactionCode) {
-    callCtx.getDiagServices().check(localSession.get() == null, "cannot nest transaction");
+    getDiagnostics().check(localSession.get() == null, "cannot nest transaction");
 
     try (EntityManager session = emf.createEntityManager()) {
       localSession.set(session);
@@ -606,8 +606,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
             this.store.lookupPrincipalSecrets(localSession.get(), clientId));
 
     // should be found
-    callCtx
-        .getDiagServices()
+    getDiagnostics()
         .checkNotNull(
             principalSecrets,
             "cannot_find_secrets",
@@ -616,8 +615,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
             principalId);
 
     // ensure principal id is matching
-    callCtx
-        .getDiagServices()
+    getDiagnostics()
         .check(
             principalId == principalSecrets.getPrincipalId(),
             "principal_id_mismatch",
@@ -647,8 +645,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
         this.store.lookupPrincipalSecrets(localSession.get(), clientId);
 
     // should be found
-    callCtx
-        .getDiagServices()
+    getDiagnostics()
         .checkNotNull(
             principalSecrets,
             "cannot_find_secrets",
@@ -657,8 +654,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
             principalId);
 
     // ensure principal id is matching
-    callCtx
-        .getDiagServices()
+    getDiagnostics()
         .check(
             principalId == principalSecrets.getPrincipalId(),
             "principal_id_mismatch",
@@ -688,7 +684,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
       PolarisStorageIntegration<T> loadPolarisStorageIntegrationInCurrentTxn(
           @Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
     PolarisStorageConfigurationInfo storageConfig =
-        BaseMetaStoreManager.extractStorageConfiguration(callCtx.getDiagServices(), entity);
+        BaseMetaStoreManager.extractStorageConfiguration(getDiagnostics(), entity);
     return storageIntegrationProvider.getStorageIntegrationForConfig(storageConfig);
   }
 
