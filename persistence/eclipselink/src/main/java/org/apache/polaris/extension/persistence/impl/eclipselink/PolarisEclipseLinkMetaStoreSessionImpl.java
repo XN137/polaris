@@ -250,8 +250,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
 
   /** {@inheritDoc} */
   @Override
-  public <T> T runInReadTransaction(
-      @Nonnull PolarisCallContext callCtx, @Nonnull Supplier<T> transactionCode) {
+  public <T> T runInReadTransaction(@Nonnull Supplier<T> transactionCode) {
     // EclipseLink doesn't support readOnly transaction
     return runInTransaction(transactionCode);
   }
@@ -273,7 +272,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
     // If called out of transaction, create a new transaction, otherwise run in current transaction
     return localSession.get() != null
         ? this.store.getNextSequence(localSession.get())
-        : runInReadTransaction(callCtx, () -> generateNewIdInCurrentTxn(callCtx));
+        : runInReadTransaction(() -> generateNewIdInCurrentTxn(callCtx));
   }
 
   /** {@inheritDoc} */

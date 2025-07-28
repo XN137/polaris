@@ -77,11 +77,9 @@ public interface TransactionalPersistence
    * will be committed, else the transaction will be automatically rolled-back on error. The result
    * of the supplier lambda is returned if success, else the error will be re-thrown.
    *
-   * @param callCtx call context
    * @param transactionCode code of the transaction being executed, a supplier lambda
    */
-  <T> T runInReadTransaction(
-      @Nonnull PolarisCallContext callCtx, @Nonnull Supplier<T> transactionCode);
+  <T> T runInReadTransaction(@Nonnull Supplier<T> transactionCode);
 
   /**
    * Run the specified transaction code (a runnable lambda type) in a database read transaction. If

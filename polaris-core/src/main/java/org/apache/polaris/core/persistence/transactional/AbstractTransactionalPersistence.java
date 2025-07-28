@@ -288,7 +288,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public PolarisBaseEntity lookupEntity(
       @Nonnull PolarisCallContext callCtx, long catalogId, long entityId, int typeCode) {
     return runInReadTransaction(
-        callCtx, () -> this.lookupEntityInCurrentTxn(callCtx, catalogId, entityId, typeCode));
+        () -> this.lookupEntityInCurrentTxn(callCtx, catalogId, entityId, typeCode));
   }
 
   /** {@inheritDoc} */
@@ -301,7 +301,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       int typeCode,
       @Nonnull String name) {
     return runInReadTransaction(
-        callCtx,
         () -> this.lookupEntityByNameInCurrentTxn(callCtx, catalogId, parentId, typeCode, name));
   }
 
@@ -315,7 +314,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       int typeCode,
       @Nonnull String name) {
     return runInReadTransaction(
-        callCtx,
         () ->
             this.lookupEntityIdAndSubTypeByNameInCurrentTxn(
                 callCtx, catalogId, parentId, typeCode, name));
@@ -326,7 +324,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Nonnull
   public List<PolarisBaseEntity> lookupEntities(
       @Nonnull PolarisCallContext callCtx, List<PolarisEntityId> entityIds) {
-    return runInReadTransaction(callCtx, () -> this.lookupEntitiesInCurrentTxn(callCtx, entityIds));
+    return runInReadTransaction(() -> this.lookupEntitiesInCurrentTxn(callCtx, entityIds));
   }
 
   /** {@inheritDoc} */
@@ -334,8 +332,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Nonnull
   public List<PolarisChangeTrackingVersions> lookupEntityVersions(
       @Nonnull PolarisCallContext callCtx, List<PolarisEntityId> entityIds) {
-    return runInReadTransaction(
-        callCtx, () -> this.lookupEntityVersionsInCurrentTxn(callCtx, entityIds));
+    return runInReadTransaction(() -> this.lookupEntityVersionsInCurrentTxn(callCtx, entityIds));
   }
 
   /** {@inheritDoc} */
@@ -348,7 +345,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull PolarisEntityType entityType,
       @Nonnull PageToken pageToken) {
     return runInReadTransaction(
-        callCtx,
         () -> this.listEntitiesInCurrentTxn(callCtx, catalogId, parentId, entityType, pageToken));
   }
 
@@ -363,7 +359,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull Predicate<PolarisBaseEntity> entityFilter,
       @Nonnull PageToken pageToken) {
     return runInReadTransaction(
-        callCtx,
         () ->
             this.listEntitiesInCurrentTxn(
                 callCtx, catalogId, parentId, entityType, entityFilter, pageToken));
@@ -381,7 +376,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull Function<PolarisBaseEntity, T> transformer,
       @Nonnull PageToken pageToken) {
     return runInReadTransaction(
-        callCtx,
         () ->
             this.listEntitiesInCurrentTxn(
                 callCtx, catalogId, parentId, entityType, entityFilter, transformer, pageToken));
@@ -392,7 +386,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public int lookupEntityGrantRecordsVersion(
       @Nonnull PolarisCallContext callCtx, long catalogId, long entityId) {
     return runInReadTransaction(
-        callCtx,
         () -> this.lookupEntityGrantRecordsVersionInCurrentTxn(callCtx, catalogId, entityId));
   }
 
@@ -407,7 +400,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       long granteeId,
       int privilegeCode) {
     return runInReadTransaction(
-        callCtx,
         () ->
             this.lookupGrantRecordInCurrentTxn(
                 callCtx,
@@ -424,7 +416,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public List<PolarisGrantRecord> loadAllGrantRecordsOnSecurable(
       @Nonnull PolarisCallContext callCtx, long securableCatalogId, long securableId) {
     return runInReadTransaction(
-        callCtx,
         () ->
             this.loadAllGrantRecordsOnSecurableInCurrentTxn(
                 callCtx, securableCatalogId, securableId));
@@ -436,7 +427,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public List<PolarisGrantRecord> loadAllGrantRecordsOnGrantee(
       @Nonnull PolarisCallContext callCtx, long granteeCatalogId, long granteeId) {
     return runInReadTransaction(
-        callCtx,
         () -> this.loadAllGrantRecordsOnGranteeInCurrentTxn(callCtx, granteeCatalogId, granteeId));
   }
 
@@ -448,7 +438,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       long catalogId,
       long parentId) {
     return runInReadTransaction(
-        callCtx,
         () -> this.hasChildrenInCurrentTxn(callCtx, optionalEntityType, catalogId, parentId));
   }
 
@@ -462,8 +451,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Nullable
   public PolarisPrincipalSecrets loadPrincipalSecrets(
       @Nonnull PolarisCallContext callCtx, @Nonnull String clientId) {
-    return runInReadTransaction(
-        callCtx, () -> this.loadPrincipalSecretsInCurrentTxn(callCtx, clientId));
+    return runInReadTransaction(() -> this.loadPrincipalSecretsInCurrentTxn(callCtx, clientId));
   }
 
   /** {@inheritDoc} */
@@ -532,7 +520,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       PolarisStorageIntegration<T> loadPolarisStorageIntegration(
           @Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
     return runInReadTransaction(
-        callCtx, () -> this.loadPolarisStorageIntegrationInCurrentTxn(callCtx, entity));
+        () -> this.loadPolarisStorageIntegrationInCurrentTxn(callCtx, entity));
   }
 
   //
@@ -722,7 +710,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       long policyCatalogId,
       long policyId) {
     return this.runInReadTransaction(
-        callCtx,
         () ->
             this.lookupPolicyMappingRecordInCurrentTxn(
                 callCtx, targetCatalogId, targetId, policyTypeCode, policyCatalogId, policyId));
@@ -737,7 +724,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       long targetId,
       int policyTypeCode) {
     return this.runInReadTransaction(
-        callCtx,
         () ->
             this.loadPoliciesOnTargetByTypeInCurrentTxn(
                 callCtx, targetCatalogId, targetId, policyTypeCode));
@@ -749,7 +735,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public List<PolarisPolicyMappingRecord> loadAllPoliciesOnTarget(
       @Nonnull PolarisCallContext callCtx, long targetCatalogId, long targetId) {
     return this.runInReadTransaction(
-        callCtx,
         () -> this.loadAllPoliciesOnTargetInCurrentTxn(callCtx, targetCatalogId, targetId));
   }
 
@@ -762,7 +747,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       long policyId,
       int policyTypeCode) {
     return this.runInReadTransaction(
-        callCtx,
         () ->
             this.loadAllTargetsOnPolicyInCurrentTxn(
                 callCtx, policyCatalogId, policyId, policyTypeCode));
