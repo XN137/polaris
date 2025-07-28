@@ -466,7 +466,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       return new CreateCatalogResult(BaseResult.ReturnStatus.ENTITY_ALREADY_EXISTS, null);
     }
 
-    ms.persistStorageIntegrationIfNeededInCurrentTxn(callCtx, catalog, integration);
+    ms.persistStorageIntegrationIfNeededInCurrentTxn(catalog, integration);
 
     // now create and persist new catalog entity
     this.persistNewEntity(callCtx, ms, catalog);

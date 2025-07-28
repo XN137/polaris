@@ -493,9 +493,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull PolarisBaseEntity entity,
       @Nullable PolarisStorageIntegration<T> storageIntegration) {
     runActionInTransaction(
-        () ->
-            this.persistStorageIntegrationIfNeededInCurrentTxn(
-                callCtx, entity, storageIntegration));
+        () -> this.persistStorageIntegrationIfNeededInCurrentTxn(entity, storageIntegration));
   }
 
   /** {@inheritDoc} */

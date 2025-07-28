@@ -284,7 +284,6 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   @Override
   public <T extends PolarisStorageConfigurationInfo>
       void persistStorageIntegrationIfNeededInCurrentTxn(
-          @Nonnull PolarisCallContext callContext,
           @Nonnull PolarisBaseEntity entity,
           @Nullable PolarisStorageIntegration<T> storageIntegration) {
     // not implemented for eclipselink store
