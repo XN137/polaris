@@ -154,8 +154,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
 
   /** {@inheritDoc} */
   @Override
-  public void writeToGrantRecordsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec) {
+  public void writeToGrantRecordsInCurrentTxn(@Nonnull PolarisGrantRecord grantRec) {
     // write it
     this.store.getSliceGrantRecords().write(grantRec);
     this.store.getSliceGrantRecordsByGrantee().write(grantRec);

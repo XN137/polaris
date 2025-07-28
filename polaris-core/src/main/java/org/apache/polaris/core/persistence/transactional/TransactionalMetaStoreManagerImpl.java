@@ -283,7 +283,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
             priv.getCode());
 
     // persist the new grant
-    ms.writeToGrantRecordsInCurrentTxn(callCtx, grantRecord);
+    ms.writeToGrantRecordsInCurrentTxn(grantRecord);
 
     // load the grantee (either a catalog/principal role or a principal) and increment its grants
     // version

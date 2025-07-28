@@ -135,8 +135,7 @@ public interface TransactionalPersistence
       @Nullable List<PolarisBaseEntity> originalEntities);
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#writeToGrantRecords} */
-  void writeToGrantRecordsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec);
+  void writeToGrantRecordsInCurrentTxn(@Nonnull PolarisGrantRecord grantRec);
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#deleteEntity} */
   void deleteEntityInCurrentTxn(

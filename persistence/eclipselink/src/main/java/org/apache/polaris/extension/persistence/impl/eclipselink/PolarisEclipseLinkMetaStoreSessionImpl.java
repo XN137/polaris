@@ -306,8 +306,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
 
   /** {@inheritDoc} */
   @Override
-  public void writeToGrantRecordsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec) {
+  public void writeToGrantRecordsInCurrentTxn(@Nonnull PolarisGrantRecord grantRec) {
     // write it
     this.store.writeToGrantRecords(localSession.get(), grantRec);
   }
