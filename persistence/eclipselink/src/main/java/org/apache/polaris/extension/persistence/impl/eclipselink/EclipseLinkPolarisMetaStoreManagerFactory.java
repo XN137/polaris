@@ -71,7 +71,8 @@ public class EclipseLinkPolarisMetaStoreManagerFactory
         realmContext,
         configurationFile(),
         persistenceUnitName(),
-        secretsGenerator(realmContext, rootCredentialsSet));
+        secretsGenerator(realmContext, rootCredentialsSet),
+        diagnostics);
   }
 
   private String configurationFile() {

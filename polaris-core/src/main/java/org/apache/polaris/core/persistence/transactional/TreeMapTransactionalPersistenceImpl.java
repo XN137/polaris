@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.polaris.core.PolarisCallContext;
+import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.entity.EntityNameLookupRecord;
 import org.apache.polaris.core.entity.LocationBasedEntity;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
@@ -61,16 +62,19 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
   private final TreeMapMetaStore store;
   private final PolarisStorageIntegrationProvider storageIntegrationProvider;
   private final PrincipalSecretsGenerator secretsGenerator;
+  private final PolarisDiagnostics diagnostics;
 
   public TreeMapTransactionalPersistenceImpl(
       @Nonnull TreeMapMetaStore store,
       @Nonnull PolarisStorageIntegrationProvider storageIntegrationProvider,
-      @Nonnull PrincipalSecretsGenerator secretsGenerator) {
+      @Nonnull PrincipalSecretsGenerator secretsGenerator,
+      @Nonnull PolarisDiagnostics diagnostics) {
 
     // init store
     this.store = store;
     this.storageIntegrationProvider = storageIntegrationProvider;
     this.secretsGenerator = secretsGenerator;
+    this.diagnostics = diagnostics;
   }
 
   /** {@inheritDoc} */

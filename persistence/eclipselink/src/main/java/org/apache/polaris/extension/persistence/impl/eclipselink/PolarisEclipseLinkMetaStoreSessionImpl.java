@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.polaris.core.PolarisCallContext;
+import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.EntityNameLookupRecord;
 import org.apache.polaris.core.entity.LocationBasedEntity;
@@ -95,6 +96,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   private final PolarisEclipseLinkStore store;
   private final PolarisStorageIntegrationProvider storageIntegrationProvider;
   private final PrincipalSecretsGenerator secretsGenerator;
+  private final PolarisDiagnostics diagnostics;
 
   /**
    * Create a meta store session against provided realm. Each realm has its own database.
@@ -111,7 +113,8 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
       @Nonnull RealmContext realmContext,
       @Nullable String confFile,
       @Nullable String persistenceUnitName,
-      @Nonnull PrincipalSecretsGenerator secretsGenerator) {
+      @Nonnull PrincipalSecretsGenerator secretsGenerator,
+      @Nonnull PolarisDiagnostics diagnostics) {
     LOGGER.debug(
         "Creating EclipseLink Meta Store Session for realm {}", realmContext.getRealmIdentifier());
     emf = createEntityManagerFactory(realmContext, confFile, persistenceUnitName);
@@ -123,6 +126,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
     }
     this.storageIntegrationProvider = storageIntegrationProvider;
     this.secretsGenerator = secretsGenerator;
+    this.diagnostics = diagnostics;
   }
 
   /**

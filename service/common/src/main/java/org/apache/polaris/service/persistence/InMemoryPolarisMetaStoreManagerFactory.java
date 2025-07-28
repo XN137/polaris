@@ -69,7 +69,7 @@ public class InMemoryPolarisMetaStoreManagerFactory
       @Nullable RootCredentialsSet rootCredentialsSet,
       @Nonnull PolarisDiagnostics diagnostics) {
     return new TreeMapTransactionalPersistenceImpl(
-        store, storageIntegration, secretsGenerator(realmContext, rootCredentialsSet));
+        store, storageIntegration, secretsGenerator(realmContext, rootCredentialsSet), diagnostics);
   }
 
   @Override
