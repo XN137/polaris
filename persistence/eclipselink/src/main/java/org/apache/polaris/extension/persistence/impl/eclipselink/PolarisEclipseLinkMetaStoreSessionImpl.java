@@ -257,8 +257,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
 
   /** {@inheritDoc} */
   @Override
-  public void runActionInReadTransaction(
-      @Nonnull PolarisCallContext callCtx, @Nonnull Runnable transactionCode) {
+  public void runActionInReadTransaction(@Nonnull Runnable transactionCode) {
     // EclipseLink doesn't support readOnly transaction
     runActionInTransaction(transactionCode);
   }

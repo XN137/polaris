@@ -86,11 +86,9 @@ public interface TransactionalPersistence
    * the code of the transaction does not throw any exception and returns normally, the transaction
    * will be committed, else the transaction will be automatically rolled-back on error.
    *
-   * @param callCtx call context
    * @param transactionCode code of the transaction being executed, a runnable lambda
    */
-  void runActionInReadTransaction(
-      @Nonnull PolarisCallContext callCtx, @Nonnull Runnable transactionCode);
+  void runActionInReadTransaction(@Nonnull Runnable transactionCode);
 
   /**
    * Lookup the specified set of entities by entityActiveKeys Return the result, a parallel list of
