@@ -848,7 +848,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     TransactionalPersistence ms = ((TransactionalPersistence) callCtx.getMetaStore());
 
     // need to run inside a read/write transaction
-    return ms.runInTransaction(callCtx, () -> this.createPrincipal(callCtx, ms, principal));
+    return ms.runInTransaction(() -> this.createPrincipal(callCtx, ms, principal));
   }
 
   /** See {@link #loadPrincipalSecrets(PolarisCallContext, String)} */
@@ -866,7 +866,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     PolarisPrincipalSecrets secrets =
-        ms.runInTransaction(callCtx, () -> this.loadPrincipalSecrets(callCtx, ms, clientId));
+        ms.runInTransaction(() -> this.loadPrincipalSecrets(callCtx, ms, clientId));
 
     return (secrets == null)
         ? new PrincipalSecretsResult(BaseResult.ReturnStatus.ENTITY_NOT_FOUND, null)
@@ -942,7 +942,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // need to run inside a read/write transaction
     PolarisPrincipalSecrets secrets =
         ms.runInTransaction(
-            callCtx,
             () ->
                 this.rotatePrincipalSecrets(
                     callCtx, ms, clientId, principalId, reset, oldSecretHash));
@@ -981,7 +980,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     }
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx, () -> this.createCatalog(callCtx, ms, catalog, integration, principalRoles));
+        () -> this.createCatalog(callCtx, ms, catalog, integration, principalRoles));
   }
 
   /** {@link #createEntityIfNotExists(PolarisCallContext, List, PolarisBaseEntity)} */
@@ -1047,7 +1046,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx, () -> this.createEntityIfNotExists(callCtx, ms, catalogPath, entity));
+        () -> this.createEntityIfNotExists(callCtx, ms, catalogPath, entity));
   }
 
   @Override
@@ -1060,7 +1059,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx,
         () -> {
           List<PolarisBaseEntity> createdEntities = new ArrayList<>(entities.size());
           for (PolarisBaseEntity entity : entities) {
@@ -1145,7 +1143,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx, () -> this.updateEntityPropertiesIfNotChanged(callCtx, ms, catalogPath, entity));
+        () -> this.updateEntityPropertiesIfNotChanged(callCtx, ms, catalogPath, entity));
   }
 
   /** See {@link #updateEntitiesPropertiesIfNotChanged(PolarisCallContext, List)} */
@@ -1190,7 +1188,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx, () -> this.updateEntitiesPropertiesIfNotChanged(callCtx, ms, entities));
+        () -> this.updateEntitiesPropertiesIfNotChanged(callCtx, ms, entities));
   }
 
   /**
@@ -1316,7 +1314,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx,
         () ->
             this.renameEntity(
                 callCtx, ms, catalogPath, entityToRename, newCatalogPath, renamedEntity));
@@ -1465,7 +1462,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx,
         () ->
             this.dropEntityIfExists(
                 callCtx, ms, catalogPath, entityToDrop, cleanupProperties, cleanup));
@@ -1603,7 +1599,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx, () -> this.grantUsageOnRoleToGrantee(callCtx, ms, catalog, role, grantee));
+        () -> this.grantUsageOnRoleToGrantee(callCtx, ms, catalog, role, grantee));
   }
 
   /**
@@ -1665,7 +1661,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx, () -> this.revokeUsageOnRoleFromGrantee(callCtx, ms, catalog, role, grantee));
+        () -> this.revokeUsageOnRoleFromGrantee(callCtx, ms, catalog, role, grantee));
   }
 
   /**
@@ -1708,7 +1704,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx,
         () ->
             this.grantPrivilegeOnSecurableToRole(
                 callCtx, ms, grantee, catalogPath, securable, privilege));
@@ -1770,7 +1765,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // need to run inside a read/write transaction
     return ms.runInTransaction(
-        callCtx,
         () ->
             this.revokePrivilegeOnSecurableFromRole(
                 callCtx, ms, grantee, catalogPath, securable, privilege));
@@ -2011,7 +2005,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
   public @Nonnull EntitiesResult loadTasks(
       @Nonnull PolarisCallContext callCtx, String executorId, PageToken pageToken) {
     TransactionalPersistence ms = ((TransactionalPersistence) callCtx.getMetaStore());
-    return ms.runInTransaction(callCtx, () -> this.loadTasks(callCtx, ms, executorId, pageToken));
+    return ms.runInTransaction(() -> this.loadTasks(callCtx, ms, executorId, pageToken));
   }
 
   /** {@inheritDoc} */
@@ -2331,7 +2325,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
           @Nonnull PolarisCallContext callContext, T entity) {
     TransactionalPersistence ms = ((TransactionalPersistence) callContext.getMetaStore());
     return ms.runInTransaction(
-        callContext,
         () -> {
           return callContext.getMetaStore().hasOverlappingSiblings(callContext, entity);
         });
@@ -2350,7 +2343,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     TransactionalPersistence ms = ((TransactionalPersistence) callCtx.getMetaStore());
 
     return ms.runInTransaction(
-        callCtx,
         () ->
             this.doAttachPolicyToEntity(
                 callCtx, ms, targetCatalogPath, target, policyCatalogPath, policy, parameters));
@@ -2389,7 +2381,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       @Nonnull PolicyEntity policy) {
     TransactionalPersistence ms = ((TransactionalPersistence) callCtx.getMetaStore());
     return ms.runInTransaction(
-        callCtx,
         () ->
             this.doDetachPolicyFromEntity(
                 callCtx, ms, targetCatalogPath, target, policyCatalogPath, policy));

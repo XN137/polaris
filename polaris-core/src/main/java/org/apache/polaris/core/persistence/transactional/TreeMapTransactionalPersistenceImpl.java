@@ -84,8 +84,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
 
   /** {@inheritDoc} */
   @Override
-  public <T> T runInTransaction(
-      @Nonnull PolarisCallContext callCtx, @Nonnull Supplier<T> transactionCode) {
+  public <T> T runInTransaction(@Nonnull Supplier<T> transactionCode) {
 
     // run transaction on our underlying store
     return store.runInTransaction(getDiagnostics(), transactionCode);

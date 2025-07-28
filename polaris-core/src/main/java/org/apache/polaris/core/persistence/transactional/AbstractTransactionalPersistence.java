@@ -126,7 +126,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /** {@inheritDoc} */
   @Override
   public long generateNewId(@Nonnull PolarisCallContext callCtx) {
-    return runInTransaction(callCtx, () -> this.generateNewIdInCurrentTxn(callCtx));
+    return runInTransaction(() -> this.generateNewIdInCurrentTxn(callCtx));
   }
 
   /** Helper to perform the compare-and-swap semantics of a single writeEntity call. */
@@ -476,7 +476,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public PolarisPrincipalSecrets generateNewPrincipalSecrets(
       @Nonnull PolarisCallContext callCtx, @Nonnull String principalName, long principalId) {
     return runInTransaction(
-        callCtx,
         () -> this.generateNewPrincipalSecretsInCurrentTxn(callCtx, principalName, principalId));
   }
 
@@ -490,7 +489,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       boolean reset,
       @Nonnull String oldSecretHash) {
     return runInTransaction(
-        callCtx,
         () ->
             this.rotatePrincipalSecretsInCurrentTxn(
                 callCtx, clientId, principalId, reset, oldSecretHash));
@@ -514,7 +512,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
           long entityId,
           PolarisStorageConfigurationInfo polarisStorageConfigurationInfo) {
     return runInTransaction(
-        callCtx,
         () ->
             this.createStorageIntegrationInCurrentTxn(
                 callCtx, catalogId, entityId, polarisStorageConfigurationInfo));
