@@ -72,12 +72,10 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
    * Write the base entity to the entities table. If there is a conflict (existing record with the
    * same id), all attributes of the new record will replace the existing one.
    *
-   * @param callCtx call context
    * @param entity entity record to write, potentially replacing an existing entity record with the
    *     same key
    */
-  protected abstract void writeToEntitiesInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity);
+  protected abstract void writeToEntitiesInCurrentTxn(@Nonnull PolarisBaseEntity entity);
 
   /**
    * Write the base entity to the entities_active table. If there is a conflict (existing record
@@ -565,7 +563,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull PolarisBaseEntity entity,
       boolean nameOrParentChanged,
       @Nullable PolarisBaseEntity originalEntity) {
-    this.writeToEntitiesInCurrentTxn(callCtx, entity);
+    this.writeToEntitiesInCurrentTxn(entity);
     this.writeToEntitiesChangeTrackingInCurrentTxn(callCtx, entity);
 
     if (nameOrParentChanged) {
