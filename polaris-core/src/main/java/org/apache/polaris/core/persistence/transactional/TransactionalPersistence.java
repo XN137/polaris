@@ -223,7 +223,7 @@ public interface TransactionalPersistence
    */
   @Nonnull
   List<PolarisGrantRecord> loadAllGrantRecordsOnSecurableInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, long securableCatalogId, long securableId);
+      long securableCatalogId, long securableId);
 
   /**
    * See {@link org.apache.polaris.core.persistence.BasePersistence#loadAllGrantRecordsOnGrantee}

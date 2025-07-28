@@ -424,7 +424,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
   /** {@inheritDoc} */
   @Override
   public @Nonnull List<PolarisGrantRecord> loadAllGrantRecordsOnSecurableInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, long securableCatalogId, long securableId) {
+      long securableCatalogId, long securableId) {
     // now fetch all grants for this securable
     return this.store
         .getSliceGrantRecords()
