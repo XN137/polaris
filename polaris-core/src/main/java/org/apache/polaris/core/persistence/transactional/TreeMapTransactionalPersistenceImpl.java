@@ -380,10 +380,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
   /** {@inheritDoc} */
   @Override
   public boolean hasChildrenInCurrentTxn(
-      @Nonnull PolarisCallContext callContext,
-      @Nullable PolarisEntityType entityType,
-      long catalogId,
-      long parentId) {
+      @Nullable PolarisEntityType entityType, long catalogId, long parentId) {
     // determine key prefix, add type if one is passed-in
     String prefixKey =
         entityType == null

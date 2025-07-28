@@ -234,10 +234,7 @@ public interface TransactionalPersistence
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#hasChildren} */
   boolean hasChildrenInCurrentTxn(
-      @Nonnull PolarisCallContext callContext,
-      @Nullable PolarisEntityType optionalEntityType,
-      long catalogId,
-      long parentId);
+      @Nullable PolarisEntityType optionalEntityType, long catalogId, long parentId);
 
   /** See {@link org.apache.polaris.core.persistence.IntegrationPersistence#loadPrincipalSecrets} */
   @Nullable

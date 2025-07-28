@@ -476,10 +476,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   /** {@inheritDoc} */
   @Override
   public boolean hasChildrenInCurrentTxn(
-      @Nonnull PolarisCallContext callContext,
-      @Nullable PolarisEntityType entityType,
-      long catalogId,
-      long parentId) {
+      @Nullable PolarisEntityType entityType, long catalogId, long parentId) {
     // check if it has children
     return this.store.countActiveChildEntities(localSession.get(), catalogId, parentId, entityType)
         > 0;

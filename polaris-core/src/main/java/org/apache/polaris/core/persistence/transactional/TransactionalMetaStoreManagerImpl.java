@@ -1340,7 +1340,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       long catalogId = refreshEntityToDrop.getId();
 
       // if not all namespaces are dropped, we cannot drop this catalog
-      if (ms.hasChildrenInCurrentTxn(callCtx, PolarisEntityType.NAMESPACE, catalogId, catalogId)) {
+      if (ms.hasChildrenInCurrentTxn(PolarisEntityType.NAMESPACE, catalogId, catalogId)) {
         return new DropEntityResult(BaseResult.ReturnStatus.NAMESPACE_NOT_EMPTY, null);
       }
 
@@ -1367,7 +1367,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       }
     } else if (refreshEntityToDrop.getType() == PolarisEntityType.NAMESPACE) {
       if (ms.hasChildrenInCurrentTxn(
-          callCtx, null, refreshEntityToDrop.getCatalogId(), refreshEntityToDrop.getId())) {
+          null, refreshEntityToDrop.getCatalogId(), refreshEntityToDrop.getId())) {
         return new DropEntityResult(BaseResult.ReturnStatus.NAMESPACE_NOT_EMPTY, null);
       }
     } else if (refreshEntityToDrop.getType() == PolarisEntityType.POLICY && !cleanup) {

@@ -426,7 +426,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       long catalogId,
       long parentId) {
     return runInReadTransaction(
-        () -> this.hasChildrenInCurrentTxn(callCtx, optionalEntityType, catalogId, parentId));
+        () -> this.hasChildrenInCurrentTxn(optionalEntityType, catalogId, parentId));
   }
 
   //
