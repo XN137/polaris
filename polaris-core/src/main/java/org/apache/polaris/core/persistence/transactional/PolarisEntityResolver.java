@@ -130,8 +130,7 @@ public class PolarisEntityResolver {
 
     // call the resolution logic
     this.isSuccess =
-        this.resolveEntitiesIfNeeded(
-            callCtx, ms, catalogPath, resolvedEntity, otherTopLevelEntities);
+        this.resolveEntitiesIfNeeded(ms, catalogPath, resolvedEntity, otherTopLevelEntities);
 
     // process result
     if (!this.isSuccess) {
@@ -225,7 +224,6 @@ public class PolarisEntityResolver {
   /**
    * Ensure all specified entities are still active, have not been renamed or re-parented.
    *
-   * @param callCtx call context
    * @param ms meta store in read mode
    * @param catalogPath path within the catalog. The first element MUST be a catalog. Null or empty
    *     for top-level entities like catalog
@@ -238,7 +236,6 @@ public class PolarisEntityResolver {
    * @return true if all entities have been resolved successfully
    */
   private boolean resolveEntitiesIfNeeded(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull TransactionalPersistence ms,
       @Nullable List<PolarisEntityCore> catalogPath,
       @Nullable PolarisEntityCore resolvedEntity,
