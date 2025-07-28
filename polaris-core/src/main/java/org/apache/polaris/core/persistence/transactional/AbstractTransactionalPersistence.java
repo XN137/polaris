@@ -253,7 +253,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /** {@inheritDoc} */
   @Override
   public void deleteEntity(@Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
-    runActionInTransaction(() -> this.deleteEntityInCurrentTxn(callCtx, entity));
+    runActionInTransaction(() -> this.deleteEntityInCurrentTxn(entity));
   }
 
   /** {@inheritDoc} */
@@ -581,8 +581,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
 
   /** {@inheritDoc} */
   @Override
-  public void deleteEntityInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
+  public void deleteEntityInCurrentTxn(@Nonnull PolarisBaseEntity entity) {
     this.deleteFromEntitiesActiveInCurrentTxn(entity);
     this.deleteFromEntitiesInCurrentTxn(entity);
     this.deleteFromEntitiesChangeTrackingInCurrentTxn(entity);

@@ -228,7 +228,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     }
 
     // remove the entity being dropped now
-    ms.deleteEntityInCurrentTxn(callCtx, entity);
+    ms.deleteEntityInCurrentTxn(entity);
 
     // if it is a principal, we also need to drop the secrets
     if (entity.getType() == PolarisEntityType.PRINCIPAL) {
