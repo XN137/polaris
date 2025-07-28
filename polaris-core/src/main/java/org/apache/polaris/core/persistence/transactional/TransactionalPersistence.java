@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.entity.EntityNameLookupRecord;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisChangeTrackingVersions;
@@ -113,7 +112,7 @@ public interface TransactionalPersistence
   //
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#generateNewId} */
-  long generateNewIdInCurrentTxn(@Nonnull PolarisCallContext callCtx);
+  long generateNewIdInCurrentTxn();
 
   /**
    * See {@link org.apache.polaris.core.persistence.BasePersistence#writeEntity}

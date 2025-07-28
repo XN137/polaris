@@ -126,7 +126,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /** {@inheritDoc} */
   @Override
   public long generateNewId(@Nonnull PolarisCallContext callCtx) {
-    return runInTransaction(() -> this.generateNewIdInCurrentTxn(callCtx));
+    return runInTransaction(this::generateNewIdInCurrentTxn);
   }
 
   /** Helper to perform the compare-and-swap semantics of a single writeEntity call. */

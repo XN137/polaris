@@ -479,7 +479,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     this.persistNewEntity(callCtx, ms, catalog);
 
     // create the catalog admin role for this new catalog
-    long adminRoleId = ms.generateNewIdInCurrentTxn(callCtx);
+    long adminRoleId = ms.generateNewIdInCurrentTxn();
     PolarisBaseEntity adminRole =
         new PolarisBaseEntity(
             catalog.getId(),
@@ -558,7 +558,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // Now bootstrap the service by creating the root principal and the service_admin principal
     // role. The principal role will be granted to that root principal and the root catalog admin
     // of the root catalog will be granted to that principal role.
-    long rootPrincipalId = ms.generateNewIdInCurrentTxn(callCtx);
+    long rootPrincipalId = ms.generateNewIdInCurrentTxn();
     PolarisBaseEntity rootPrincipal =
         new PolarisBaseEntity(
             PolarisEntityConstants.getNullId(),
@@ -572,7 +572,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     this.createPrincipal(callCtx, ms, rootPrincipal);
 
     // now create the account admin principal role
-    long serviceAdminPrincipalRoleId = ms.generateNewIdInCurrentTxn(callCtx);
+    long serviceAdminPrincipalRoleId = ms.generateNewIdInCurrentTxn();
     PolarisBaseEntity serviceAdminPrincipalRole =
         new PolarisBaseEntity(
             PolarisEntityConstants.getNullId(),
@@ -1428,7 +1428,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       properties.put("data", PolarisObjectMapperUtil.serialize(refreshEntityToDrop));
       PolarisBaseEntity.Builder taskEntityBuilder =
           new PolarisBaseEntity.Builder()
-              .id(ms.generateNewIdInCurrentTxn(callCtx))
+              .id(ms.generateNewIdInCurrentTxn())
               .catalogId(0L)
               .name("entityCleanup_" + entityToDrop.getId())
               .typeCode(PolarisEntityType.TASK.getCode())

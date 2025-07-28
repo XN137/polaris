@@ -266,12 +266,12 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
    * @return new unique entity identifier
    */
   @Override
-  public long generateNewIdInCurrentTxn(@Nonnull PolarisCallContext callCtx) {
+  public long generateNewIdInCurrentTxn() {
     // This function can be called within a transaction or out of transaction.
     // If called out of transaction, create a new transaction, otherwise run in current transaction
     return localSession.get() != null
         ? this.store.getNextSequence(localSession.get())
-        : runInReadTransaction(() -> generateNewIdInCurrentTxn(callCtx));
+        : runInReadTransaction(this::generateNewIdInCurrentTxn);
   }
 
   /** {@inheritDoc} */

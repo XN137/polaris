@@ -117,7 +117,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
    * @return new unique entity identifier
    */
   @Override
-  public long generateNewIdInCurrentTxn(@Nonnull PolarisCallContext callCtx) {
+  public long generateNewIdInCurrentTxn() {
     return this.store.getNextSequence();
   }
 
