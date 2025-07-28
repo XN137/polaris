@@ -106,11 +106,9 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /**
    * Delete the base entity from the entities_active table.
    *
-   * @param callCtx call context
    * @param entity entity record to delete
    */
-  protected abstract void deleteFromEntitiesActiveInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisEntityCore entity);
+  protected abstract void deleteFromEntitiesActiveInCurrentTxn(@Nonnull PolarisEntityCore entity);
 
   /**
    * Delete the base entity from the entities change tracking table
@@ -566,7 +564,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
         // In our case, rename isn't automatically handled when the main "entities" slice
         // is updated; instead we must explicitly remove from the old entitiesActive
         // key as well.
-        this.deleteFromEntitiesActiveInCurrentTxn(callCtx, originalEntity);
+        this.deleteFromEntitiesActiveInCurrentTxn(originalEntity);
       }
       this.writeToEntitiesActiveInCurrentTxn(entity);
     }
@@ -608,7 +606,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   public void deleteEntityInCurrentTxn(
       @Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
-    this.deleteFromEntitiesActiveInCurrentTxn(callCtx, entity);
+    this.deleteFromEntitiesActiveInCurrentTxn(entity);
     this.deleteFromEntitiesInCurrentTxn(entity);
     this.deleteFromEntitiesChangeTrackingInCurrentTxn(callCtx, entity);
   }
