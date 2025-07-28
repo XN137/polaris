@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.apache.polaris.core.PolarisCallContext;
+import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.entity.EntityNameLookupRecord;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisChangeTrackingVersions;
@@ -54,6 +55,8 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   // New abstract methods specific to this slice-based transactional persistence that subclasses
   // must implement to inherit implementations of lookup/write/delete
   //
+
+  protected abstract PolarisDiagnostics getDiagnostics();
 
   /**
    * Lookup an entity by entityActiveKey

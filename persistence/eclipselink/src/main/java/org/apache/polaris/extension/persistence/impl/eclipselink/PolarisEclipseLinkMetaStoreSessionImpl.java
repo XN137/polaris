@@ -129,6 +129,11 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
     this.diagnostics = diagnostics;
   }
 
+  @Override
+  protected PolarisDiagnostics getDiagnostics() {
+    return diagnostics;
+  }
+
   /**
    * Create EntityManagerFactory.
    *

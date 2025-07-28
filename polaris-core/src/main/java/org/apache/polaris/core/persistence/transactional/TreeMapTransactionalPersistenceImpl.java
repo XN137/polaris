@@ -77,6 +77,11 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
     this.diagnostics = diagnostics;
   }
 
+  @Override
+  protected PolarisDiagnostics getDiagnostics() {
+    return diagnostics;
+  }
+
   /** {@inheritDoc} */
   @Override
   public <T> T runInTransaction(
