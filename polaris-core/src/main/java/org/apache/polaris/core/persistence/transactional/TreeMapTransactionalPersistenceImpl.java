@@ -284,7 +284,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
   @Override
   @Nullable
   public EntityNameLookupRecord lookupEntityActiveInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisEntitiesActiveKey entityActiveKey) {
+      @Nonnull PolarisEntitiesActiveKey entityActiveKey) {
     // lookup the active entity slice
     PolarisBaseEntity entity =
         this.store
@@ -316,7 +316,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
       @Nonnull List<PolarisEntitiesActiveKey> entityActiveKeys) {
     // now build a list to quickly verify that nothing has changed
     return entityActiveKeys.stream()
-        .map(entityActiveKey -> this.lookupEntityActiveInCurrentTxn(callCtx, entityActiveKey))
+        .map(this::lookupEntityActiveInCurrentTxn)
         .collect(Collectors.toList());
   }
 

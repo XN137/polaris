@@ -61,13 +61,12 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /**
    * Lookup an entity by entityActiveKey
    *
-   * @param callCtx call context
    * @param entityActiveKey key by name
    * @return null if the specified entity does not exist or has been dropped.
    */
   @Nullable
   protected abstract EntityNameLookupRecord lookupEntityActiveInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisEntitiesActiveKey entityActiveKey);
+      @Nonnull PolarisEntitiesActiveKey entityActiveKey);
 
   /**
    * Write the base entity to the entities table. If there is a conflict (existing record with the
@@ -635,7 +634,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
 
     // ensure that the entity exists
     EntityNameLookupRecord entityActiveRecord =
-        this.lookupEntityActiveInCurrentTxn(callCtx, entityActiveKey);
+        this.lookupEntityActiveInCurrentTxn(entityActiveKey);
 
     // if not found, return null
     if (entityActiveRecord == null) {
@@ -668,7 +667,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull String name) {
     PolarisEntitiesActiveKey entityActiveKey =
         new PolarisEntitiesActiveKey(catalogId, parentId, typeCode, name);
-    return this.lookupEntityActiveInCurrentTxn(callCtx, entityActiveKey);
+    return this.lookupEntityActiveInCurrentTxn(entityActiveKey);
   }
 
   /** {@inheritDoc} */
