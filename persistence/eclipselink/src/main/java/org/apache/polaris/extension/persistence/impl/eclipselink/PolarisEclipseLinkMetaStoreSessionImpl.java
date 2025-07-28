@@ -529,7 +529,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   /** {@inheritDoc} */
   @Override
   public @Nonnull List<PolarisGrantRecord> loadAllGrantRecordsOnGranteeInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, long granteeCatalogId, long granteeId) {
+      long granteeCatalogId, long granteeId) {
     // now fetch all grants assigned to this grantee
     return this.store
         .lookupGrantRecordsOnGrantee(localSession.get(), granteeCatalogId, granteeId)

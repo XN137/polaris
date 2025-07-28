@@ -172,8 +172,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // delete ALL grant records to (if the entity is a grantee) and from that entity
     final List<PolarisGrantRecord> grantsOnGrantee =
         (entity.getType().isGrantee())
-            ? ms.loadAllGrantRecordsOnGranteeInCurrentTxn(
-                callCtx, entity.getCatalogId(), entity.getId())
+            ? ms.loadAllGrantRecordsOnGranteeInCurrentTxn(entity.getCatalogId(), entity.getId())
             : List.of();
     final List<PolarisGrantRecord> grantsOnSecurable =
         ms.loadAllGrantRecordsOnSecurableInCurrentTxn(entity.getCatalogId(), entity.getId());
@@ -1814,7 +1813,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // now fetch all grants for this grantee
     final List<PolarisGrantRecord> returnGrantRecords =
-        ms.loadAllGrantRecordsOnGranteeInCurrentTxn(callCtx, granteeCatalogId, granteeId);
+        ms.loadAllGrantRecordsOnGranteeInCurrentTxn(granteeCatalogId, granteeId);
 
     // find all unique securables
     List<PolarisEntityId> entityIds =
@@ -2069,8 +2068,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     final List<PolarisGrantRecord> grantRecords;
     if (entity.getType().isGrantee()) {
       grantRecords =
-          new ArrayList<>(
-              ms.loadAllGrantRecordsOnGranteeInCurrentTxn(callCtx, entityCatalogId, entityId));
+          new ArrayList<>(ms.loadAllGrantRecordsOnGranteeInCurrentTxn(entityCatalogId, entityId));
       grantRecords.addAll(ms.loadAllGrantRecordsOnSecurableInCurrentTxn(entityCatalogId, entityId));
     } else {
       grantRecords = ms.loadAllGrantRecordsOnSecurableInCurrentTxn(entityCatalogId, entityId);
@@ -2121,8 +2119,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     if (entity.getType().isGrantee()) {
       grantRecords =
           new ArrayList<>(
-              ms.loadAllGrantRecordsOnGranteeInCurrentTxn(
-                  callCtx, entityCatalogId, entity.getId()));
+              ms.loadAllGrantRecordsOnGranteeInCurrentTxn(entityCatalogId, entity.getId()));
       grantRecords.addAll(
           ms.loadAllGrantRecordsOnSecurableInCurrentTxn(entityCatalogId, entity.getId()));
     } else {
@@ -2233,8 +2230,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     if (entityVersions.getGrantRecordsVersion() != entityGrantRecordsVersion) {
       if (entityType.isGrantee()) {
         grantRecords =
-            new ArrayList<>(
-                ms.loadAllGrantRecordsOnGranteeInCurrentTxn(callCtx, entityCatalogId, entityId));
+            new ArrayList<>(ms.loadAllGrantRecordsOnGranteeInCurrentTxn(entityCatalogId, entityId));
         grantRecords.addAll(
             ms.loadAllGrantRecordsOnSecurableInCurrentTxn(entityCatalogId, entityId));
       } else {

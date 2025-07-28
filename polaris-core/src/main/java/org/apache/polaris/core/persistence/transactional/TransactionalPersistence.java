@@ -230,7 +230,7 @@ public interface TransactionalPersistence
    */
   @Nonnull
   List<PolarisGrantRecord> loadAllGrantRecordsOnGranteeInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, long granteeCatalogId, long granteeId);
+      long granteeCatalogId, long granteeId);
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#hasChildren} */
   boolean hasChildrenInCurrentTxn(
