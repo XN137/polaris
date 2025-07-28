@@ -395,8 +395,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
 
   /** {@inheritDoc} */
   @Override
-  public int lookupEntityGrantRecordsVersionInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, long catalogId, long entityId) {
+  public int lookupEntityGrantRecordsVersionInCurrentTxn(long catalogId, long entityId) {
     PolarisBaseEntity entity =
         this.store
             .getSliceEntitiesChangeTracking()

@@ -207,8 +207,7 @@ public interface TransactionalPersistence
   /**
    * See {@link org.apache.polaris.core.persistence.BasePersistence#lookupEntityGrantRecordsVersion}
    */
-  int lookupEntityGrantRecordsVersionInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, long catalogId, long entityId);
+  int lookupEntityGrantRecordsVersionInCurrentTxn(long catalogId, long entityId);
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#lookupGrantRecord} */
   @Nullable
