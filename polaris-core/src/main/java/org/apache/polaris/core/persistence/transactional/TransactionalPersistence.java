@@ -131,7 +131,6 @@ public interface TransactionalPersistence
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#writeEntities} */
   void writeEntitiesInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull List<PolarisBaseEntity> entities,
       @Nullable List<PolarisBaseEntity> originalEntities);
 
