@@ -365,7 +365,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
         .check(grantee.getType().isGrantee(), "not_a_grantee", "grantee={}", grantee);
 
     // remove that grant
-    ms.deleteFromGrantRecordsInCurrentTxn(callCtx, grantRecord);
+    ms.deleteFromGrantRecordsInCurrentTxn(grantRecord);
 
     // load the grantee and increment its grants version
     PolarisBaseEntity refreshGrantee =

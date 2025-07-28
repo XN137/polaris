@@ -188,8 +188,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
 
   /** {@inheritDoc} */
   @Override
-  public void deleteFromGrantRecordsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec) {
+  public void deleteFromGrantRecordsInCurrentTxn(@Nonnull PolarisGrantRecord grantRec) {
 
     // delete it
     this.store.getSliceGrantRecords().delete(grantRec);

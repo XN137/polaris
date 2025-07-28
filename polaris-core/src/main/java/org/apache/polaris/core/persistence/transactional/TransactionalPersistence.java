@@ -141,8 +141,7 @@ public interface TransactionalPersistence
   void deleteEntityInCurrentTxn(@Nonnull PolarisBaseEntity entity);
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#deleteFromGrantRecords} */
-  void deleteFromGrantRecordsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec);
+  void deleteFromGrantRecordsInCurrentTxn(@Nonnull PolarisGrantRecord grantRec);
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#deleteAllEntityGrantRecords} */
   void deleteAllEntityGrantRecordsInCurrentTxn(

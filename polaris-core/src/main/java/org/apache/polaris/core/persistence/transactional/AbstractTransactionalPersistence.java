@@ -260,7 +260,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   public void deleteFromGrantRecords(
       @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec) {
-    runActionInTransaction(() -> this.deleteFromGrantRecordsInCurrentTxn(callCtx, grantRec));
+    runActionInTransaction(() -> this.deleteFromGrantRecordsInCurrentTxn(grantRec));
   }
 
   /** {@inheritDoc} */
