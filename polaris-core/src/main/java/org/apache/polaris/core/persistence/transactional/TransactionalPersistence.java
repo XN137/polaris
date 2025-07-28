@@ -238,8 +238,7 @@ public interface TransactionalPersistence
 
   /** See {@link org.apache.polaris.core.persistence.IntegrationPersistence#loadPrincipalSecrets} */
   @Nullable
-  PolarisPrincipalSecrets loadPrincipalSecretsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull String clientId);
+  PolarisPrincipalSecrets loadPrincipalSecretsInCurrentTxn(@Nonnull String clientId);
 
   /**
    * See {@link

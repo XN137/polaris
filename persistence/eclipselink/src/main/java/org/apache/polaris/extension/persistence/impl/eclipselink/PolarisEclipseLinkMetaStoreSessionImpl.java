@@ -538,7 +538,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   /** {@inheritDoc} */
   @Override
   public @Nullable PolarisPrincipalSecrets loadPrincipalSecretsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull String clientId) {
+      @Nonnull String clientId) {
     return ModelPrincipalSecrets.toPrincipalSecrets(
         this.store.lookupPrincipalSecrets(localSession.get(), clientId));
   }

@@ -771,8 +771,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
               refreshPrincipal.getInternalProperties());
 
       // get the main and secondary secrets for that client
-      PolarisPrincipalSecrets principalSecrets =
-          ms.loadPrincipalSecretsInCurrentTxn(callCtx, clientId);
+      PolarisPrincipalSecrets principalSecrets = ms.loadPrincipalSecretsInCurrentTxn(clientId);
 
       // should not be null
       callCtx
@@ -835,7 +834,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
   /** See {@link #loadPrincipalSecrets(PolarisCallContext, String)} */
   private @Nullable PolarisPrincipalSecrets loadPrincipalSecrets(
       @Nonnull PolarisCallContext callCtx, TransactionalPersistence ms, @Nonnull String clientId) {
-    return ms.loadPrincipalSecretsInCurrentTxn(callCtx, clientId);
+    return ms.loadPrincipalSecretsInCurrentTxn(clientId);
   }
 
   /** {@inheritDoc} */

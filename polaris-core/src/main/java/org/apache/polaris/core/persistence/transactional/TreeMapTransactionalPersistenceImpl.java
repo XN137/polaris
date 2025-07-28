@@ -441,7 +441,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
   /** {@inheritDoc} */
   @Override
   public @Nullable PolarisPrincipalSecrets loadPrincipalSecretsInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull String clientId) {
+      @Nonnull String clientId) {
     return this.store.getSlicePrincipalSecrets().read(clientId);
   }
 

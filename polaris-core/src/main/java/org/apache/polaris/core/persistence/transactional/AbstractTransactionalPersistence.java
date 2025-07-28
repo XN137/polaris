@@ -439,7 +439,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Nullable
   public PolarisPrincipalSecrets loadPrincipalSecrets(
       @Nonnull PolarisCallContext callCtx, @Nonnull String clientId) {
-    return runInReadTransaction(() -> this.loadPrincipalSecretsInCurrentTxn(callCtx, clientId));
+    return runInReadTransaction(() -> this.loadPrincipalSecretsInCurrentTxn(clientId));
   }
 
   /** {@inheritDoc} */
