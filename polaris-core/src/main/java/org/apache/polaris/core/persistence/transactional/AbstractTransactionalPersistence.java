@@ -187,7 +187,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       boolean nameOrParentChanged,
       @Nullable PolarisBaseEntity originalEntity) {
     runActionInTransaction(
-        callCtx,
         () -> {
           this.checkConditionsForWriteEntityInCurrentTxn(callCtx, entity, originalEntity);
           this.writeEntityInCurrentTxn(callCtx, entity, nameOrParentChanged, originalEntity);
@@ -210,7 +209,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
               originalEntities.size());
     }
     runActionInTransaction(
-        callCtx,
         () -> {
           // Validate and write each one independently so that we can also detect conflicting
           // writes to the same entity id within a given batch (so that previously written
@@ -249,21 +247,20 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   public void writeToGrantRecords(
       @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec) {
-    runActionInTransaction(callCtx, () -> this.writeToGrantRecordsInCurrentTxn(callCtx, grantRec));
+    runActionInTransaction(() -> this.writeToGrantRecordsInCurrentTxn(callCtx, grantRec));
   }
 
   /** {@inheritDoc} */
   @Override
   public void deleteEntity(@Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
-    runActionInTransaction(callCtx, () -> this.deleteEntityInCurrentTxn(callCtx, entity));
+    runActionInTransaction(() -> this.deleteEntityInCurrentTxn(callCtx, entity));
   }
 
   /** {@inheritDoc} */
   @Override
   public void deleteFromGrantRecords(
       @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec) {
-    runActionInTransaction(
-        callCtx, () -> this.deleteFromGrantRecordsInCurrentTxn(callCtx, grantRec));
+    runActionInTransaction(() -> this.deleteFromGrantRecordsInCurrentTxn(callCtx, grantRec));
   }
 
   /** {@inheritDoc} */
@@ -274,7 +271,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull List<PolarisGrantRecord> grantsOnGrantee,
       @Nonnull List<PolarisGrantRecord> grantsOnSecurable) {
     runActionInTransaction(
-        callCtx,
         () ->
             this.deleteAllEntityGrantRecordsInCurrentTxn(
                 callCtx, entity, grantsOnGrantee, grantsOnSecurable));
@@ -283,7 +279,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /** {@inheritDoc} */
   @Override
   public void deleteAll(@Nonnull PolarisCallContext callCtx) {
-    runActionInTransaction(callCtx, () -> this.deleteAllInCurrentTxn(callCtx));
+    runActionInTransaction(() -> this.deleteAllInCurrentTxn(callCtx));
   }
 
   /** {@inheritDoc} */
@@ -499,7 +495,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public void deletePrincipalSecrets(
       @Nonnull PolarisCallContext callCtx, @Nonnull String clientId, long principalId) {
     runActionInTransaction(
-        callCtx, () -> this.deletePrincipalSecretsInCurrentTxn(callCtx, clientId, principalId));
+        () -> this.deletePrincipalSecretsInCurrentTxn(callCtx, clientId, principalId));
   }
 
   /** {@inheritDoc} */
@@ -524,7 +520,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull PolarisBaseEntity entity,
       @Nullable PolarisStorageIntegration<T> storageIntegration) {
     runActionInTransaction(
-        callCtx,
         () ->
             this.persistStorageIntegrationIfNeededInCurrentTxn(
                 callCtx, entity, storageIntegration));
@@ -662,7 +657,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public void writeToPolicyMappingRecords(
       @Nonnull PolarisCallContext callCtx, @Nonnull PolarisPolicyMappingRecord record) {
     this.runActionInTransaction(
-        callCtx,
         () -> {
           this.checkConditionsForWriteToPolicyMappingRecordsInCurrentTxn(callCtx, record);
           this.writeToPolicyMappingRecordsInCurrentTxn(callCtx, record);
@@ -701,7 +695,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public void deleteFromPolicyMappingRecords(
       @Nonnull PolarisCallContext callCtx, @Nonnull PolarisPolicyMappingRecord record) {
     this.runActionInTransaction(
-        callCtx, () -> this.deleteFromPolicyMappingRecordsInCurrentTxn(callCtx, record));
+        () -> this.deleteFromPolicyMappingRecordsInCurrentTxn(callCtx, record));
   }
 
   /** {@inheritDoc} */
@@ -712,7 +706,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull List<PolarisPolicyMappingRecord> mappingOnTarget,
       @Nonnull List<PolarisPolicyMappingRecord> mappingOnPolicy) {
     this.runActionInTransaction(
-        callCtx,
         () ->
             this.deleteAllEntityPolicyMappingRecordsInCurrentTxn(
                 callCtx, entity, mappingOnTarget, mappingOnPolicy));

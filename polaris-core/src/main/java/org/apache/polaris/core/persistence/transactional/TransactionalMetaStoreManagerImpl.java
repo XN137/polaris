@@ -607,7 +607,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     TransactionalPersistence ms = ((TransactionalPersistence) callCtx.getMetaStore());
 
     // run operation in a read/write transaction
-    ms.runActionInTransaction(callCtx, () -> this.bootstrapPolarisService(callCtx, ms));
+    ms.runActionInTransaction(() -> this.bootstrapPolarisService(callCtx, ms));
 
     // all good
     return new BaseResult(BaseResult.ReturnStatus.SUCCESS);
@@ -620,7 +620,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // run operation in a read/write transaction
     LOGGER.warn("Deleting all metadata in the metastore...");
-    ms.runActionInTransaction(callCtx, () -> ms.deleteAllInCurrentTxn(callCtx));
+    ms.runActionInTransaction(() -> ms.deleteAllInCurrentTxn(callCtx));
     LOGGER.warn("Finished deleting all metadata in the metastore");
 
     // all good
@@ -2193,7 +2193,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
         && !result.isSuccess()) {
       // Backfill rootContainer if needed.
       ms.runActionInTransaction(
-          callCtx,
           () -> {
             PolarisBaseEntity rootContainer =
                 new PolarisBaseEntity(

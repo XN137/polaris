@@ -212,8 +212,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
 
   /** {@inheritDoc} */
   @Override
-  public void runActionInTransaction(
-      @Nonnull PolarisCallContext callCtx, @Nonnull Runnable transactionCode) {
+  public void runActionInTransaction(@Nonnull Runnable transactionCode) {
     getDiagnostics().check(localSession.get() == null, "cannot nest transaction");
 
     try (EntityManager session = emf.createEntityManager()) {
@@ -262,7 +261,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   public void runActionInReadTransaction(
       @Nonnull PolarisCallContext callCtx, @Nonnull Runnable transactionCode) {
     // EclipseLink doesn't support readOnly transaction
-    runActionInTransaction(callCtx, transactionCode);
+    runActionInTransaction(transactionCode);
   }
 
   /**
