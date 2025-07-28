@@ -460,7 +460,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // check that a catalog with the same name does not exist already
     // if it exists, this is an error, the client should retry
     if (ms.lookupEntityIdAndSubTypeByNameInCurrentTxn(
-            callCtx,
             PolarisEntityConstants.getNullId(),
             PolarisEntityConstants.getRootEntityId(),
             PolarisEntityType.CATALOG.getCode(),
@@ -799,7 +798,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // check that a principal with the same name does not exist already
     // if it exists, this is an error, the client should retry
     if (ms.lookupEntityIdAndSubTypeByNameInCurrentTxn(
-            callCtx,
             PolarisEntityConstants.getNullId(),
             PolarisEntityConstants.getRootEntityId(),
             PolarisEntityType.PRINCIPAL.getCode(),
@@ -1007,7 +1005,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // check if an entity does not already exist with the same name. If true, this is an error
     EntityNameLookupRecord entityActiveRecord =
         ms.lookupEntityIdAndSubTypeByNameInCurrentTxn(
-            callCtx,
             entity.getCatalogId(),
             entity.getParentId(),
             entity.getType().getCode(),
@@ -1252,7 +1249,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // if this entity already exists, this is an error
     EntityNameLookupRecord entityActiveRecord =
         ms.lookupEntityIdAndSubTypeByNameInCurrentTxn(
-            callCtx,
             resolver.getCatalogIdOrNull(),
             resolver.getParentId(),
             refreshEntityToRename.getTypeCode(),

@@ -311,9 +311,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       int typeCode,
       @Nonnull String name) {
     return runInReadTransaction(
-        () ->
-            this.lookupEntityIdAndSubTypeByNameInCurrentTxn(
-                callCtx, catalogId, parentId, typeCode, name));
+        () -> this.lookupEntityIdAndSubTypeByNameInCurrentTxn(catalogId, parentId, typeCode, name));
   }
 
   /** {@inheritDoc} */
@@ -619,11 +617,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   @Nullable
   public EntityNameLookupRecord lookupEntityIdAndSubTypeByNameInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
-      long catalogId,
-      long parentId,
-      int typeCode,
-      @Nonnull String name) {
+      long catalogId, long parentId, int typeCode, @Nonnull String name) {
     PolarisEntitiesActiveKey entityActiveKey =
         new PolarisEntitiesActiveKey(catalogId, parentId, typeCode, name);
     return this.lookupEntityActiveInCurrentTxn(entityActiveKey);
