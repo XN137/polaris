@@ -149,7 +149,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
         // we must also check for name-collection now.
         refreshedEntity =
             this.lookupEntityByNameInCurrentTxn(
-                callCtx,
                 entity.getCatalogId(),
                 entity.getParentId(),
                 entity.getType().getCode(),
@@ -299,7 +298,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       int typeCode,
       @Nonnull String name) {
     return runInReadTransaction(
-        () -> this.lookupEntityByNameInCurrentTxn(callCtx, catalogId, parentId, typeCode, name));
+        () -> this.lookupEntityByNameInCurrentTxn(catalogId, parentId, typeCode, name));
   }
 
   /** {@inheritDoc} */
@@ -589,11 +588,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   @Nullable
   public PolarisBaseEntity lookupEntityByNameInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
-      long catalogId,
-      long parentId,
-      int typeCode,
-      @Nonnull String name) {
+      long catalogId, long parentId, int typeCode, @Nonnull String name) {
     PolarisEntitiesActiveKey entityActiveKey =
         new PolarisEntitiesActiveKey(catalogId, parentId, typeCode, name);
 

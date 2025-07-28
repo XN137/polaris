@@ -442,7 +442,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       // lookup catalog admin role, should exist
       PolarisBaseEntity catalogAdminRole =
           ms.lookupEntityByNameInCurrentTxn(
-              callCtx,
               refreshCatalog.getId(),
               refreshCatalog.getId(),
               PolarisEntityType.CATALOG_ROLE.getCode(),
@@ -501,7 +500,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       // lookup service admin role, should exist
       PolarisBaseEntity serviceAdminRole =
           ms.lookupEntityByNameInCurrentTxn(
-              callCtx,
               PolarisEntityConstants.getNullId(),
               PolarisEntityConstants.getRootEntityId(),
               PolarisEntityType.PRINCIPAL_ROLE.getCode(),
@@ -646,11 +644,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // now looking the entity by name
     PolarisBaseEntity entity =
         ms.lookupEntityByNameInCurrentTxn(
-            callCtx,
-            resolver.getCatalogIdOrNull(),
-            resolver.getParentId(),
-            entityType.getCode(),
-            name);
+            resolver.getCatalogIdOrNull(), resolver.getParentId(), entityType.getCode(), name);
 
     // if found, check if subType really matches
     if (entity != null
@@ -2132,7 +2126,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // load that entity
     PolarisBaseEntity entity =
         ms.lookupEntityByNameInCurrentTxn(
-            callCtx, entityCatalogId, parentId, entityType.getCode(), entityName);
+            entityCatalogId, parentId, entityType.getCode(), entityName);
 
     // null if entity not found
     if (entity == null) {
@@ -2193,7 +2187,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
             if (backfillResult.isSuccess()) {
               PolarisBaseEntity serviceAdminRole =
                   ms.lookupEntityByNameInCurrentTxn(
-                      callCtx,
                       0L,
                       0L,
                       PolarisEntityType.PRINCIPAL_ROLE.getCode(),
