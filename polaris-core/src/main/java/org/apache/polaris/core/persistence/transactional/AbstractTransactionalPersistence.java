@@ -371,7 +371,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   @Nullable
   public PolarisGrantRecord lookupGrantRecord(
-      @Nonnull PolarisCallContext callCtx,
       long securableCatalogId,
       long securableId,
       long granteeCatalogId,

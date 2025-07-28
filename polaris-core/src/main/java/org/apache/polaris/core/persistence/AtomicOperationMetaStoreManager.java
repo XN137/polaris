@@ -1282,7 +1282,6 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // first, ensure that this privilege has been granted
     PolarisGrantRecord grantRecord =
         ms.lookupGrantRecord(
-            callCtx,
             role.getCatalogId(),
             role.getId(),
             grantee.getCatalogId(),
@@ -1331,7 +1330,6 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // lookup the grants records to find this grant
     PolarisGrantRecord grantRecord =
         ms.lookupGrantRecord(
-            callCtx,
             securable.getCatalogId(),
             securable.getId(),
             grantee.getCatalogId(),

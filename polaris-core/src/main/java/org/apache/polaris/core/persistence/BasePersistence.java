@@ -320,7 +320,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * Lookup the specified grant record from the grant_records table. Return NULL if not found
    *
-   * @param callCtx call context
    * @param securableCatalogId catalog id of the securable entity, NULL_ID if the entity is
    *     top-level
    * @param securableId id of the securable entity
@@ -331,7 +330,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
    */
   @Nullable
   PolarisGrantRecord lookupGrantRecord(
-      @Nonnull PolarisCallContext callCtx,
       long securableCatalogId,
       long securableId,
       long granteeCatalogId,
