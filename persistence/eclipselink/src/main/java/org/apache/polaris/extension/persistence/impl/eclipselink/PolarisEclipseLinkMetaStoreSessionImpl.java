@@ -318,8 +318,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
 
   /** {@inheritDoc} */
   @Override
-  public void deleteFromEntitiesInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisEntityCore entity) {
+  public void deleteFromEntitiesInCurrentTxn(@Nonnull PolarisEntityCore entity) {
 
     // delete it
     this.store.deleteFromEntities(

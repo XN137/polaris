@@ -99,11 +99,9 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /**
    * Delete the base entity from the entities table.
    *
-   * @param callCtx call context
    * @param entity entity record to delete
    */
-  protected abstract void deleteFromEntitiesInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisEntityCore entity);
+  protected abstract void deleteFromEntitiesInCurrentTxn(@Nonnull PolarisEntityCore entity);
 
   /**
    * Delete the base entity from the entities_active table.
@@ -611,7 +609,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   public void deleteEntityInCurrentTxn(
       @Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
     this.deleteFromEntitiesActiveInCurrentTxn(callCtx, entity);
-    this.deleteFromEntitiesInCurrentTxn(callCtx, entity);
+    this.deleteFromEntitiesInCurrentTxn(entity);
     this.deleteFromEntitiesChangeTrackingInCurrentTxn(callCtx, entity);
   }
 

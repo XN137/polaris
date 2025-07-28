@@ -167,8 +167,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
 
   /** {@inheritDoc} */
   @Override
-  public void deleteFromEntitiesInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisEntityCore entity) {
+  public void deleteFromEntitiesInCurrentTxn(@Nonnull PolarisEntityCore entity) {
 
     // delete it
     this.store.getSliceEntities().delete(this.store.buildEntitiesKey(entity));
