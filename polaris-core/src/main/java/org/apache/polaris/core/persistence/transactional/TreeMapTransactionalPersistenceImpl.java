@@ -235,7 +235,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
   /** {@inheritDoc} */
   @Override
   public @Nonnull List<PolarisBaseEntity> lookupEntitiesInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, List<PolarisEntityId> entityIds) {
+      List<PolarisEntityId> entityIds) {
     // allocate return list
     return entityIds.stream()
         .map(

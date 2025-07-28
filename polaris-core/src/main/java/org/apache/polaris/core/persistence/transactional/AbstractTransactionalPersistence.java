@@ -319,7 +319,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Nonnull
   public List<PolarisBaseEntity> lookupEntities(
       @Nonnull PolarisCallContext callCtx, List<PolarisEntityId> entityIds) {
-    return runInReadTransaction(() -> this.lookupEntitiesInCurrentTxn(callCtx, entityIds));
+    return runInReadTransaction(() -> this.lookupEntitiesInCurrentTxn(entityIds));
   }
 
   /** {@inheritDoc} */

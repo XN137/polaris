@@ -195,7 +195,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // Bump up the grant version of these entities
     List<PolarisBaseEntity> entities =
-        ms.lookupEntitiesInCurrentTxn(callCtx, new ArrayList<>(entityIdsGrantChanged));
+        ms.lookupEntitiesInCurrentTxn(new ArrayList<>(entityIdsGrantChanged));
     for (PolarisBaseEntity originalEntity : entities) {
       PolarisBaseEntity entityGrantChanged =
           originalEntity.withGrantRecordsVersion(originalEntity.getGrantRecordsVersion() + 1);
@@ -1780,7 +1780,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
                         grantRecord.getGranteeCatalogId(), grantRecord.getGranteeId()))
             .distinct()
             .collect(Collectors.toList());
-    List<PolarisBaseEntity> entities = ms.lookupEntitiesInCurrentTxn(callCtx, entityIds);
+    List<PolarisBaseEntity> entities = ms.lookupEntitiesInCurrentTxn(entityIds);
 
     // done, return the list of grants and their version
     return new LoadGrantsResult(
@@ -1835,7 +1835,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
                         grantRecord.getSecurableCatalogId(), grantRecord.getSecurableId()))
             .distinct()
             .collect(Collectors.toList());
-    List<PolarisBaseEntity> entities = ms.lookupEntitiesInCurrentTxn(callCtx, entityIds);
+    List<PolarisBaseEntity> entities = ms.lookupEntitiesInCurrentTxn(entityIds);
 
     // done, return the list of grants and their version
     return new LoadGrantsResult(
@@ -2517,6 +2517,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
                         policyMappingRecord.getPolicyId()))
             .distinct()
             .collect(Collectors.toList());
-    return ms.lookupEntitiesInCurrentTxn(callCtx, policyEntityIds);
+    return ms.lookupEntitiesInCurrentTxn(policyEntityIds);
   }
 }

@@ -170,8 +170,7 @@ public interface TransactionalPersistence
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#lookupEntities} */
   @Nonnull
-  List<PolarisBaseEntity> lookupEntitiesInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, List<PolarisEntityId> entityIds);
+  List<PolarisBaseEntity> lookupEntitiesInCurrentTxn(List<PolarisEntityId> entityIds);
 
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#lookupEntityVersions} */
   @Nonnull
