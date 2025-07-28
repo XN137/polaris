@@ -1867,7 +1867,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       @Nonnull TransactionalPersistence ms,
       @Nonnull List<PolarisEntityId> entityIds) {
     List<PolarisChangeTrackingVersions> changeTracking =
-        ms.lookupEntityVersionsInCurrentTxn(callCtx, entityIds);
+        ms.lookupEntityVersionsInCurrentTxn(entityIds);
     return new ChangeTrackingResult(changeTracking);
   }
 
@@ -2220,8 +2220,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // load version information
     PolarisChangeTrackingVersions entityVersions =
-        ms.lookupEntityVersionsInCurrentTxn(
-                callCtx, List.of(new PolarisEntityId(entityCatalogId, entityId)))
+        ms.lookupEntityVersionsInCurrentTxn(List.of(new PolarisEntityId(entityCatalogId, entityId)))
             .get(0);
 
     // if null, the entity has been purged
