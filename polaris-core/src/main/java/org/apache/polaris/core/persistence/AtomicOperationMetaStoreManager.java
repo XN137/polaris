@@ -100,7 +100,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
 
     try {
       // write it
-      ms.writeEntity(callCtx, entity, true, null);
+      ms.writeEntity(entity, true, null);
     } catch (EntityAlreadyExistsException e) {
       if (e.getExistingEntity().getId() == entity.getId()) {
         // Since ids are unique and reserved when generated, a matching id means a low-level retry
@@ -142,7 +142,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
         prepareToPersistEntityAfterChange(callCtx, ms, entity, nameOrParentChanged, originalEntity);
 
     // persist it to the various slices
-    ms.writeEntity(callCtx, entity, nameOrParentChanged, originalEntity);
+    ms.writeEntity(entity, nameOrParentChanged, originalEntity);
 
     // return it
     return entity;
@@ -239,7 +239,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     for (PolarisBaseEntity originalEntity : entities) {
       PolarisBaseEntity entityGrantChanged =
           originalEntity.withGrantRecordsVersion(originalEntity.getGrantRecordsVersion() + 1);
-      ms.writeEntity(callCtx, entityGrantChanged, false, originalEntity);
+      ms.writeEntity(entityGrantChanged, false, originalEntity);
     }
 
     // if it is a principal, we also need to drop the secrets
@@ -305,7 +305,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // grants have changed, we need to bump-up the grants version
     PolarisBaseEntity updatedGranteeEntity =
         granteeEntity.withGrantRecordsVersion(granteeEntity.getGrantRecordsVersion() + 1);
-    ms.writeEntity(callCtx, updatedGranteeEntity, false, granteeEntity);
+    ms.writeEntity(updatedGranteeEntity, false, granteeEntity);
 
     // we also need to invalidate the grants on that securable so that we can reload them.
     // load the securable and increment its grants version
@@ -317,7 +317,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // grants have changed, we need to bump-up the grants version
     PolarisBaseEntity updatedSecurableEntity =
         securableEntity.withGrantRecordsVersion(securableEntity.getGrantRecordsVersion() + 1);
-    ms.writeEntity(callCtx, updatedSecurableEntity, false, securableEntity);
+    ms.writeEntity(updatedSecurableEntity, false, securableEntity);
 
     // TODO: Reorder and/or expose bulk update of both grantRecordsVersions and grant records. In
     // the meantime, cache can be disabled or configured with a short enough expiry time to
@@ -387,7 +387,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // grants have changed, we need to bump-up the grants version
     PolarisBaseEntity updatedRefreshGrantee =
         refreshGrantee.withGrantRecordsVersion(refreshGrantee.getGrantRecordsVersion() + 1);
-    ms.writeEntity(callCtx, updatedRefreshGrantee, false, refreshGrantee);
+    ms.writeEntity(updatedRefreshGrantee, false, refreshGrantee);
 
     // we also need to invalidate the grants on that securable so that we can reload them.
     // load the securable and increment its grants version
@@ -404,7 +404,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     // grants have changed, we need to bump-up the grants version
     PolarisBaseEntity updatedRefreshSecurable =
         refreshSecurable.withGrantRecordsVersion(refreshSecurable.getGrantRecordsVersion() + 1);
-    ms.writeEntity(callCtx, updatedRefreshSecurable, false, refreshSecurable);
+    ms.writeEntity(updatedRefreshSecurable, false, refreshSecurable);
 
     // TODO: Reorder and/or expose bulk update of both grantRecordsVersions and grant records. In
     // the meantime, cache can be disabled or configured with a short enough expiry time to
@@ -874,14 +874,14 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
       principalBuilder.internalProperties(
           PolarisObjectMapperUtil.serializeProperties(internalProps));
       principalBuilder.entityVersion(principal.getEntityVersion() + 1);
-      ms.writeEntity(callCtx, principalBuilder.build(), true, principal);
+      ms.writeEntity(principalBuilder.build(), true, principal);
     } else if (internalProps.containsKey(
         PolarisEntityConstants.PRINCIPAL_CREDENTIAL_ROTATION_REQUIRED_STATE)) {
       internalProps.remove(PolarisEntityConstants.PRINCIPAL_CREDENTIAL_ROTATION_REQUIRED_STATE);
       principalBuilder.internalProperties(
           PolarisObjectMapperUtil.serializeProperties(internalProps));
       principalBuilder.entityVersion(principal.getEntityVersion() + 1);
-      ms.writeEntity(callCtx, principalBuilder.build(), true, principal);
+      ms.writeEntity(principalBuilder.build(), true, principal);
     }
 
     // TODO: Rethink the atomicity of the relationship between principalSecrets and principal

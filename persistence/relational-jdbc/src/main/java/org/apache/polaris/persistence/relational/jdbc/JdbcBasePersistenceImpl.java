@@ -104,7 +104,6 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
 
   @Override
   public void writeEntity(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull PolarisBaseEntity entity,
       boolean nameOrParentChanged,
       PolarisBaseEntity originalEntity) {

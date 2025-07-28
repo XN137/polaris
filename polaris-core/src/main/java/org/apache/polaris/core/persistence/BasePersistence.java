@@ -74,14 +74,12 @@ public interface BasePersistence extends PolicyMappingPersistence {
    * through correctly, in particular for values the PolarisMetaStoreManagerImpl doesn't have access
    * to such as the original name and parentId in renames.
    *
-   * @param callCtx call context
    * @param entity entity to persist
    * @param nameOrParentChanged if true, also write it to by-name lookups if applicable
    * @param originalEntity original state of the entity to use for compare-and-swap purposes, or
    *     null if this is expected to be a brand-new entity
    */
   void writeEntity(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull PolarisBaseEntity entity,
       boolean nameOrParentChanged,
       @Nullable PolarisBaseEntity originalEntity);
