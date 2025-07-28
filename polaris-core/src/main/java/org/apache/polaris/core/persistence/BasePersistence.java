@@ -147,14 +147,12 @@ public interface BasePersistence extends PolicyMappingPersistence {
    * will delete all grant records on that securable entity and also all grants to that grantee
    * entity assuming that the entity is a grantee (catalog role, principal role or principal).
    *
-   * @param callCtx call context
    * @param entity entity whose grant records to and from should be deleted
    * @param grantsOnGrantee all grants to that grantee entity. Empty list if that entity is not a
    *     grantee
    * @param grantsOnSecurable all grants on that securable entity
    */
   void deleteAllEntityGrantRecords(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull PolarisEntityCore entity,
       @Nonnull List<PolarisGrantRecord> grantsOnGrantee,
       @Nonnull List<PolarisGrantRecord> grantsOnSecurable);

@@ -194,7 +194,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
             : List.of();
     final List<PolarisGrantRecord> grantsOnSecurable =
         ms.loadAllGrantRecordsOnSecurable(entity.getCatalogId(), entity.getId());
-    ms.deleteAllEntityGrantRecords(callCtx, entity, grantsOnGrantee, grantsOnSecurable);
+    ms.deleteAllEntityGrantRecords(entity, grantsOnGrantee, grantsOnSecurable);
 
     if (entity.getType() == PolarisEntityType.POLICY
         || PolicyMappingUtil.isValidTargetEntityType(entity.getType(), entity.getSubType())) {
