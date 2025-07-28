@@ -284,5 +284,5 @@ public interface TransactionalPersistence
   @Nullable
   <T extends PolarisStorageConfigurationInfo>
       PolarisStorageIntegration<T> loadPolarisStorageIntegrationInCurrentTxn(
-          @Nonnull PolarisCallContext callContext, @Nonnull PolarisBaseEntity entity);
+          @Nonnull PolarisBaseEntity entity);
 }
