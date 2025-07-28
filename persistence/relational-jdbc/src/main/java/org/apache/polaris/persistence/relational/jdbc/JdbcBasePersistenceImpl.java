@@ -110,7 +110,6 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
       PolarisBaseEntity originalEntity) {
     try {
       persistEntity(
-          callCtx,
           entity,
           originalEntity,
           null,
@@ -144,8 +143,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
                 // already been updated after the creation.
                 continue;
               }
-              persistEntity(
-                  callCtx, entity, originalEntity, connection, datasourceOperations::execute);
+              persistEntity(entity, originalEntity, connection, datasourceOperations::execute);
             }
             return true;
           });
@@ -158,7 +156,6 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   }
 
   private void persistEntity(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull PolarisBaseEntity entity,
       PolarisBaseEntity originalEntity,
       Connection connection,
