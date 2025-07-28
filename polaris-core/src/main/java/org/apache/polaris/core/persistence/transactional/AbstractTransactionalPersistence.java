@@ -386,7 +386,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   @Override
   @Nonnull
   public List<PolarisGrantRecord> loadAllGrantRecordsOnSecurable(
-      @Nonnull PolarisCallContext callCtx, long securableCatalogId, long securableId) {
+      long securableCatalogId, long securableId) {
     return runInReadTransaction(
         () -> this.loadAllGrantRecordsOnSecurableInCurrentTxn(securableCatalogId, securableId));
   }

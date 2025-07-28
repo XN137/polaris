@@ -339,7 +339,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * Get all grant records on the specified securable entity.
    *
-   * @param callCtx call context
    * @param securableCatalogId catalog id of the securable entity, NULL_ID if the entity is
    *     top-level
    * @param securableId id of the securable entity
@@ -347,7 +346,7 @@ public interface BasePersistence extends PolicyMappingPersistence {
    */
   @Nonnull
   List<PolarisGrantRecord> loadAllGrantRecordsOnSecurable(
-      @Nonnull PolarisCallContext callCtx, long securableCatalogId, long securableId);
+      long securableCatalogId, long securableId);
 
   /**
    * Get all grant records granted to the specified grantee entity.

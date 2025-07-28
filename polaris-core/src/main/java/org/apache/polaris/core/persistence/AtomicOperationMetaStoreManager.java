@@ -193,7 +193,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
             ? ms.loadAllGrantRecordsOnGrantee(callCtx, entity.getCatalogId(), entity.getId())
             : List.of();
     final List<PolarisGrantRecord> grantsOnSecurable =
-        ms.loadAllGrantRecordsOnSecurable(callCtx, entity.getCatalogId(), entity.getId());
+        ms.loadAllGrantRecordsOnSecurable(entity.getCatalogId(), entity.getId());
     ms.deleteAllEntityGrantRecords(callCtx, entity, grantsOnGrantee, grantsOnSecurable);
 
     if (entity.getType() == PolarisEntityType.POLICY
@@ -1373,7 +1373,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
 
     // now fetch all grants for this securable
     final List<PolarisGrantRecord> returnGrantRecords =
-        ms.loadAllGrantRecordsOnSecurable(callCtx, securableCatalogId, securableId);
+        ms.loadAllGrantRecordsOnSecurable(securableCatalogId, securableId);
 
     // find all unique grantees
     List<PolarisEntityId> entityIds =
@@ -1646,9 +1646,9 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     if (entity.getType().isGrantee()) {
       grantRecords =
           new ArrayList<>(ms.loadAllGrantRecordsOnGrantee(callCtx, entityCatalogId, entityId));
-      grantRecords.addAll(ms.loadAllGrantRecordsOnSecurable(callCtx, entityCatalogId, entityId));
+      grantRecords.addAll(ms.loadAllGrantRecordsOnSecurable(entityCatalogId, entityId));
     } else {
-      grantRecords = ms.loadAllGrantRecordsOnSecurable(callCtx, entityCatalogId, entityId);
+      grantRecords = ms.loadAllGrantRecordsOnSecurable(entityCatalogId, entityId);
     }
 
     // return the result
@@ -1684,10 +1684,9 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
       grantRecords =
           new ArrayList<>(
               ms.loadAllGrantRecordsOnGrantee(callCtx, entityCatalogId, entity.getId()));
-      grantRecords.addAll(
-          ms.loadAllGrantRecordsOnSecurable(callCtx, entityCatalogId, entity.getId()));
+      grantRecords.addAll(ms.loadAllGrantRecordsOnSecurable(entityCatalogId, entity.getId()));
     } else {
-      grantRecords = ms.loadAllGrantRecordsOnSecurable(callCtx, entityCatalogId, entity.getId());
+      grantRecords = ms.loadAllGrantRecordsOnSecurable(entityCatalogId, entity.getId());
     }
 
     ResolvedEntityResult result =
@@ -1775,9 +1774,9 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
       if (entityType.isGrantee()) {
         grantRecords =
             new ArrayList<>(ms.loadAllGrantRecordsOnGrantee(callCtx, entityCatalogId, entityId));
-        grantRecords.addAll(ms.loadAllGrantRecordsOnSecurable(callCtx, entityCatalogId, entityId));
+        grantRecords.addAll(ms.loadAllGrantRecordsOnSecurable(entityCatalogId, entityId));
       } else {
-        grantRecords = ms.loadAllGrantRecordsOnSecurable(callCtx, entityCatalogId, entityId);
+        grantRecords = ms.loadAllGrantRecordsOnSecurable(entityCatalogId, entityId);
       }
     } else {
       grantRecords = null;

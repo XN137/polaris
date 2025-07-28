@@ -540,7 +540,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   @Nonnull
   @Override
   public List<PolarisGrantRecord> loadAllGrantRecordsOnSecurable(
-      @Nonnull PolarisCallContext callCtx, long securableCatalogId, long securableId) {
+      long securableCatalogId, long securableId) {
     Map<String, Object> params =
         Map.of(
             "securable_catalog_id",
