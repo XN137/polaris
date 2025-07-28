@@ -1071,11 +1071,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
             : newCatalogPath.get(newCatalogPath.size() - 1).getId();
     EntityNameLookupRecord entityActiveRecord =
         ms.lookupEntityIdAndSubTypeByName(
-            callCtx,
-            catalogId,
-            parentId,
-            refreshEntityToRename.getTypeCode(),
-            renamedEntity.getName());
+            catalogId, parentId, refreshEntityToRename.getTypeCode(), renamedEntity.getName());
     if (entityActiveRecord != null) {
       return new EntityResult(
           BaseResult.ReturnStatus.ENTITY_ALREADY_EXISTS, entityActiveRecord.getSubTypeCode());

@@ -215,7 +215,6 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * Looks up just the entity's subType and id given it catalogId, parentId, typeCode, and name.
    *
-   * @param callCtx call context
    * @param catalogId catalog id or NULL_ID
    * @param parentId id of the parent
    * @param typeCode the PolarisEntityType code of the entity to lookup
@@ -224,11 +223,7 @@ public interface BasePersistence extends PolicyMappingPersistence {
    */
   @Nullable
   default EntityNameLookupRecord lookupEntityIdAndSubTypeByName(
-      @Nonnull PolarisCallContext callCtx,
-      long catalogId,
-      long parentId,
-      int typeCode,
-      @Nonnull String name) {
+      long catalogId, long parentId, int typeCode, @Nonnull String name) {
     PolarisBaseEntity baseEntity = lookupEntityByName(catalogId, parentId, typeCode, name);
     if (baseEntity == null) {
       return null;
