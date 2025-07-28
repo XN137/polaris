@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.entity.EntityNameLookupRecord;
 import org.apache.polaris.core.entity.LocationBasedEntity;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
@@ -160,10 +159,8 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * Delete Polaris entity and grant record metadata from all tables within the realm defined by the
    * contents of the {@code callCtx}
-   *
-   * @param callCtx call context
    */
-  void deleteAll(@Nonnull PolarisCallContext callCtx);
+  void deleteAll();
 
   /**
    * Lookup an entity given its catalog id (which can be {@link

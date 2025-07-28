@@ -279,7 +279,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   }
 
   @Override
-  public void deleteAll(@Nonnull PolarisCallContext callCtx) {
+  public void deleteAll() {
     try {
       Map<String, Object> params = Map.of("realm_id", realmId);
       datasourceOperations.runWithinTransaction(

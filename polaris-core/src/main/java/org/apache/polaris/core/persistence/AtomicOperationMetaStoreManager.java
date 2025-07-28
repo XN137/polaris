@@ -631,7 +631,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
     BasePersistence ms = callCtx.getMetaStore();
 
     LOGGER.warn("Deleting all metadata in the metastore...");
-    ms.deleteAll(callCtx);
+    ms.deleteAll();
     LOGGER.warn("Finished deleting all metadata in the metastore");
 
     // all good
