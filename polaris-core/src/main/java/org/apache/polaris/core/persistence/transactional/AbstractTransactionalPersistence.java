@@ -245,7 +245,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
 
   /** {@inheritDoc} */
   @Override
-  public void deleteEntity(@Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
+  public void deleteEntity(@Nonnull PolarisBaseEntity entity) {
     runActionInTransaction(() -> this.deleteEntityInCurrentTxn(entity));
   }
 

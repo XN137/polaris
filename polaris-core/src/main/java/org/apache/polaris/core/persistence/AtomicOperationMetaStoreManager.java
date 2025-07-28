@@ -176,7 +176,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
 
     // Remove the main entity itself first-thing; once its id no longer resolves successfully
     // it will be pruned out of any grant-record lookups anyways.
-    ms.deleteEntity(callCtx, entity);
+    ms.deleteEntity(entity);
 
     // Best-effort cleanup - drop grant records, update grantRecordVersions for affected
     // other entities.

@@ -131,10 +131,9 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * Delete this entity from the meta store.
    *
-   * @param callCtx call context
    * @param entity entity to delete
    */
-  void deleteEntity(@Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity);
+  void deleteEntity(@Nonnull PolarisBaseEntity entity);
 
   /**
    * Delete the specified grantRecord to the grant_records table.

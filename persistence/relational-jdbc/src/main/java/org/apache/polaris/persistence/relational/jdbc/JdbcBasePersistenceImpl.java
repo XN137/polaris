@@ -228,7 +228,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   }
 
   @Override
-  public void deleteEntity(@Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
+  public void deleteEntity(@Nonnull PolarisBaseEntity entity) {
     ModelEntity modelEntity = ModelEntity.fromEntity(entity);
     Map<String, Object> params =
         Map.of(
