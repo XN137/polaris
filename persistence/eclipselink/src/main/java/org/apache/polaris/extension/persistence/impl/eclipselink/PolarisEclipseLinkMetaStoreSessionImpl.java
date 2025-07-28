@@ -498,7 +498,6 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   /** {@inheritDoc} */
   @Override
   public @Nullable PolarisGrantRecord lookupGrantRecordInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
       long securableCatalogId,
       long securableId,
       long granteeCatalogId,

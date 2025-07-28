@@ -408,7 +408,6 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
   /** {@inheritDoc} */
   @Override
   public @Nullable PolarisGrantRecord lookupGrantRecordInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
       long securableCatalogId,
       long securableId,
       long granteeCatalogId,

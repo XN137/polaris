@@ -1606,7 +1606,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // first, ensure that this privilege has been granted
     PolarisGrantRecord grantRecord =
         ms.lookupGrantRecordInCurrentTxn(
-            callCtx,
             role.getCatalogId(),
             role.getId(),
             grantee.getCatalogId(),
@@ -1708,7 +1707,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // lookup the grants records to find this grant
     PolarisGrantRecord grantRecord =
         ms.lookupGrantRecordInCurrentTxn(
-            callCtx,
             securable.getCatalogId(),
             securable.getId(),
             grantee.getCatalogId(),

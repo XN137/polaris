@@ -212,7 +212,6 @@ public interface TransactionalPersistence
   /** See {@link org.apache.polaris.core.persistence.BasePersistence#lookupGrantRecord} */
   @Nullable
   PolarisGrantRecord lookupGrantRecordInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
       long securableCatalogId,
       long securableId,
       long granteeCatalogId,

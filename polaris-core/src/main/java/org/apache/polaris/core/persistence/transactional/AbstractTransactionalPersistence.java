@@ -397,12 +397,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
     return runInReadTransaction(
         () ->
             this.lookupGrantRecordInCurrentTxn(
-                callCtx,
-                securableCatalogId,
-                securableId,
-                granteeCatalogId,
-                granteeId,
-                privilegeCode));
+                securableCatalogId, securableId, granteeCatalogId, granteeId, privilegeCode));
   }
 
   /** {@inheritDoc} */
