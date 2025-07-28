@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.entity.EntityNameLookupRecord;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
@@ -67,7 +66,7 @@ public class PolarisEntityResolver {
    * <p>The resolver will ensure that none of the entities which are passed in have been dropped or
    * were renamed or moved.
    *
-   * @param callCtx call context
+   * @param diagnostics diagnostics
    * @param ms meta store in read mode
    * @param catalogPath path within the catalog. The first element MUST be a catalog entity.
    * @param resolvedEntity optional entity to resolve under that catalog path. If a non-null value
@@ -77,14 +76,14 @@ public class PolarisEntityResolver {
    *     or a principal can be specified here
    */
   PolarisEntityResolver(
-      @Nonnull PolarisCallContext callCtx,
+      @Nonnull PolarisDiagnostics diagnostics,
       @Nonnull TransactionalPersistence ms,
       @Nullable List<PolarisEntityCore> catalogPath,
       @Nullable PolarisEntityCore resolvedEntity,
       @Nullable List<PolarisEntityCore> otherTopLevelEntities) {
 
     // cache diagnostics services
-    this.diagnostics = callCtx.getDiagServices();
+    this.diagnostics = diagnostics;
 
     // validate path if one was specified
     if (catalogPath != null) {
@@ -142,50 +141,50 @@ public class PolarisEntityResolver {
   /**
    * Constructor for the resolver, when we only need to resolve a path
    *
-   * @param callCtx call context
+   * @param diagnostics diagnostics
    * @param ms meta store in read mode
    * @param catalogPath input path, can be null or empty list if the entity is a top-level entity
    *     like a catalog.
    */
   PolarisEntityResolver(
-      @Nonnull PolarisCallContext callCtx,
+      @Nonnull PolarisDiagnostics diagnostics,
       @Nonnull TransactionalPersistence ms,
       @Nullable List<PolarisEntityCore> catalogPath) {
-    this(callCtx, ms, catalogPath, null, null);
+    this(diagnostics, ms, catalogPath, null, null);
   }
 
   /**
    * Constructor for the resolver, when we only need to resolve a path
    *
-   * @param callCtx call context
+   * @param diagnostics diagnostics
    * @param ms meta store in read mode
    * @param catalogPath input path, can be null or empty list if the entity is a top-level entity
    *     like a catalog.
    * @param resolvedEntityDto resolved entity DTO
    */
   PolarisEntityResolver(
-      @Nonnull PolarisCallContext callCtx,
+      @Nonnull PolarisDiagnostics diagnostics,
       @Nonnull TransactionalPersistence ms,
       @Nullable List<PolarisEntityCore> catalogPath,
       PolarisEntityCore resolvedEntityDto) {
-    this(callCtx, ms, catalogPath, resolvedEntityDto, null);
+    this(diagnostics, ms, catalogPath, resolvedEntityDto, null);
   }
 
   /**
    * Constructor for the resolver, when we only need to resolve a path
    *
-   * @param callCtx call context
+   * @param diagnostics diagnostics
    * @param ms meta store in read mode
    * @param catalogPath input path, can be null or empty list if the entity is a top-level entity
    *     like a catalog.
    * @param entity Polaris base entity
    */
   PolarisEntityResolver(
-      @Nonnull PolarisCallContext callCtx,
+      @Nonnull PolarisDiagnostics diagnostics,
       @Nonnull TransactionalPersistence ms,
       @Nullable List<PolarisEntityCore> catalogPath,
       @Nonnull PolarisBaseEntity entity) {
-    this(callCtx, ms, catalogPath, new PolarisEntityCore.Builder<>(entity).build(), null);
+    this(diagnostics, ms, catalogPath, new PolarisEntityCore.Builder<>(entity).build(), null);
   }
 
   /**

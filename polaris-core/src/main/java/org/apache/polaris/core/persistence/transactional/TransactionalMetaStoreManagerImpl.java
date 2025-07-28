@@ -631,7 +631,8 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       @Nonnull PolarisEntitySubType entitySubType,
       @Nonnull String name) {
     // first resolve again the catalogPath to that entity
-    PolarisEntityResolver resolver = new PolarisEntityResolver(callCtx, ms, catalogPath);
+    PolarisEntityResolver resolver =
+        new PolarisEntityResolver(callCtx.getDiagServices(), ms, catalogPath);
 
     // return if we failed to resolve
     if (resolver.isFailure()) {
@@ -684,7 +685,8 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       @Nonnull PolarisEntitySubType entitySubType,
       @Nonnull PageToken pageToken) {
     // first resolve again the catalogPath to that entity
-    PolarisEntityResolver resolver = new PolarisEntityResolver(callCtx, ms, catalogPath);
+    PolarisEntityResolver resolver =
+        new PolarisEntityResolver(callCtx.getDiagServices(), ms, catalogPath);
 
     // return if we failed to resolve
     if (resolver.isFailure()) {
@@ -985,7 +987,8 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     }
 
     // first resolve again the catalogPath
-    PolarisEntityResolver resolver = new PolarisEntityResolver(callCtx, ms, catalogPath);
+    PolarisEntityResolver resolver =
+        new PolarisEntityResolver(callCtx.getDiagServices(), ms, catalogPath);
 
     // return if we failed to resolve
     if (resolver.isFailure()) {
@@ -1064,7 +1067,8 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     callCtx.getDiagServices().checkNotNull(entity, "unexpected_null_entity");
 
     // re-resolve everything including that entity
-    PolarisEntityResolver resolver = new PolarisEntityResolver(callCtx, ms, catalogPath, entity);
+    PolarisEntityResolver resolver =
+        new PolarisEntityResolver(callCtx.getDiagServices(), ms, catalogPath, entity);
 
     // if resolution failed, return false
     if (resolver.isFailure()) {
@@ -1197,7 +1201,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // re-resolve everything including that entity
     PolarisEntityResolver resolver =
-        new PolarisEntityResolver(callCtx, ms, catalogPath, entityToRename);
+        new PolarisEntityResolver(callCtx.getDiagServices(), ms, catalogPath, entityToRename);
 
     // if resolution failed, return false
     if (resolver.isFailure()) {
@@ -1227,7 +1231,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // re-resolve the new catalog path if this entity is going to be moved
     if (newCatalogPath != null) {
-      resolver = new PolarisEntityResolver(callCtx, ms, newCatalogPath);
+      resolver = new PolarisEntityResolver(callCtx.getDiagServices(), ms, newCatalogPath);
 
       // if resolution failed, return false
       if (resolver.isFailure()) {
@@ -1308,7 +1312,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // re-resolve everything including that entity
     PolarisEntityResolver resolver =
-        new PolarisEntityResolver(callCtx, ms, catalogPath, entityToDrop);
+        new PolarisEntityResolver(callCtx.getDiagServices(), ms, catalogPath, entityToDrop);
 
     // if resolution failed, return false
     if (resolver.isFailure()) {
@@ -1488,7 +1492,11 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // ensure these entities have not changed
     return new PolarisEntityResolver(
-        callCtx, ms, catalog != null ? List.of(catalog) : null, null, otherTopLevelEntities);
+        callCtx.getDiagServices(),
+        ms,
+        catalog != null ? List.of(catalog) : null,
+        null,
+        otherTopLevelEntities);
   }
 
   /**
@@ -1519,7 +1527,8 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     }
 
     // re-resolve now all these entities
-    return new PolarisEntityResolver(callCtx, ms, catalogPath, securable, List.of(grantee));
+    return new PolarisEntityResolver(
+        callCtx.getDiagServices(), ms, catalogPath, securable, List.of(grantee));
   }
 
   /**
@@ -2306,9 +2315,9 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       @Nonnull PolicyEntity policy,
       Map<String, String> parameters) {
     PolarisEntityResolver targetResolver =
-        new PolarisEntityResolver(callCtx, ms, targetCatalogPath, target);
+        new PolarisEntityResolver(callCtx.getDiagServices(), ms, targetCatalogPath, target);
     PolarisEntityResolver policyResolver =
-        new PolarisEntityResolver(callCtx, ms, policyCatalogPath, policy);
+        new PolarisEntityResolver(callCtx.getDiagServices(), ms, policyCatalogPath, policy);
     if (targetResolver.isFailure() || policyResolver.isFailure()) {
       return new PolicyAttachmentResult(BaseResult.ReturnStatus.ENTITY_CANNOT_BE_RESOLVED, null);
     }
@@ -2343,9 +2352,9 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       @Nonnull List<PolarisEntityCore> policyCatalogPath,
       @Nonnull PolicyEntity policy) {
     PolarisEntityResolver targetResolver =
-        new PolarisEntityResolver(callCtx, ms, targetCatalogPath, target);
+        new PolarisEntityResolver(callCtx.getDiagServices(), ms, targetCatalogPath, target);
     PolarisEntityResolver policyResolver =
-        new PolarisEntityResolver(callCtx, ms, policyCatalogPath, policy);
+        new PolarisEntityResolver(callCtx.getDiagServices(), ms, policyCatalogPath, policy);
     if (targetResolver.isFailure() || policyResolver.isFailure()) {
       return new PolicyAttachmentResult(BaseResult.ReturnStatus.ENTITY_CANNOT_BE_RESOLVED, null);
     }
