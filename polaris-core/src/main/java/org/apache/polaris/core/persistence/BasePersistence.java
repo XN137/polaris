@@ -376,15 +376,13 @@ public interface BasePersistence extends PolicyMappingPersistence {
    * Check if the specified IcebergTableLikeEntity / NamespaceEntity has any sibling entities which
    * share a base location
    *
-   * @param callContext the polaris call context
    * @param entity the entity to check for overlapping siblings for
-   * @return Optional.of(Optional.of(location)) if the parent entity has children,
+   * @return Optional.of(Optional.of ( location)) if the parent entity has children,
    *     Optional.of(Optional.empty()) if not, and Optional.empty() if the metastore doesn't support
    *     this operation
    */
   default <T extends PolarisEntity & LocationBasedEntity>
-      Optional<Optional<String>> hasOverlappingSiblings(
-          @Nonnull PolarisCallContext callContext, T entity) {
+      Optional<Optional<String>> hasOverlappingSiblings(T entity) {
     return Optional.empty();
   }
 

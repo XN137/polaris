@@ -630,8 +630,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   /** {@inheritDoc} */
   @Override
   public <T extends PolarisEntity & LocationBasedEntity>
-      Optional<Optional<String>> hasOverlappingSiblings(
-          @Nonnull PolarisCallContext callContext, T entity) {
+      Optional<Optional<String>> hasOverlappingSiblings(T entity) {
     if (this.version < 2) {
       return Optional.empty();
     }
