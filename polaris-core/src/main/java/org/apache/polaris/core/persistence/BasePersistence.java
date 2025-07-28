@@ -351,14 +351,12 @@ public interface BasePersistence extends PolicyMappingPersistence {
   /**
    * Get all grant records granted to the specified grantee entity.
    *
-   * @param callCtx call context
    * @param granteeCatalogId catalog id of the grantee entity, NULL_ID if the entity is top-level
    * @param granteeId id of the grantee entity
    * @return the list of grant records for the specified grantee
    */
   @Nonnull
-  List<PolarisGrantRecord> loadAllGrantRecordsOnGrantee(
-      @Nonnull PolarisCallContext callCtx, long granteeCatalogId, long granteeId);
+  List<PolarisGrantRecord> loadAllGrantRecordsOnGrantee(long granteeCatalogId, long granteeId);
 
   /**
    * Check if the specified parent entity has children.

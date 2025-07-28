@@ -568,7 +568,7 @@ public class JdbcBasePersistenceImpl implements BasePersistence, IntegrationPers
   @Nonnull
   @Override
   public List<PolarisGrantRecord> loadAllGrantRecordsOnGrantee(
-      @Nonnull PolarisCallContext callCtx, long granteeCatalogId, long granteeId) {
+      long granteeCatalogId, long granteeId) {
     Map<String, Object> params =
         Map.of(
             "grantee_catalog_id", granteeCatalogId, "grantee_id", granteeId, "realm_id", realmId);
