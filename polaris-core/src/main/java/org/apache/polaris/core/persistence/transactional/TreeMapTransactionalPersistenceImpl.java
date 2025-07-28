@@ -144,8 +144,7 @@ public class TreeMapTransactionalPersistenceImpl extends AbstractTransactionalPe
 
   /** {@inheritDoc} */
   @Override
-  public void writeToEntitiesActiveInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
+  public void writeToEntitiesActiveInCurrentTxn(@Nonnull PolarisBaseEntity entity) {
     // write it
     this.store.getSliceEntitiesActive().write(entity);
   }

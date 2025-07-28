@@ -296,8 +296,7 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
 
   /** {@inheritDoc} */
   @Override
-  public void writeToEntitiesActiveInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisBaseEntity entity) {
+  public void writeToEntitiesActiveInCurrentTxn(@Nonnull PolarisBaseEntity entity) {
     // write it
     this.store.writeToEntitiesActive(localSession.get(), entity);
   }
