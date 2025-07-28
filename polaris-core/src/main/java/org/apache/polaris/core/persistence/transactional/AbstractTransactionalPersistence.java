@@ -340,7 +340,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
       @Nonnull PolarisEntityType entityType,
       @Nonnull PageToken pageToken) {
     return runInReadTransaction(
-        () -> this.listEntitiesInCurrentTxn(callCtx, catalogId, parentId, entityType, pageToken));
+        () -> this.listEntitiesInCurrentTxn(catalogId, parentId, entityType, pageToken));
   }
 
   /** {@inheritDoc} */
@@ -356,7 +356,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
     return runInReadTransaction(
         () ->
             this.listEntitiesInCurrentTxn(
-                callCtx, catalogId, parentId, entityType, entityFilter, pageToken));
+                catalogId, parentId, entityType, entityFilter, pageToken));
   }
 
   /** {@inheritDoc} */
@@ -373,7 +373,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
     return runInReadTransaction(
         () ->
             this.listEntitiesInCurrentTxn(
-                callCtx, catalogId, parentId, entityType, entityFilter, transformer, pageToken));
+                catalogId, parentId, entityType, entityFilter, transformer, pageToken));
   }
 
   /** {@inheritDoc} */

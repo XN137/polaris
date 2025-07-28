@@ -421,18 +421,16 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   /** {@inheritDoc} */
   @Override
   public @Nonnull Page<EntityNameLookupRecord> listEntitiesInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,
       @Nonnull PageToken pageToken) {
     return this.listEntitiesInCurrentTxn(
-        callCtx, catalogId, parentId, entityType, Predicates.alwaysTrue(), pageToken);
+        catalogId, parentId, entityType, Predicates.alwaysTrue(), pageToken);
   }
 
   @Override
   public @Nonnull Page<EntityNameLookupRecord> listEntitiesInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,
@@ -440,7 +438,6 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
       @Nonnull PageToken pageToken) {
     // full range scan under the parent for that type
     return this.listEntitiesInCurrentTxn(
-        callCtx,
         catalogId,
         parentId,
         entityType,
@@ -458,7 +455,6 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
 
   @Override
   public @Nonnull <T> Page<T> listEntitiesInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
       long catalogId,
       long parentId,
       @Nonnull PolarisEntityType entityType,

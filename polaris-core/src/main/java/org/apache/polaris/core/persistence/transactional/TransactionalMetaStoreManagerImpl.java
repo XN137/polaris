@@ -702,12 +702,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // return list of active entities
     Page<EntityNameLookupRecord> resultPage =
         ms.listEntitiesInCurrentTxn(
-            callCtx,
-            resolver.getCatalogIdOrNull(),
-            resolver.getParentId(),
-            entityType,
-            filter,
-            pageToken);
+            resolver.getCatalogIdOrNull(), resolver.getParentId(), entityType, filter, pageToken);
 
     // done
     return ListEntitiesResult.fromPage(resultPage);
@@ -1354,7 +1349,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       // get the list of catalog roles, at most 2
       List<PolarisBaseEntity> catalogRoles =
           ms.listEntitiesInCurrentTxn(
-                  callCtx,
                   catalogId,
                   catalogId,
                   PolarisEntityType.CATALOG_ROLE,
@@ -1922,7 +1916,6 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // find all available tasks
     Page<PolarisBaseEntity> availableTasks =
         ms.listEntitiesInCurrentTxn(
-            callCtx,
             PolarisEntityConstants.getRootEntityId(),
             PolarisEntityConstants.getRootEntityId(),
             PolarisEntityType.TASK,
