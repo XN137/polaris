@@ -125,7 +125,6 @@ public interface TransactionalPersistence
    * entity, but TransactionalPersistence::writeEntityInCurrentTxn is *not* expected to do the same.
    */
   void writeEntityInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull PolarisBaseEntity entity,
       boolean nameOrParentChanged,
       @Nullable PolarisBaseEntity originalEntity);

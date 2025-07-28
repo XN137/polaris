@@ -189,7 +189,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
     runActionInTransaction(
         () -> {
           this.checkConditionsForWriteEntityInCurrentTxn(callCtx, entity, originalEntity);
-          this.writeEntityInCurrentTxn(callCtx, entity, nameOrParentChanged, originalEntity);
+          this.writeEntityInCurrentTxn(entity, nameOrParentChanged, originalEntity);
         });
   }
 
@@ -238,7 +238,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
               }
               // Else silently swallow the apparent create-retry
             }
-            this.writeEntityInCurrentTxn(callCtx, entity, nameOrParentChanged, originalEntity);
+            this.writeEntityInCurrentTxn(entity, nameOrParentChanged, originalEntity);
           }
         });
   }
@@ -531,7 +531,6 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
   /** {@inheritDoc} */
   @Override
   public void writeEntityInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull PolarisBaseEntity entity,
       boolean nameOrParentChanged,
       @Nullable PolarisBaseEntity originalEntity) {
@@ -577,7 +576,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
           originalEntity == null
               || !entity.getName().equals(originalEntity.getName())
               || entity.getParentId() != originalEntity.getParentId();
-      this.writeEntityInCurrentTxn(callCtx, entity, nameOrParentChanged, originalEntity);
+      this.writeEntityInCurrentTxn(entity, nameOrParentChanged, originalEntity);
     }
   }
 

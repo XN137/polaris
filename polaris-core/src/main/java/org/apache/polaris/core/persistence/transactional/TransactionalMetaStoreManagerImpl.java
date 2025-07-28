@@ -108,7 +108,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     entity = prepareToPersistNewEntity(callCtx, ms, entity);
 
     // write it
-    ms.writeEntityInCurrentTxn(callCtx, entity, true, null);
+    ms.writeEntityInCurrentTxn(entity, true, null);
   }
 
   /**
@@ -136,7 +136,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
 
     // Use the write method defined in TransactionalPersistence which expects an
     // existing runInTransaction to already be in-place.
-    ms.writeEntityInCurrentTxn(callCtx, entity, nameOrParentChanged, originalEntity);
+    ms.writeEntityInCurrentTxn(entity, nameOrParentChanged, originalEntity);
 
     // return it
     return entity;
@@ -199,7 +199,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     for (PolarisBaseEntity originalEntity : entities) {
       PolarisBaseEntity entityGrantChanged =
           originalEntity.withGrantRecordsVersion(originalEntity.getGrantRecordsVersion() + 1);
-      ms.writeEntityInCurrentTxn(callCtx, entityGrantChanged, false, originalEntity);
+      ms.writeEntityInCurrentTxn(entityGrantChanged, false, originalEntity);
     }
 
     if (entity.getType() == PolarisEntityType.POLICY
@@ -296,7 +296,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // grants have changed, we need to bump-up the grants version
     PolarisBaseEntity updatedGranteeEntity =
         granteeEntity.withGrantRecordsVersion(granteeEntity.getGrantRecordsVersion() + 1);
-    ms.writeEntityInCurrentTxn(callCtx, updatedGranteeEntity, false, granteeEntity);
+    ms.writeEntityInCurrentTxn(updatedGranteeEntity, false, granteeEntity);
 
     // we also need to invalidate the grants on that securable so that we can reload them.
     // load the securable and increment its grants version
@@ -311,7 +311,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
         new PolarisBaseEntity.Builder(securableEntity)
             .grantRecordsVersion(securableEntity.getGrantRecordsVersion() + 1)
             .build();
-    ms.writeEntityInCurrentTxn(callCtx, updatedSecurableEntity, false, securableEntity);
+    ms.writeEntityInCurrentTxn(updatedSecurableEntity, false, securableEntity);
 
     // TODO: Update this to be an atomic bulk-update of the grantee/securable, ideally along
     // with adding the grant record in the same bulk-update.
@@ -378,7 +378,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // grants have changed, we need to bump-up the grants version
     PolarisBaseEntity updatedRefreshGrantee =
         refreshGrantee.withGrantRecordsVersion(refreshGrantee.getGrantRecordsVersion() + 1);
-    ms.writeEntityInCurrentTxn(callCtx, updatedRefreshGrantee, false, refreshGrantee);
+    ms.writeEntityInCurrentTxn(updatedRefreshGrantee, false, refreshGrantee);
 
     // we also need to invalidate the grants on that securable so that we can reload them.
     // load the securable and increment its grants version
@@ -396,7 +396,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
     // grants have changed, we need to bump-up the grants version
     PolarisBaseEntity updatedRefreshSecurable =
         refreshSecurable.withGrantRecordsVersion(refreshSecurable.getGrantRecordsVersion() + 1);
-    ms.writeEntityInCurrentTxn(callCtx, updatedRefreshSecurable, false, refreshSecurable);
+    ms.writeEntityInCurrentTxn(updatedRefreshSecurable, false, refreshSecurable);
 
     // TODO: Update this to be an atomic bulk-update of the grantee/securable, ideally along
     // with removing the grant record in the same bulk-update.
@@ -915,14 +915,14 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager {
       principalBuilder.internalProperties(
           PolarisObjectMapperUtil.serializeProperties(internalProps));
       principalBuilder.entityVersion(principal.getEntityVersion() + 1);
-      ms.writeEntityInCurrentTxn(callCtx, principalBuilder.build(), true, principal);
+      ms.writeEntityInCurrentTxn(principalBuilder.build(), true, principal);
     } else if (internalProps.containsKey(
         PolarisEntityConstants.PRINCIPAL_CREDENTIAL_ROTATION_REQUIRED_STATE)) {
       internalProps.remove(PolarisEntityConstants.PRINCIPAL_CREDENTIAL_ROTATION_REQUIRED_STATE);
       principalBuilder.internalProperties(
           PolarisObjectMapperUtil.serializeProperties(internalProps));
       principalBuilder.entityVersion(principal.getEntityVersion() + 1);
-      ms.writeEntityInCurrentTxn(callCtx, principalBuilder.build(), true, principal);
+      ms.writeEntityInCurrentTxn(principalBuilder.build(), true, principal);
     }
     return secrets;
   }
