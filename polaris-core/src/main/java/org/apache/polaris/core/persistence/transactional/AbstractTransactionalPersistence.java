@@ -239,8 +239,7 @@ public abstract class AbstractTransactionalPersistence implements TransactionalP
 
   /** {@inheritDoc} */
   @Override
-  public void writeToGrantRecords(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec) {
+  public void writeToGrantRecords(@Nonnull PolarisGrantRecord grantRec) {
     runActionInTransaction(() -> this.writeToGrantRecordsInCurrentTxn(grantRec));
   }
 

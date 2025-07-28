@@ -123,12 +123,10 @@ public interface BasePersistence extends PolicyMappingPersistence {
    * Write the specified grantRecord to the grant_records table. If there is a conflict (existing
    * record with the same PK), all attributes of the new record will replace the existing one.
    *
-   * @param callCtx call context
    * @param grantRec entity record to write, potentially replacing an existing entity record with
    *     the same key
    */
-  void writeToGrantRecords(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisGrantRecord grantRec);
+  void writeToGrantRecords(@Nonnull PolarisGrantRecord grantRec);
 
   /**
    * Delete this entity from the meta store.
