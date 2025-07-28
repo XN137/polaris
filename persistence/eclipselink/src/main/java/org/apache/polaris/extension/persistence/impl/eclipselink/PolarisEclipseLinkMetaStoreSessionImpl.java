@@ -335,12 +335,10 @@ public class PolarisEclipseLinkMetaStoreSessionImpl extends AbstractTransactiona
   /**
    * {@inheritDoc}
    *
-   * @param callCtx
    * @param entity entity record to delete
    */
   @Override
-  public void deleteFromEntitiesChangeTrackingInCurrentTxn(
-      @Nonnull PolarisCallContext callCtx, @Nonnull PolarisEntityCore entity) {
+  public void deleteFromEntitiesChangeTrackingInCurrentTxn(@Nonnull PolarisEntityCore entity) {
     // delete it
     this.store.deleteFromEntitiesChangeTracking(localSession.get(), entity);
   }
