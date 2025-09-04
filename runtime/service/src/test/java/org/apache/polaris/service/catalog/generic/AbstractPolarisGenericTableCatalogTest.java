@@ -225,8 +225,7 @@ public abstract class AbstractPolarisGenericTableCatalogTest {
             isA(AwsStorageConfigurationInfo.class)))
         .thenReturn((PolarisStorageIntegration) storageIntegration);
 
-    this.genericTableCatalog =
-        new PolarisGenericTableCatalog(metaStoreManager, polarisContext, passthroughView);
+    this.genericTableCatalog = new PolarisGenericTableCatalog(metaStoreManager, passthroughView);
     this.genericTableCatalog.initialize(CATALOG_NAME, Map.of());
     this.icebergCatalog =
         new IcebergCatalog(
