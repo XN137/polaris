@@ -178,7 +178,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
       PolarisMetaStoreManager metaStoreManager = getOrCreateMetaStoreManager(realmContext);
 
       PolarisCallContext callContext = new PolarisCallContext(realmContext);
-      BaseResult result = metaStoreManager.purge(callContext);
+      BaseResult result = metaStoreManager.purge();
       results.put(realm, result);
 
       sessionSupplierMap.remove(realm);
@@ -234,8 +234,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
         metaStoreManagerMap.get(realmContext.getRealmIdentifier());
     PolarisCallContext polarisContext = new PolarisCallContext(realmContext);
 
-    Optional<PrincipalEntity> preliminaryRootPrincipal =
-        metaStoreManager.findRootPrincipal(polarisContext);
+    Optional<PrincipalEntity> preliminaryRootPrincipal = metaStoreManager.findRootPrincipal();
     if (preliminaryRootPrincipal.isPresent()) {
       String overrideMessage =
           "It appears this metastore manager has already been bootstrapped. "
@@ -244,12 +243,10 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
       throw new IllegalArgumentException(overrideMessage);
     }
 
-    metaStoreManager.bootstrapPolarisService(polarisContext);
+    metaStoreManager.bootstrapPolarisService();
 
-    PrincipalEntity rootPrincipal =
-        metaStoreManager.findRootPrincipal(polarisContext).orElseThrow();
+    PrincipalEntity rootPrincipal = metaStoreManager.findRootPrincipal().orElseThrow();
     return metaStoreManager.loadPrincipalSecrets(
-        polarisContext,
         rootPrincipal
             .getInternalPropertiesAsMap()
             .get(PolarisEntityConstants.getClientIdPropertyName()));
@@ -267,7 +264,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
         metaStoreManagerMap.get(realmContext.getRealmIdentifier());
     PolarisCallContext polarisContext = new PolarisCallContext(realmContext);
 
-    Optional<PrincipalEntity> rootPrincipal = metaStoreManager.findRootPrincipal(polarisContext);
+    Optional<PrincipalEntity> rootPrincipal = metaStoreManager.findRootPrincipal();
     if (rootPrincipal.isEmpty()) {
       LOGGER.error(
           "\n\n Realm {} is not bootstrapped, could not load root principal. Please run Bootstrap command. \n\n",

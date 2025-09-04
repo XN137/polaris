@@ -227,7 +227,6 @@ public class IcebergCatalogHandlerAuthzTest extends PolarisAuthzTestBase {
     String principalName = "all_the_powers";
     CreatePrincipalResult newPrincipal =
         metaStoreManager.createPrincipal(
-            callContext.getPolarisCallContext(),
             new PrincipalEntity.Builder()
                 .setName(principalName)
                 .setCreateTimestamp(Instant.now().toEpochMilli())

@@ -478,9 +478,7 @@ public abstract class BaseResolverTest {
             .map(
                 scopes ->
                     scopes.stream()
-                        .map(
-                            roleName ->
-                                metaStoreManager().findPrincipalRoleByName(callCtx(), roleName))
+                        .map(roleName -> metaStoreManager().findPrincipalRoleByName(roleName))
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .collect(Collectors.toList()));
@@ -770,8 +768,7 @@ public abstract class BaseResolverTest {
       // the principal does not exist, check that this is the case
       if (principalName != null) {
         // see if the principal exists
-        Optional<PrincipalEntity> principal =
-            metaStoreManager().findPrincipalByName(callCtx(), principalName);
+        Optional<PrincipalEntity> principal = metaStoreManager().findPrincipalByName(principalName);
         // if found, ensure properly resolved
         if (principal.isPresent()) {
           // the principal exist, check that this is the case
@@ -972,7 +969,7 @@ public abstract class BaseResolverTest {
     ResolvedEntityResult refResolvedEntity =
         metaStoreManager()
             .loadResolvedEntityById(
-                callCtx(), refEntity.getCatalogId(), refEntity.getId(), refEntity.getType());
+                refEntity.getCatalogId(), refEntity.getId(), refEntity.getType());
 
     // should exist
     Assertions.assertThat(refResolvedEntity).isNotNull();

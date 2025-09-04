@@ -161,8 +161,7 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
     polarisContext = new PolarisCallContext(realmContext, configurationStore);
     realmConfig = polarisContext.getRealmConfig();
 
-    PrincipalEntity rootPrincipal =
-        metaStoreManager.findRootPrincipal(polarisContext).orElseThrow();
+    PrincipalEntity rootPrincipal = metaStoreManager.findRootPrincipal().orElseThrow();
     PolarisPrincipal authenticatedRoot = PolarisPrincipal.of(rootPrincipal, Set.of());
 
     SecurityContext securityContext = Mockito.mock(SecurityContext.class);
@@ -230,7 +229,7 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
   @AfterEach
   public void after() throws IOException {
     catalog().close();
-    metaStoreManager.purge(polarisContext);
+    metaStoreManager.purge();
   }
 
   @Override

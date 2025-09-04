@@ -551,8 +551,7 @@ public class Resolver {
 
       // now get the current backend versions of all these entities
       ChangeTrackingResult changeTrackingResult =
-          this.polarisMetaStoreManager.loadEntitiesChangeTracking(
-              this.polarisCallContext, entityIds);
+          this.polarisMetaStoreManager.loadEntitiesChangeTracking(entityIds);
 
       // refresh any entity which is not fresh. If an entity is missing, reload it
       Iterator<ResolvedPolarisEntity> entityIterator = toValidate.iterator();
@@ -590,7 +589,6 @@ public class Resolver {
             } else {
               ResolvedEntityResult result =
                   this.polarisMetaStoreManager.refreshResolvedEntity(
-                      this.polarisCallContext,
                       entity.getEntityVersion(),
                       entity.getGrantRecordsVersion(),
                       entity.getType(),
@@ -1012,7 +1010,7 @@ public class Resolver {
       // If no cache, load directly from metastore manager.
       ResolvedEntityResult result =
           this.polarisMetaStoreManager.loadResolvedEntityByName(
-              this.polarisCallContext, catalogId, parentId, entityType, entityName);
+              catalogId, parentId, entityType, entityName);
       if (!result.isSuccess()) {
         // not found
         return null;
@@ -1068,8 +1066,7 @@ public class Resolver {
     } else {
       // If no cache, load directly from metastore manager.
       ResolvedEntityResult result =
-          polarisMetaStoreManager.loadResolvedEntityById(
-              this.polarisCallContext, catalogId, entityId, entityType);
+          polarisMetaStoreManager.loadResolvedEntityById(catalogId, entityId, entityType);
       if (!result.isSuccess()) {
         // not found
         return null;

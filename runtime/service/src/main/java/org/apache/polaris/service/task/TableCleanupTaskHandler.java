@@ -128,9 +128,7 @@ public class TableCleanupTaskHandler implements TaskHandler {
           Stream.concat(manifestCleanupTasks, metadataFileCleanupTasks).toList();
 
       List<PolarisBaseEntity> createdTasks =
-          metaStoreManager
-              .createEntitiesIfNotExist(polarisCallContext, null, taskEntities)
-              .getEntities();
+          metaStoreManager.createEntitiesIfNotExist(null, taskEntities).getEntities();
       if (createdTasks != null) {
         LOGGER
             .atInfo()
@@ -189,13 +187,13 @@ public class TableCleanupTaskHandler implements TaskHandler {
                   .log("Queueing task to delete manifest file");
               return new TaskEntity.Builder()
                   .setName(taskName)
-                  .setId(metaStoreManager.generateNewEntityId(polarisCallContext).getId())
+                  .setId(metaStoreManager.generateNewEntityId().getId())
                   .setCreateTimestamp(clock.millis())
                   .withTaskType(AsyncTaskType.MANIFEST_FILE_CLEANUP)
                   .withData(
                       ManifestFileCleanupTaskHandler.ManifestCleanupTask.buildFrom(
                           tableEntity.getTableIdentifier(), mf))
-                  .setId(metaStoreManager.generateNewEntityId(polarisCallContext).getId())
+                  .setId(metaStoreManager.generateNewEntityId().getId())
                   // copy the internal properties, which will have storage info
                   .setInternalProperties(cleanupTask.getInternalPropertiesAsMap())
                   .build();
@@ -228,7 +226,7 @@ public class TableCleanupTaskHandler implements TaskHandler {
                       "Queueing task to delete metadata files (prev metadata and statistics files)");
               return new TaskEntity.Builder()
                   .setName(taskName)
-                  .setId(metaStoreManager.generateNewEntityId(polarisCallContext).getId())
+                  .setId(metaStoreManager.generateNewEntityId().getId())
                   .setCreateTimestamp(clock.millis())
                   .withTaskType(AsyncTaskType.BATCH_FILE_CLEANUP)
                   .withData(

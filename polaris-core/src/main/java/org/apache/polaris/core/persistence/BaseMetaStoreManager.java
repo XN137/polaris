@@ -21,7 +21,6 @@ package org.apache.polaris.core.persistence;
 import jakarta.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
@@ -72,14 +71,9 @@ public abstract class BaseMetaStoreManager<T extends BasePersistence>
    * Performs basic validation of expected invariants on a new entity, then returns the entity with
    * fields filled out for which the persistence layer is responsible.
    *
-   * @param callCtx call context
-   * @param ms meta store in read/write mode
    * @param entity entity we need a new persisted record for
    */
-  protected PolarisBaseEntity prepareToPersistNewEntity(
-      @Nonnull PolarisCallContext callCtx,
-      @Nonnull BasePersistence ms,
-      @Nonnull PolarisBaseEntity entity) {
+  protected PolarisBaseEntity prepareToPersistNewEntity(@Nonnull PolarisBaseEntity entity) {
 
     // validate the entity type and subtype
     getDiagnostics().checkNotNull(entity, "unexpected_null_entity");
@@ -127,7 +121,6 @@ public abstract class BaseMetaStoreManager<T extends BasePersistence>
    * Performs basic validation of expected invariants on a changed entity, then returns the entity
    * with fields filled out for which the persistence layer is responsible.
    *
-   * @param callCtx call context
    * @param ms meta store
    * @param entity the entity which has been changed
    * @param nameOrParentChanged indicates if parent or name changed
@@ -135,7 +128,6 @@ public abstract class BaseMetaStoreManager<T extends BasePersistence>
    * @return the entity with its version and lastUpdateTimestamp updated
    */
   protected @Nonnull PolarisBaseEntity prepareToPersistEntityAfterChange(
-      @Nonnull PolarisCallContext callCtx,
       @Nonnull BasePersistence ms,
       @Nonnull PolarisBaseEntity entity,
       boolean nameOrParentChanged,
@@ -177,10 +169,10 @@ public abstract class BaseMetaStoreManager<T extends BasePersistence>
 
   /** {@inheritDoc} */
   @Override
-  public @Nonnull GenerateEntityIdResult generateNewEntityId(@Nonnull PolarisCallContext callCtx) {
+  public @Nonnull GenerateEntityIdResult generateNewEntityId() {
     BasePersistence ms = getMetaStore();
 
-    return new GenerateEntityIdResult(ms.generateNewId(callCtx));
+    return new GenerateEntityIdResult(ms.generateNewId());
   }
 
   /** {@inheritDoc} */

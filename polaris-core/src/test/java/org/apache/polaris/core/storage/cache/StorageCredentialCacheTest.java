@@ -82,7 +82,6 @@ public class StorageCredentialCacheTest {
             BaseResult.ReturnStatus.SUBSCOPE_CREDS_ERROR, "extra_error_info");
     Mockito.when(
             metaStoreManager.getSubscopedCredsForEntity(
-                Mockito.any(),
                 Mockito.anyLong(),
                 Mockito.anyLong(),
                 Mockito.any(),
@@ -116,7 +115,6 @@ public class StorageCredentialCacheTest {
         getFakeScopedCreds(3, /* expireSoon= */ false);
     Mockito.when(
             metaStoreManager.getSubscopedCredsForEntity(
-                Mockito.any(),
                 Mockito.anyLong(),
                 Mockito.anyLong(),
                 Mockito.any(),
@@ -162,7 +160,6 @@ public class StorageCredentialCacheTest {
 
     Mockito.when(
             metaStoreManager.getSubscopedCredsForEntity(
-                Mockito.any(),
                 Mockito.anyLong(),
                 Mockito.anyLong(),
                 Mockito.any(),
@@ -225,7 +222,6 @@ public class StorageCredentialCacheTest {
         getFakeScopedCreds(3, /* expireSoon= */ false);
     Mockito.when(
             metaStoreManager.getSubscopedCredsForEntity(
-                Mockito.any(),
                 Mockito.anyLong(),
                 Mockito.anyLong(),
                 Mockito.any(),
@@ -319,7 +315,6 @@ public class StorageCredentialCacheTest {
 
     Mockito.when(
             metaStoreManager.getSubscopedCredsForEntity(
-                Mockito.any(),
                 Mockito.anyLong(),
                 Mockito.anyLong(),
                 Mockito.any(),
@@ -466,7 +461,6 @@ public class StorageCredentialCacheTest {
                 .build());
     Mockito.when(
             metaStoreManager.getSubscopedCredsForEntity(
-                Mockito.any(),
                 Mockito.anyLong(),
                 Mockito.anyLong(),
                 Mockito.any(),

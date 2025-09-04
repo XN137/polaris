@@ -59,11 +59,7 @@ public class DefaultAuthenticatorTest {
     DecodedToken token = Mockito.mock(DecodedToken.class);
     long principalId = 100L;
     when(token.getPrincipalId()).thenReturn(principalId);
-    when(metaStoreManager.loadEntity(
-            authenticator.callContext.getPolarisCallContext(),
-            0L,
-            principalId,
-            PolarisEntityType.PRINCIPAL))
+    when(metaStoreManager.loadEntity(0L, principalId, PolarisEntityType.PRINCIPAL))
         .thenThrow(new RuntimeException("Metastore exception"));
 
     Assertions.assertThatThrownBy(() -> authenticator.authenticate(token))
@@ -77,11 +73,7 @@ public class DefaultAuthenticatorTest {
     long principalId = 100L;
     when(token.getPrincipalId()).thenReturn(principalId);
     when(token.getClientId()).thenReturn("abc");
-    when(metaStoreManager.loadEntity(
-            authenticator.callContext.getPolarisCallContext(),
-            0L,
-            principalId,
-            PolarisEntityType.PRINCIPAL))
+    when(metaStoreManager.loadEntity(0L, principalId, PolarisEntityType.PRINCIPAL))
         .thenReturn(new EntityResult(BaseResult.ReturnStatus.ENTITY_NOT_FOUND, ""));
 
     Assertions.assertThatThrownBy(() -> authenticator.authenticate(token))

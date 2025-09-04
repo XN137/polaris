@@ -304,7 +304,7 @@ public class InMemoryEntityCache implements EntityCache {
         // try to load it
         refreshedCacheEntry =
             this.polarisMetaStoreManager.loadResolvedEntityById(
-                callContext, entityCatalogId, entityId, entityType);
+                entityCatalogId, entityId, entityType);
         if (refreshedCacheEntry.isSuccess()) {
           entity = refreshedCacheEntry.getEntity();
           grantRecords = refreshedCacheEntry.getEntityGrantRecords();
@@ -316,7 +316,6 @@ public class InMemoryEntityCache implements EntityCache {
         // refresh it
         refreshedCacheEntry =
             this.polarisMetaStoreManager.refreshResolvedEntity(
-                callContext,
                 existingCacheEntry.getEntity().getEntityVersion(),
                 existingCacheEntry.getEntity().getGrantRecordsVersion(),
                 entityType,
@@ -387,8 +386,7 @@ public class InMemoryEntityCache implements EntityCache {
 
       // load it
       ResolvedEntityResult result =
-          polarisMetaStoreManager.loadResolvedEntityById(
-              callContext, entityCatalogId, entityId, entityType);
+          polarisMetaStoreManager.loadResolvedEntityById(entityCatalogId, entityId, entityType);
 
       // not found, exit
       if (!result.isSuccess()) {
@@ -440,7 +438,6 @@ public class InMemoryEntityCache implements EntityCache {
       // load it
       ResolvedEntityResult result =
           polarisMetaStoreManager.loadResolvedEntityByName(
-              callContext,
               entityNameKey.getCatalogId(),
               entityNameKey.getParentId(),
               entityNameKey.getType(),

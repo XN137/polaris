@@ -107,10 +107,8 @@ public class PolarisIntegrationTestFixture {
         new PolarisCallContext(realmContext, helper.configurationStore);
     PolarisMetaStoreManager metaStoreManager =
         helper.metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
-    PrincipalEntity principal = metaStoreManager.findRootPrincipal(polarisContext).orElseThrow();
-    return metaStoreManager
-        .loadPrincipalSecrets(polarisContext, principal.getClientId())
-        .getPrincipalSecrets();
+    PrincipalEntity principal = metaStoreManager.findRootPrincipal().orElseThrow();
+    return metaStoreManager.loadPrincipalSecrets(principal.getClientId()).getPrincipalSecrets();
   }
 
   private SnowmanCredentials createSnowmanCredentials(TestEnvironment testEnv) {

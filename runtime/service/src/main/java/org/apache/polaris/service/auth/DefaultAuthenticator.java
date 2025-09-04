@@ -66,16 +66,10 @@ public class DefaultAuthenticator implements Authenticator {
         principal =
             PolarisEntity.of(
                 metaStoreManager.loadEntity(
-                    callContext.getPolarisCallContext(),
-                    0L,
-                    credentials.getPrincipalId(),
-                    PolarisEntityType.PRINCIPAL));
+                    0L, credentials.getPrincipalId(), PolarisEntityType.PRINCIPAL));
       } else if (credentials.getPrincipalName() != null) {
         principal =
-            metaStoreManager
-                .findPrincipalByName(
-                    callContext.getPolarisCallContext(), credentials.getPrincipalName())
-                .orElse(null);
+            metaStoreManager.findPrincipalByName(credentials.getPrincipalName()).orElse(null);
       }
     } catch (Exception e) {
       LOGGER

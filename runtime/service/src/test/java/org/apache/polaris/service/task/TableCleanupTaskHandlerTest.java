@@ -119,7 +119,7 @@ class TableCleanupTaskHandlerTest {
     assertThat(
             metaStoreManagerFactory
                 .getOrCreateMetaStoreManager(realmContext)
-                .loadTasks(callContext.getPolarisCallContext(), "test", PageToken.fromLimit(2))
+                .loadTasks("test", PageToken.fromLimit(2))
                 .getEntities())
         .hasSize(2)
         .satisfiesExactlyInAnyOrder(
@@ -194,7 +194,7 @@ class TableCleanupTaskHandlerTest {
     assertThat(
             metaStoreManagerFactory
                 .getOrCreateMetaStoreManager(realmContext)
-                .loadTasks(callContext.getPolarisCallContext(), "test", PageToken.fromLimit(5))
+                .loadTasks("test", PageToken.fromLimit(5))
                 .getEntities())
         .hasSize(2);
   }
@@ -252,7 +252,7 @@ class TableCleanupTaskHandlerTest {
     assertThat(
             metaStoreManagerFactory
                 .getOrCreateMetaStoreManager(realmContext)
-                .loadTasks(callContext.getPolarisCallContext(), "test", PageToken.fromLimit(5))
+                .loadTasks("test", PageToken.fromLimit(5))
                 .getEntities())
         .hasSize(4)
         .satisfiesExactlyInAnyOrder(
@@ -365,7 +365,7 @@ class TableCleanupTaskHandlerTest {
     List<PolarisBaseEntity> entities =
         metaStoreManagerFactory
             .getOrCreateMetaStoreManager(realmContext)
-            .loadTasks(callContext.getPolarisCallContext(), "test", PageToken.fromLimit(5))
+            .loadTasks("test", PageToken.fromLimit(5))
             .getEntities();
 
     List<PolarisBaseEntity> manifestCleanupTasks =
@@ -533,7 +533,7 @@ class TableCleanupTaskHandlerTest {
     List<PolarisBaseEntity> entities =
         metaStoreManagerFactory
             .getOrCreateMetaStoreManager(callContext.getRealmContext())
-            .loadTasks(callContext.getPolarisCallContext(), "test", PageToken.fromLimit(6))
+            .loadTasks("test", PageToken.fromLimit(6))
             .getEntities();
 
     List<PolarisBaseEntity> manifestCleanupTasks =

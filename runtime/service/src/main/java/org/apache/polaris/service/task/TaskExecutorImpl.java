@@ -151,9 +151,7 @@ public class TaskExecutorImpl implements TaskExecutor {
       PolarisMetaStoreManager metaStoreManager =
           metaStoreManagerFactory.getOrCreateMetaStoreManager(ctx.getRealmContext());
       PolarisBaseEntity taskEntity =
-          metaStoreManager
-              .loadEntity(ctx.getPolarisCallContext(), 0L, taskEntityId, PolarisEntityType.TASK)
-              .getEntity();
+          metaStoreManager.loadEntity(0L, taskEntityId, PolarisEntityType.TASK).getEntity();
       if (!PolarisEntityType.TASK.equals(taskEntity.getType())) {
         throw new IllegalArgumentException("Provided taskId must be a task entity type");
       }
@@ -176,8 +174,7 @@ public class TaskExecutorImpl implements TaskExecutor {
             .addKeyValue("taskEntityId", taskEntityId)
             .addKeyValue("handlerClass", handler.getClass())
             .log("Task successfully handled");
-        metaStoreManager.dropEntityIfExists(
-            ctx.getPolarisCallContext(), null, taskEntity, Map.of(), false);
+        metaStoreManager.dropEntityIfExists(null, taskEntity, Map.of(), false);
       } else {
         LOGGER
             .atWarn()

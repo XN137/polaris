@@ -102,10 +102,7 @@ public class PolarisGenericTableCatalog implements GenericTableCatalog {
               .setCatalogId(this.catalogId)
               .setParentNamespace(tableIdentifier.namespace())
               .setParentId(resolvedParent.getRawLeafEntity().getId())
-              .setId(
-                  this.metaStoreManager
-                      .generateNewEntityId(this.callContext.getPolarisCallContext())
-                      .getId())
+              .setId(this.metaStoreManager.generateNewEntityId().getId())
               .setProperties(properties)
               .setDoc(doc)
               .setBaseLocation(baseLocation)
@@ -118,9 +115,7 @@ public class PolarisGenericTableCatalog implements GenericTableCatalog {
 
     EntityResult res =
         this.metaStoreManager.createEntityIfNotExists(
-            this.callContext.getPolarisCallContext(),
-            PolarisEntity.toCoreList(catalogPath),
-            entity);
+            PolarisEntity.toCoreList(catalogPath), entity);
     if (!res.isSuccess()) {
       switch (res.getReturnStatus()) {
         case BaseResult.ReturnStatus.ENTITY_ALREADY_EXISTS:
@@ -170,11 +165,7 @@ public class PolarisGenericTableCatalog implements GenericTableCatalog {
 
     DropEntityResult dropEntityResult =
         this.metaStoreManager.dropEntityIfExists(
-            this.callContext.getPolarisCallContext(),
-            PolarisEntity.toCoreList(catalogPath),
-            leafEntity,
-            Map.of(),
-            false);
+            PolarisEntity.toCoreList(catalogPath), leafEntity, Map.of(), false);
 
     return dropEntityResult.isSuccess();
   }
@@ -191,7 +182,6 @@ public class PolarisGenericTableCatalog implements GenericTableCatalog {
         PolarisEntity.toNameAndIdList(
             this.metaStoreManager
                 .listEntities(
-                    this.callContext.getPolarisCallContext(),
                     PolarisEntity.toCoreList(catalogPath),
                     PolarisEntityType.TABLE_LIKE,
                     PolarisEntitySubType.GENERIC_TABLE,

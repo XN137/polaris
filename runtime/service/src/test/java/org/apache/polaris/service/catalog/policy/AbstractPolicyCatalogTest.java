@@ -172,8 +172,7 @@ public abstract class AbstractPolicyCatalogTest {
     polarisContext = new PolarisCallContext(realmContext, configurationStore);
     realmConfig = polarisContext.getRealmConfig();
 
-    PrincipalEntity rootPrincipal =
-        metaStoreManager.findRootPrincipal(polarisContext).orElseThrow();
+    PrincipalEntity rootPrincipal = metaStoreManager.findRootPrincipal().orElseThrow();
     authenticatedRoot = PolarisPrincipal.of(rootPrincipal, Set.of());
 
     securityContext = Mockito.mock(SecurityContext.class);
@@ -266,7 +265,7 @@ public abstract class AbstractPolicyCatalogTest {
 
   @AfterEach
   public void after() throws IOException {
-    metaStoreManager.purge(polarisContext);
+    metaStoreManager.purge();
   }
 
   @Test

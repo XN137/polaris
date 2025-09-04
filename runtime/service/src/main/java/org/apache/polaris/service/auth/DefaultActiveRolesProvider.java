@@ -77,8 +77,7 @@ public class DefaultActiveRolesProvider implements ActiveRolesProvider {
   protected List<PrincipalRoleEntity> loadActivePrincipalRoles(
       Set<String> tokenRoles, PolarisEntity principal, PolarisMetaStoreManager metaStoreManager) {
     PolarisCallContext polarisContext = callContext.getPolarisCallContext();
-    LoadGrantsResult principalGrantResults =
-        metaStoreManager.loadGrantsToGrantee(polarisContext, principal);
+    LoadGrantsResult principalGrantResults = metaStoreManager.loadGrantsToGrantee(principal);
     diagnostics.check(
         principalGrantResults.isSuccess(),
         "Failed to resolve principal roles for principal name={} id={}",
@@ -101,7 +100,6 @@ public class DefaultActiveRolesProvider implements ActiveRolesProvider {
             .map(
                 gr ->
                     metaStoreManager.loadEntity(
-                        polarisContext,
                         gr.getSecurableCatalogId(),
                         gr.getSecurableId(),
                         PolarisEntityType.PRINCIPAL_ROLE))
