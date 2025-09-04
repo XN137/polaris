@@ -53,7 +53,7 @@ public class JWTRSAKeyPairTest {
     final String clientId = "test-client-id";
     final String scope = "PRINCIPAL_ROLE:TEST";
 
-    PolarisCallContext polarisCallContext = new PolarisCallContext(null, null, configurationStore);
+    PolarisCallContext polarisCallContext = new PolarisCallContext(null, configurationStore);
     PolarisMetaStoreManager metastoreManager = Mockito.mock(PolarisMetaStoreManager.class);
     String mainSecret = "client-secret";
     PolarisPrincipalSecrets principalSecrets =

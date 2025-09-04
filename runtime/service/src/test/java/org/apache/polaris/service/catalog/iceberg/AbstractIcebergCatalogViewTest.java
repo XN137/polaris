@@ -158,11 +158,7 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
 
     metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
     userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
-    polarisContext =
-        new PolarisCallContext(
-            realmContext,
-            metaStoreManagerFactory.getOrCreateSession(realmContext),
-            configurationStore);
+    polarisContext = new PolarisCallContext(realmContext, configurationStore);
     realmConfig = polarisContext.getRealmConfig();
 
     PrincipalEntity rootPrincipal =

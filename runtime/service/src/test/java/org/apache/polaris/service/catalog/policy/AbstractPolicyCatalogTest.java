@@ -169,11 +169,7 @@ public abstract class AbstractPolicyCatalogTest {
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
     metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
     userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
-    polarisContext =
-        new PolarisCallContext(
-            realmContext,
-            metaStoreManagerFactory.getOrCreateSession(realmContext),
-            configurationStore);
+    polarisContext = new PolarisCallContext(realmContext, configurationStore);
     realmConfig = polarisContext.getRealmConfig();
 
     PrincipalEntity rootPrincipal =

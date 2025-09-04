@@ -234,9 +234,7 @@ public abstract class PolarisAuthzTestBase {
     metaStoreManager = managerFactory.getOrCreateMetaStoreManager(realmContext);
     userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
 
-    polarisContext =
-        new PolarisCallContext(
-            realmContext, managerFactory.getOrCreateSession(realmContext), configurationStore);
+    polarisContext = new PolarisCallContext(realmContext, configurationStore);
 
     callContext = polarisContext;
     realmConfig = polarisContext.getRealmConfig();

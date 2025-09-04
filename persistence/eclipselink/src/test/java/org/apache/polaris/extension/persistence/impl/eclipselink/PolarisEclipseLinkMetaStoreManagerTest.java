@@ -89,7 +89,7 @@ public class PolarisEclipseLinkMetaStoreManagerTest extends BasePolarisMetaStore
             diagServices, store, Mockito.mock(), realmContext, null, "polaris", RANDOM_SECRETS);
     TransactionalMetaStoreManagerImpl metaStoreManager =
         new TransactionalMetaStoreManagerImpl(clock, diagServices);
-    PolarisCallContext callCtx = new PolarisCallContext(realmContext, session);
+    PolarisCallContext callCtx = new PolarisCallContext(realmContext);
     return new PolarisTestMetaStoreManager(metaStoreManager, callCtx);
   }
 

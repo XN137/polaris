@@ -85,7 +85,8 @@ import org.slf4j.LoggerFactory;
  * Default implementation of the Polaris Meta Store Manager. Uses the underlying meta store to store
  * and retrieve all Polaris metadata
  */
-public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager<TransactionalPersistence> {
+public class TransactionalMetaStoreManagerImpl
+    extends BaseMetaStoreManager<TransactionalPersistence> {
   private static final Logger LOGGER =
       LoggerFactory.getLogger(TransactionalMetaStoreManagerImpl.class);
 
@@ -96,7 +97,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager<Tran
     this.clock = clock;
   }
 
-    @Override
+  @Override
   protected TransactionalPersistence getMetaStore() {
     // FIXME
     return null;
@@ -2045,7 +2046,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager<Tran
               PolarisObjectMapperUtil.TaskExecutionState taskState =
                   PolarisObjectMapperUtil.parseTaskState(entity);
               long taskAgeTimeout =
-                      realmConfig
+                  getRealmConfig()
                       .getConfig(
                           PolarisTaskConstants.TASK_TIMEOUT_MILLIS_CONFIG,
                           PolarisTaskConstants.TASK_TIMEOUT_MILLIS);
@@ -2141,7 +2142,7 @@ public class TransactionalMetaStoreManagerImpl extends BaseMetaStoreManager<Tran
     try {
       AccessConfig accessConfig =
           storageIntegration.getSubscopedCreds(
-                  realmConfig,
+              getRealmConfig(),
               allowListOperation,
               allowedReadLocations,
               allowedWriteLocations,

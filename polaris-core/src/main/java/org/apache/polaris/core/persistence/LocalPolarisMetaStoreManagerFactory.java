@@ -129,9 +129,8 @@ public abstract class LocalPolarisMetaStoreManagerFactory<StoreType>
     for (String realm : realms) {
       RealmContext realmContext = () -> realm;
       PolarisMetaStoreManager metaStoreManager = getOrCreateMetaStoreManager(realmContext);
-      TransactionalPersistence session = getOrCreateSession(realmContext);
 
-      PolarisCallContext callContext = new PolarisCallContext(realmContext, session);
+      PolarisCallContext callContext = new PolarisCallContext(realmContext);
       BaseResult result = metaStoreManager.purge(callContext);
       results.put(realm, result);
 
@@ -185,8 +184,7 @@ public abstract class LocalPolarisMetaStoreManagerFactory<StoreType>
     // CallContext may not have been resolved yet.
     PolarisMetaStoreManager metaStoreManager =
         metaStoreManagerMap.get(realmContext.getRealmIdentifier());
-    BasePersistence metaStore = sessionSupplierMap.get(realmContext.getRealmIdentifier()).get();
-    PolarisCallContext polarisContext = new PolarisCallContext(realmContext, metaStore);
+    PolarisCallContext polarisContext = new PolarisCallContext(realmContext);
 
     Optional<PrincipalEntity> preliminaryRootPrincipal =
         metaStoreManager.findRootPrincipal(polarisContext);
@@ -219,8 +217,7 @@ public abstract class LocalPolarisMetaStoreManagerFactory<StoreType>
   private void checkPolarisServiceBootstrappedForRealm(RealmContext realmContext) {
     PolarisMetaStoreManager metaStoreManager =
         metaStoreManagerMap.get(realmContext.getRealmIdentifier());
-    BasePersistence metaStore = sessionSupplierMap.get(realmContext.getRealmIdentifier()).get();
-    PolarisCallContext polarisContext = new PolarisCallContext(realmContext, metaStore);
+    PolarisCallContext polarisContext = new PolarisCallContext(realmContext);
 
     Optional<PrincipalEntity> rootPrincipal = metaStoreManager.findRootPrincipal(polarisContext);
     if (rootPrincipal.isEmpty()) {

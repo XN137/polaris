@@ -1550,7 +1550,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager<BasePe
               PolarisObjectMapperUtil.TaskExecutionState taskState =
                   PolarisObjectMapperUtil.parseTaskState(entity);
               long taskAgeTimeout =
-                  realmConfig
+                  getRealmConfig()
                       .getConfig(
                           PolarisTaskConstants.TASK_TIMEOUT_MILLIS_CONFIG,
                           PolarisTaskConstants.TASK_TIMEOUT_MILLIS);
@@ -1654,7 +1654,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager<BasePe
     try {
       AccessConfig accessConfig =
           storageIntegration.getSubscopedCreds(
-                  realmConfig,
+              getRealmConfig(),
               allowListOperation,
               allowedReadLocations,
               allowedWriteLocations,

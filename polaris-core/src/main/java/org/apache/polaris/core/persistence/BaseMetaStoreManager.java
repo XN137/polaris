@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
+import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisEntityConstants;
 import org.apache.polaris.core.entity.PolarisEntitySubType;
@@ -32,7 +33,8 @@ import org.apache.polaris.core.persistence.dao.entity.GenerateEntityIdResult;
 import org.apache.polaris.core.storage.PolarisStorageConfigurationInfo;
 
 /** Shared basic PolarisMetaStoreManager logic for transactional and non-transactional impls. */
-public abstract class BaseMetaStoreManager<T extends BasePersistence> implements PolarisMetaStoreManager {
+public abstract class BaseMetaStoreManager<T extends BasePersistence>
+    implements PolarisMetaStoreManager {
 
   public static PolarisStorageConfigurationInfo extractStorageConfiguration(
       @Nonnull PolarisDiagnostics diagnostics, PolarisBaseEntity reloadedEntity) {
@@ -57,6 +59,11 @@ public abstract class BaseMetaStoreManager<T extends BasePersistence> implements
 
   protected PolarisDiagnostics getDiagnostics() {
     return diagnostics;
+  }
+
+  protected RealmConfig getRealmConfig() {
+    // FIXME:
+    return null;
   }
 
   protected abstract T getMetaStore();
