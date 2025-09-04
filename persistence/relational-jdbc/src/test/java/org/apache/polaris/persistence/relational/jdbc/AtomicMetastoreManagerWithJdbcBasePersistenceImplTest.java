@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Optional;
 import javax.sql.DataSource;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDefaultDiagServiceImpl;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.context.RealmContext;
@@ -72,8 +71,7 @@ public class AtomicMetastoreManagerWithJdbcBasePersistenceImplTest
             schemaVersion);
     AtomicOperationMetaStoreManager metaStoreManager =
         new AtomicOperationMetaStoreManager(clock, diagServices);
-    PolarisCallContext callCtx = new PolarisCallContext(realmContext);
-    return new PolarisTestMetaStoreManager(metaStoreManager, callCtx);
+    return new PolarisTestMetaStoreManager(metaStoreManager);
   }
 
   private static class H2JdbcConfiguration implements RelationalJdbcConfiguration {

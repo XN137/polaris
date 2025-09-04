@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.entity.CatalogEntity;
@@ -54,9 +53,6 @@ import org.apache.polaris.core.persistence.dao.entity.ResolvedEntityResult;
  * incoming rest request, Once resolved, the request can be authorized.
  */
 public class Resolver {
-
-  // we stash the Polaris call context here
-  private final @Nonnull PolarisCallContext polarisCallContext;
 
   // the diagnostic services
   private final @Nonnull PolarisDiagnostics diagnostics;
@@ -114,7 +110,6 @@ public class Resolver {
   /**
    * Constructor, effectively starts an entity resolver session
    *
-   * @param polarisCallContext the polaris call context
    * @param polarisMetaStoreManager meta store manager
    * @param securityContext The {@link SecurityContext} for the current request
    * @param cache shared entity cache
@@ -128,12 +123,10 @@ public class Resolver {
    */
   public Resolver(
       @Nonnull PolarisDiagnostics diagnostics,
-      @Nonnull PolarisCallContext polarisCallContext,
       @Nonnull PolarisMetaStoreManager polarisMetaStoreManager,
       @Nonnull SecurityContext securityContext,
       @Nullable EntityCache cache,
       @Nullable String referenceCatalogName) {
-    this.polarisCallContext = polarisCallContext;
     this.diagnostics = diagnostics;
     this.polarisMetaStoreManager = polarisMetaStoreManager;
     this.cache = cache;
@@ -141,7 +134,6 @@ public class Resolver {
     this.referenceCatalogName = referenceCatalogName;
 
     // validate inputs
-    this.diagnostics.checkNotNull(polarisCallContext, "unexpected_null_polarisCallContext");
     this.diagnostics.checkNotNull(
         polarisMetaStoreManager, "unexpected_null_polarisMetaStoreManager");
     this.diagnostics.checkNotNull(securityContext, "security_context_must_be_specified");
@@ -582,10 +574,7 @@ public class Resolver {
             if (this.cache != null) {
               refreshedResolvedEntity =
                   this.cache.getAndRefreshIfNeeded(
-                      this.polarisCallContext,
-                      entity,
-                      versions.getEntityVersion(),
-                      versions.getGrantRecordsVersion());
+                      entity, versions.getEntityVersion(), versions.getGrantRecordsVersion());
             } else {
               ResolvedEntityResult result =
                   this.polarisMetaStoreManager.refreshResolvedEntity(
@@ -987,7 +976,6 @@ public class Resolver {
     if (this.cache != null) {
       EntityCacheLookupResult lookupResult =
           this.cache.getOrLoadEntityByName(
-              this.polarisCallContext,
               new EntityCacheByNameKey(catalogId, parentId, entityType, entityName));
 
       // if not found
@@ -1045,7 +1033,7 @@ public class Resolver {
     if (this.cache != null) {
       // get or load by name
       EntityCacheLookupResult lookupResult =
-          this.cache.getOrLoadEntityById(this.polarisCallContext, catalogId, entityId, entityType);
+          this.cache.getOrLoadEntityById(catalogId, entityId, entityType);
 
       // if not found, return null
       if (lookupResult == null) {

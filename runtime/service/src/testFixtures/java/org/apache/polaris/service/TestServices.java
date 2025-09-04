@@ -185,7 +185,6 @@ public record TestServices(
           (_callContext, securityContext, referenceCatalogName) ->
               new Resolver(
                   diagnostics,
-                  _callContext.getPolarisCallContext(),
                   metaStoreManager,
                   securityContext,
                   entityCache,

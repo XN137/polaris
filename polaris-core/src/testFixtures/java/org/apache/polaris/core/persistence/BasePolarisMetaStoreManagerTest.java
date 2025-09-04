@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.entity.AsyncTaskType;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisEntity;
@@ -246,7 +245,6 @@ public abstract class BasePolarisMetaStoreManagerTest {
     }
     String executorId = "testExecutor_abc";
     PolarisMetaStoreManager metaStoreManager = polarisTestMetaStoreManager.polarisMetaStoreManager;
-    PolarisCallContext callCtx = polarisTestMetaStoreManager.polarisCallContext;
     List<PolarisBaseEntity> taskList =
         metaStoreManager.loadTasks(executorId, PageToken.fromLimit(5)).getEntities();
     Assertions.assertThat(taskList)
@@ -328,7 +326,6 @@ public abstract class BasePolarisMetaStoreManagerTest {
           null, PolarisEntityType.TASK, PolarisEntitySubType.NULL_SUBTYPE, "task_" + i);
     }
     PolarisMetaStoreManager metaStoreManager = polarisTestMetaStoreManager.polarisMetaStoreManager;
-    PolarisCallContext callCtx = polarisTestMetaStoreManager.polarisCallContext;
     List<Future<Set<String>>> futureList = new ArrayList<>();
     ExecutorService executorService = Executors.newCachedThreadPool();
     try {

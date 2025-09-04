@@ -27,7 +27,6 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.config.BehaviorChangeConfiguration;
 import org.apache.polaris.core.config.FeatureConfiguration;
@@ -253,7 +252,6 @@ public class InMemoryEntityCache implements EntityCache {
    * Refresh the cache if needs be with a version of the entity/grant records matching the minimum
    * specified version.
    *
-   * @param callContext the Polaris call context
    * @param entityToValidate copy of the entity held by the caller to validate
    * @param entityMinVersion minimum expected version. Should be reloaded if found in a cache with a
    *     version less than this one
@@ -263,7 +261,6 @@ public class InMemoryEntityCache implements EntityCache {
    */
   @Override
   public @Nullable ResolvedPolarisEntity getAndRefreshIfNeeded(
-      @Nonnull PolarisCallContext callContext,
       @Nonnull PolarisBaseEntity entityToValidate,
       int entityMinVersion,
       int entityGrantRecordsMinVersion) {
@@ -362,7 +359,6 @@ public class InMemoryEntityCache implements EntityCache {
   /**
    * Get the specified entity by name and load it if it is not found.
    *
-   * @param callContext the Polaris call context
    * @param entityCatalogId id of the catalog where this entity resides or NULL_ID if top-level
    * @param entityId id of the entity to lookup
    * @return null if the entity does not exist or was dropped. Else return the entry for that
@@ -370,10 +366,7 @@ public class InMemoryEntityCache implements EntityCache {
    */
   @Override
   public @Nullable EntityCacheLookupResult getOrLoadEntityById(
-      @Nonnull PolarisCallContext callContext,
-      long entityCatalogId,
-      long entityId,
-      PolarisEntityType entityType) {
+      long entityCatalogId, long entityId, PolarisEntityType entityType) {
 
     // if it exists, we are set
     ResolvedPolarisEntity entry = this.getEntityById(entityId);
@@ -417,14 +410,13 @@ public class InMemoryEntityCache implements EntityCache {
   /**
    * Get the specified entity by name and load it if it is not found.
    *
-   * @param callContext the Polaris call context
    * @param entityNameKey name of the entity to load
    * @return null if the entity does not exist or was dropped. Else return the entry for that
    *     entity, either as found in the cache or loaded from the backend
    */
   @Override
   public @Nullable EntityCacheLookupResult getOrLoadEntityByName(
-      @Nonnull PolarisCallContext callContext, @Nonnull EntityCacheByNameKey entityNameKey) {
+      @Nonnull EntityCacheByNameKey entityNameKey) {
 
     // if it exists, we are set
     ResolvedPolarisEntity entry = this.getEntityByName(entityNameKey);

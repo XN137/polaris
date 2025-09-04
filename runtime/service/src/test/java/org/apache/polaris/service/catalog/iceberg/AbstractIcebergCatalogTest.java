@@ -286,12 +286,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     resolverFactory =
         (callContext, securityContext, referenceCatalogName) ->
             new Resolver(
-                diagServices,
-                callContext.getPolarisCallContext(),
-                metaStoreManager,
-                securityContext,
-                entityCache,
-                referenceCatalogName);
+                diagServices, metaStoreManager, securityContext, entityCache, referenceCatalogName);
     QuarkusMock.installMockForType(resolverFactory, ResolverFactory.class);
 
     resolutionManifestFactory = new ResolutionManifestFactoryImpl(diagServices, resolverFactory);

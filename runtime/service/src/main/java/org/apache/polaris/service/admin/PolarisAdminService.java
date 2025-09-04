@@ -46,7 +46,6 @@ import org.apache.iceberg.exceptions.BadRequestException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.exceptions.ValidationException;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.admin.model.AuthenticationParameters;
 import org.apache.polaris.core.admin.model.BearerAuthenticationParameters;
@@ -179,10 +178,6 @@ public class PolarisAdminService {
     this.authorizer = authorizer;
     this.userSecretsManager = userSecretsManager;
     this.reservedProperties = reservedProperties;
-  }
-
-  private PolarisCallContext getCurrentPolarisContext() {
-    return callContext.getPolarisCallContext();
   }
 
   private UserSecretsManager getUserSecretsManager() {

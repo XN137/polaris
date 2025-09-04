@@ -39,6 +39,6 @@ public class PolarisTreeMapAtomicOperationMetaStoreManagerTest
     AtomicOperationMetaStoreManager metaStoreManager =
         new AtomicOperationMetaStoreManager(clock, diagServices);
     PolarisCallContext callCtx = new PolarisCallContext(() -> "testRealm");
-    return new PolarisTestMetaStoreManager(metaStoreManager, callCtx);
+    return new PolarisTestMetaStoreManager(metaStoreManager);
   }
 }

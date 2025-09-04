@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.entity.EntityNameLookupRecord;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisChangeTrackingVersions;
@@ -58,9 +57,6 @@ import org.assertj.core.api.Assertions;
 /** Test the Polaris persistence layer */
 public class PolarisTestMetaStoreManager {
 
-  // call context
-  final PolarisCallContext polarisCallContext;
-
   // call metastore manager
   final PolarisMetaStoreManager polarisMetaStoreManager;
 
@@ -73,9 +69,8 @@ public class PolarisTestMetaStoreManager {
   private boolean doRetry;
 
   // initialize the test
-  public PolarisTestMetaStoreManager(
-      PolarisMetaStoreManager polarisMetaStoreManager, PolarisCallContext polarisCallContext) {
-    this(polarisMetaStoreManager, polarisCallContext, System.currentTimeMillis(), true);
+  public PolarisTestMetaStoreManager(PolarisMetaStoreManager polarisMetaStoreManager) {
+    this(polarisMetaStoreManager, System.currentTimeMillis(), true);
 
     // bootstrap the Polaris service
     polarisMetaStoreManager.purge();
@@ -84,11 +79,9 @@ public class PolarisTestMetaStoreManager {
 
   public PolarisTestMetaStoreManager(
       PolarisMetaStoreManager polarisMetaStoreManager,
-      PolarisCallContext polarisCallContext,
       long testStartTime,
       boolean supportsChangeTracking) {
     this.testStartTime = testStartTime;
-    this.polarisCallContext = polarisCallContext;
     this.polarisMetaStoreManager = polarisMetaStoreManager;
     this.supportsChangeTracking = supportsChangeTracking;
     this.doRetry = false;

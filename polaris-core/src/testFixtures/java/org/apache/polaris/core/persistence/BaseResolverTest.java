@@ -30,9 +30,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDefaultDiagServiceImpl;
 import org.apache.polaris.core.auth.PolarisPrincipal;
+import org.apache.polaris.core.config.PolarisConfigurationStore;
+import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.config.RealmConfigImpl;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisEntityCore;
 import org.apache.polaris.core.entity.PolarisEntitySubType;
@@ -53,6 +56,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public abstract class BaseResolverTest {
   protected final PolarisDefaultDiagServiceImpl diagServices = new PolarisDefaultDiagServiceImpl();
+  protected final RealmContext realmContext = () -> "testRealm";
+  protected final RealmConfig realmConfig =
+      new RealmConfigImpl(new PolarisConfigurationStore() {}, realmContext);
 
   // Principal P1
   protected PolarisBaseEntity P1;
@@ -98,9 +104,6 @@ public abstract class BaseResolverTest {
     // principal P1
     this.P1 = tm().ensureExistsByName(null, PolarisEntityType.PRINCIPAL, "P1");
   }
-
-  // polaris call context
-  protected abstract PolarisCallContext callCtx();
 
   // utility to bootstrap the mata store
   protected abstract PolarisTestMetaStoreManager tm();
@@ -469,8 +472,7 @@ public abstract class BaseResolverTest {
 
     // create a new cache if needs be
     if (cache == null) {
-      this.cache =
-          new InMemoryEntityCache(diagServices, callCtx().getRealmConfig(), metaStoreManager());
+      this.cache = new InMemoryEntityCache(diagServices, realmConfig, metaStoreManager());
     }
     boolean allRoles = principalRolesScope == null;
     Optional<List<PrincipalRoleEntity>> roleEntities =
@@ -487,7 +489,6 @@ public abstract class BaseResolverTest {
             PrincipalEntity.of(P1), Optional.ofNullable(principalRolesScope).orElse(Set.of()));
     return new Resolver(
         diagServices,
-        callCtx(),
         metaStoreManager(),
         new SecurityContext() {
           @Override

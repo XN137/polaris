@@ -117,12 +117,7 @@ public class ServiceProducers {
           metaStoreManagerFactory.getOrCreateEntityCache(
               callContext.getRealmContext(), callContext.getRealmConfig());
       return new Resolver(
-          diagnostics,
-          callContext.getPolarisCallContext(),
-          polarisMetaStoreManager,
-          securityContext,
-          entityCache,
-          referenceCatalogName);
+          diagnostics, polarisMetaStoreManager, securityContext, entityCache, referenceCatalogName);
     };
   }
 

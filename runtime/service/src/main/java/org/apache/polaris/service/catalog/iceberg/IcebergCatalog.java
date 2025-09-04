@@ -87,7 +87,6 @@ import org.apache.iceberg.view.ViewMetadataParser;
 import org.apache.iceberg.view.ViewOperations;
 import org.apache.iceberg.view.ViewProperties;
 import org.apache.iceberg.view.ViewUtil;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.admin.model.StorageConfigInfo;
 import org.apache.polaris.core.catalog.PolarisCatalogHelpers;
@@ -801,9 +800,7 @@ public class IcebergCatalog extends BaseMetastoreViewCatalog
   @Override
   public boolean dropView(TableIdentifier identifier) {
     boolean purge =
-        callContext
-            .getRealmConfig()
-            .getConfig(FeatureConfiguration.PURGE_VIEW_METADATA_ON_DROP, catalogEntity);
+        realmConfig.getConfig(FeatureConfiguration.PURGE_VIEW_METADATA_ON_DROP, catalogEntity);
 
     return dropTableLike(PolarisEntitySubType.ICEBERG_VIEW, identifier, Map.of(), purge)
         .isSuccess();
@@ -2106,10 +2103,6 @@ public class IcebergCatalog extends BaseMetastoreViewCatalog
     // ensure the new fileIO is closed when the catalog is closed
     closeableGroup.addCloseable(fileIO);
     return fileIO;
-  }
-
-  private PolarisCallContext getCurrentPolarisContext() {
-    return callContext.getPolarisCallContext();
   }
 
   private PolarisMetaStoreManager getMetaStoreManager() {
