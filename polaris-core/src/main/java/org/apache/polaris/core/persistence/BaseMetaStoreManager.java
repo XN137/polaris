@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisEntityConstants;
 import org.apache.polaris.core.entity.PolarisEntitySubType;
@@ -51,18 +52,26 @@ public abstract class BaseMetaStoreManager<T extends BasePersistence>
   }
 
   private final PolarisDiagnostics diagnostics;
+  private final RealmContext realmContext;
+  private final RealmConfig realmConfig;
 
-  protected BaseMetaStoreManager(PolarisDiagnostics diagnostics) {
+  protected BaseMetaStoreManager(
+      PolarisDiagnostics diagnostics, RealmContext realmContext, RealmConfig realmConfig) {
     this.diagnostics = diagnostics;
+    this.realmContext = realmContext;
+    this.realmConfig = realmConfig;
   }
 
   protected PolarisDiagnostics getDiagnostics() {
     return diagnostics;
   }
 
+  protected RealmContext getRealmContext() {
+    return realmContext;
+  }
+
   protected RealmConfig getRealmConfig() {
-    // FIXME:
-    return null;
+    return realmConfig;
   }
 
   protected abstract T getMetaStore();

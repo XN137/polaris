@@ -34,6 +34,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.polaris.core.config.PolarisConfigurationStore;
+import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.config.RealmConfigImpl;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.AsyncTaskType;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisEntity;
@@ -63,6 +67,9 @@ import org.threeten.extra.MutableClock;
 public abstract class BasePolarisMetaStoreManagerTest {
 
   protected final MutableClock clock = MutableClock.of(Instant.now(), ZoneOffset.UTC);
+  protected final RealmContext realmContext = () -> "testRealm";
+  protected final RealmConfig realmConfig =
+      new RealmConfigImpl(new PolarisConfigurationStore() {}, realmContext);
 
   private PolarisTestMetaStoreManager polarisTestMetaStoreManager;
 

@@ -29,7 +29,6 @@ import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.admin.model.GrantPrincipalRoleRequest;
 import org.apache.polaris.core.admin.model.Principal;
 import org.apache.polaris.core.admin.model.PrincipalRole;
@@ -103,8 +102,6 @@ public class PolarisIntegrationTestFixture {
             .toCompletableFuture()
             .join();
 
-    PolarisCallContext polarisContext =
-        new PolarisCallContext(realmContext, helper.configurationStore);
     PolarisMetaStoreManager metaStoreManager =
         helper.metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
     PrincipalEntity principal = metaStoreManager.findRootPrincipal().orElseThrow();

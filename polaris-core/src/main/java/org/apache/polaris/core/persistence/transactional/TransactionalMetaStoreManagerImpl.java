@@ -18,6 +18,7 @@
  */
 package org.apache.polaris.core.persistence.transactional;
 
+import com.google.common.base.Suppliers;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.time.Clock;
@@ -30,8 +31,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.polaris.core.PolarisDiagnostics;
+import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.AsyncTaskType;
 import org.apache.polaris.core.entity.EntityNameLookupRecord;
 import org.apache.polaris.core.entity.LocationBasedEntity;
@@ -90,16 +94,22 @@ public class TransactionalMetaStoreManagerImpl
       LoggerFactory.getLogger(TransactionalMetaStoreManagerImpl.class);
 
   private final Clock clock;
+  private final Supplier<TransactionalPersistence> metaStoreSupplier;
 
-  public TransactionalMetaStoreManagerImpl(Clock clock, PolarisDiagnostics diagnostics) {
-    super(diagnostics);
+  public TransactionalMetaStoreManagerImpl(
+      Clock clock,
+      PolarisDiagnostics diagnostics,
+      RealmContext realmContext,
+      RealmConfig realmConfig,
+      Supplier<TransactionalPersistence> metaStoreSupplier) {
+    super(diagnostics, realmContext, realmConfig);
     this.clock = clock;
+    this.metaStoreSupplier = Suppliers.memoize(metaStoreSupplier::get);
   }
 
   @Override
   protected TransactionalPersistence getMetaStore() {
-    // FIXME
-    return null;
+    return metaStoreSupplier.get();
   }
 
   /**

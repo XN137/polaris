@@ -39,7 +39,9 @@ public class ResolverTest extends BaseResolverTest {
       TreeMapTransactionalPersistenceImpl metaStore =
           new TreeMapTransactionalPersistenceImpl(
               diagServices, store, Mockito.mock(), RANDOM_SECRETS);
-      metaStoreManager = new TransactionalMetaStoreManagerImpl(clock, diagServices);
+      metaStoreManager =
+          new TransactionalMetaStoreManagerImpl(
+              clock, diagServices, realmContext, realmConfig, () -> metaStore);
     }
     return metaStoreManager;
   }

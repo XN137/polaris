@@ -26,7 +26,6 @@ import java.util.Optional;
 import javax.sql.DataSource;
 import org.apache.polaris.core.PolarisDefaultDiagServiceImpl;
 import org.apache.polaris.core.PolarisDiagnostics;
-import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.persistence.AtomicOperationMetaStoreManager;
 import org.apache.polaris.core.persistence.BasePolarisMetaStoreManagerTest;
 import org.apache.polaris.core.persistence.PolarisTestMetaStoreManager;
@@ -60,7 +59,6 @@ public class AtomicMetastoreManagerWithJdbcBasePersistenceImplTest
           e);
     }
 
-    RealmContext realmContext = () -> "REALM";
     JdbcBasePersistenceImpl basePersistence =
         new JdbcBasePersistenceImpl(
             diagServices,
@@ -70,7 +68,8 @@ public class AtomicMetastoreManagerWithJdbcBasePersistenceImplTest
             realmContext.getRealmIdentifier(),
             schemaVersion);
     AtomicOperationMetaStoreManager metaStoreManager =
-        new AtomicOperationMetaStoreManager(clock, diagServices);
+        new AtomicOperationMetaStoreManager(
+            clock, diagServices, realmContext, realmConfig, () -> basePersistence);
     return new PolarisTestMetaStoreManager(metaStoreManager);
   }
 

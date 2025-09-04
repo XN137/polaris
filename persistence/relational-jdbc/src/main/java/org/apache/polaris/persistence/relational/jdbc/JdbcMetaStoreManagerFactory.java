@@ -86,8 +86,9 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
     }
   }
 
-  protected PolarisMetaStoreManager createNewMetaStoreManager() {
-    return new AtomicOperationMetaStoreManager(clock, diagnostics);
+  protected PolarisMetaStoreManager createNewMetaStoreManager(RealmContext realmContext) {
+    return new AtomicOperationMetaStoreManager(
+        clock, diagnostics, realmContext, null, () -> getOrCreateSession(realmContext));
   }
 
   private void initializeForRealm(
@@ -110,7 +111,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
                 realmId,
                 schemaVersion));
 
-    PolarisMetaStoreManager metaStoreManager = createNewMetaStoreManager();
+    PolarisMetaStoreManager metaStoreManager = createNewMetaStoreManager(realmContext);
     metaStoreManagerMap.put(realmId, metaStoreManager);
   }
 
@@ -199,13 +200,12 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
     return metaStoreManagerMap.get(realmContext.getRealmIdentifier());
   }
 
-  @Override
-  public synchronized BasePersistence getOrCreateSession(RealmContext realmContext) {
+  protected synchronized BasePersistence getOrCreateSession(RealmContext realmContext) {
     if (!sessionSupplierMap.containsKey(realmContext.getRealmIdentifier())) {
       DatasourceOperations datasourceOperations = getDatasourceOperations();
       initializeForRealm(datasourceOperations, realmContext, null);
+      checkPolarisServiceBootstrappedForRealm(realmContext);
     }
-    checkPolarisServiceBootstrappedForRealm(realmContext);
     return sessionSupplierMap.get(realmContext.getRealmIdentifier()).get();
   }
 
@@ -232,7 +232,6 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
     // CallContext may not have been resolved yet.
     PolarisMetaStoreManager metaStoreManager =
         metaStoreManagerMap.get(realmContext.getRealmIdentifier());
-    PolarisCallContext polarisContext = new PolarisCallContext(realmContext);
 
     Optional<PrincipalEntity> preliminaryRootPrincipal = metaStoreManager.findRootPrincipal();
     if (preliminaryRootPrincipal.isPresent()) {
