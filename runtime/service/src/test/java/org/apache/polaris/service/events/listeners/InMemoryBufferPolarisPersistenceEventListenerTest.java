@@ -97,7 +97,7 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
     // Push clock forwards to flush the buffer
     clock.add(CONFIG_TIME_TO_FLUSH_IN_MS.multipliedBy(2));
     eventListener.checkAndFlushBufferIfNecessary(realmId, false);
-    verify(polarisMetaStoreManager, times(1)).writeEvents(any(), eq(eventsAddedToBuffer));
+    verify(polarisMetaStoreManager, times(1)).writeEvents(eq(eventsAddedToBuffer));
   }
 
   @Test
@@ -116,8 +116,8 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
     // Calling checkAndFlushBufferIfNecessary manually to replicate the behavior of the executor
     // service
     eventListener.checkAndFlushBufferIfNecessary(realm1, false);
-    verify(polarisMetaStoreManager, times(1)).writeEvents(any(), eq(eventsAddedToBuffer));
-    verify(polarisMetaStoreManager, times(0)).writeEvents(any(), eq(eventsAddedToBufferRealm2));
+    verify(polarisMetaStoreManager, times(1)).writeEvents(eq(eventsAddedToBuffer));
+    verify(polarisMetaStoreManager, times(0)).writeEvents(eq(eventsAddedToBufferRealm2));
   }
 
   @Test
@@ -158,7 +158,7 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
           "Exceptions occurred in concurrent checkAndFlushBufferIfNecessary: ", exceptions.peek());
     }
     // Only one flush should occur
-    verify(polarisMetaStoreManager, times(1)).writeEvents(any(), eq(events));
+    verify(polarisMetaStoreManager, times(1)).writeEvents(eq(events));
   }
 
   @Execution(ExecutionMode.SAME_THREAD)
@@ -209,8 +209,7 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
             () -> {
               clock.add(500, ChronoUnit.MILLIS);
               ArgumentCaptor<List<PolarisEvent>> eventsCaptor = ArgumentCaptor.captor();
-              verify(polarisMetaStoreManager, atLeastOnce())
-                  .writeEvents(any(), eventsCaptor.capture());
+              verify(polarisMetaStoreManager, atLeastOnce()).writeEvents(eventsCaptor.capture());
               List<PolarisEvent> eventsProcessed =
                   eventsCaptor.getAllValues().stream().flatMap(List::stream).toList();
               if (eventsProcessed.size() > 100) {
@@ -219,7 +218,7 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
               assertThat(eventsProcessed.size()).isGreaterThanOrEqualTo(allEvents.size());
             });
     ArgumentCaptor<List<PolarisEvent>> eventsCaptor = ArgumentCaptor.captor();
-    verify(polarisMetaStoreManager, atLeastOnce()).writeEvents(any(), eventsCaptor.capture());
+    verify(polarisMetaStoreManager, atLeastOnce()).writeEvents(eventsCaptor.capture());
     List<PolarisEvent> seenEvents =
         eventsCaptor.getAllValues().stream().flatMap(List::stream).toList();
     assertThat(seenEvents.size()).isEqualTo(allEvents.size());
@@ -290,7 +289,7 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
     for (PolarisEvent realmEvent : realmEvents) {
       eventListener.processEvent(realmEvent);
     }
-    verify(polarisMetaStoreManager, times(0)).writeEvents(any(), any());
+    verify(polarisMetaStoreManager, times(0)).writeEvents(any());
     return realmEvents;
   }
 

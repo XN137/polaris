@@ -19,6 +19,7 @@
 package org.apache.polaris.core.persistence;
 
 import jakarta.annotation.Nonnull;
+import java.util.List;
 import java.util.Map;
 import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
@@ -26,11 +27,12 @@ import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisEntityConstants;
 import org.apache.polaris.core.entity.PolarisEntitySubType;
 import org.apache.polaris.core.entity.PolarisEntityType;
+import org.apache.polaris.core.entity.PolarisEvent;
 import org.apache.polaris.core.persistence.dao.entity.GenerateEntityIdResult;
 import org.apache.polaris.core.storage.PolarisStorageConfigurationInfo;
 
 /** Shared basic PolarisMetaStoreManager logic for transactional and non-transactional impls. */
-public abstract class BaseMetaStoreManager implements PolarisMetaStoreManager {
+public abstract class BaseMetaStoreManager<T extends BasePersistence> implements PolarisMetaStoreManager {
 
   public static PolarisStorageConfigurationInfo extractStorageConfiguration(
       @Nonnull PolarisDiagnostics diagnostics, PolarisBaseEntity reloadedEntity) {
@@ -56,6 +58,8 @@ public abstract class BaseMetaStoreManager implements PolarisMetaStoreManager {
   protected PolarisDiagnostics getDiagnostics() {
     return diagnostics;
   }
+
+  protected abstract T getMetaStore();
 
   /**
    * Performs basic validation of expected invariants on a new entity, then returns the entity with
@@ -167,9 +171,15 @@ public abstract class BaseMetaStoreManager implements PolarisMetaStoreManager {
   /** {@inheritDoc} */
   @Override
   public @Nonnull GenerateEntityIdResult generateNewEntityId(@Nonnull PolarisCallContext callCtx) {
-    // get meta store we should be using
-    BasePersistence ms = callCtx.getMetaStore();
+    BasePersistence ms = getMetaStore();
 
     return new GenerateEntityIdResult(ms.generateNewId(callCtx));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void writeEvents(@Nonnull List<PolarisEvent> polarisEvents) {
+    BasePersistence ms = getMetaStore();
+    ms.writeEvents(polarisEvents);
   }
 }
