@@ -70,6 +70,8 @@ public abstract class BasePolarisMetaStoreManagerTest {
   @BeforeEach
   public void setupPolariMetaStoreManager() {
     this.polarisTestMetaStoreManager = createPolarisTestMetaStoreManager();
+    // refresh clock to be >= PolarisTestMetaStoreManager.testStartTime
+    clock.setInstant(Instant.now());
   }
 
   protected abstract PolarisTestMetaStoreManager createPolarisTestMetaStoreManager();
