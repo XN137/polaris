@@ -18,8 +18,6 @@
  */
 package org.apache.polaris.core.storage.cache;
 
-import static org.apache.polaris.core.persistence.PrincipalSecretsGenerator.RANDOM_SECRETS;
-
 import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,9 +37,6 @@ import org.apache.polaris.core.entity.PolarisEntityType;
 import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.dao.entity.BaseResult;
 import org.apache.polaris.core.persistence.dao.entity.ScopedCredentialsResult;
-import org.apache.polaris.core.persistence.transactional.TransactionalPersistence;
-import org.apache.polaris.core.persistence.transactional.TreeMapMetaStore;
-import org.apache.polaris.core.persistence.transactional.TreeMapTransactionalPersistenceImpl;
 import org.apache.polaris.core.storage.AccessConfig;
 import org.apache.polaris.core.storage.StorageAccessProperty;
 import org.assertj.core.api.Assertions;
@@ -58,12 +53,6 @@ public class StorageCredentialCacheTest {
   private StorageCredentialCache storageCredentialCache;
 
   public StorageCredentialCacheTest() {
-    // the entity store, use treemap implementation
-    TreeMapMetaStore store = new TreeMapMetaStore(diagServices);
-    // to interact with the metastore
-    TransactionalPersistence metaStore =
-        new TreeMapTransactionalPersistenceImpl(
-            diagServices, store, Mockito.mock(), RANDOM_SECRETS);
     callCtx = new PolarisCallContext(() -> "testRealm");
     storageCredentialCacheConfig = () -> 10_000;
     metaStoreManager = Mockito.mock(PolarisMetaStoreManager.class);

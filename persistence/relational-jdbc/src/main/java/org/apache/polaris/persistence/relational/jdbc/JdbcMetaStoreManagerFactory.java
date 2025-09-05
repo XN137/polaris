@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import javax.sql.DataSource;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.RealmContext;
@@ -178,7 +177,6 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
       RealmContext realmContext = () -> realm;
       PolarisMetaStoreManager metaStoreManager = getOrCreateMetaStoreManager(realmContext);
 
-      PolarisCallContext callContext = new PolarisCallContext(realmContext);
       BaseResult result = metaStoreManager.purge();
       results.put(realm, result);
 
@@ -261,7 +259,6 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
   private void checkPolarisServiceBootstrappedForRealm(RealmContext realmContext) {
     PolarisMetaStoreManager metaStoreManager =
         metaStoreManagerMap.get(realmContext.getRealmIdentifier());
-    PolarisCallContext polarisContext = new PolarisCallContext(realmContext);
 
     Optional<PrincipalEntity> rootPrincipal = metaStoreManager.findRootPrincipal();
     if (rootPrincipal.isEmpty()) {
