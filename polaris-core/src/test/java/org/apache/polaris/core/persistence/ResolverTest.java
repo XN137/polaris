@@ -58,7 +58,7 @@ public class ResolverTest extends BaseResolverTest {
   protected PolarisTestMetaStoreManager tm() {
     if (tm == null) {
       // bootstrap the meta store with our test schema
-      tm = new PolarisTestMetaStoreManager(metaStoreManager(), callCtx());
+      tm = new PolarisTestMetaStoreManager(clock, metaStoreManager(), callCtx());
     }
     return tm;
   }
