@@ -76,7 +76,7 @@ public abstract class AtomicMetastoreManagerWithJdbcBasePersistenceImplTest
     AtomicOperationMetaStoreManager metaStoreManager =
         new AtomicOperationMetaStoreManager(clock, diagServices);
     PolarisCallContext callCtx = new PolarisCallContext(realmContext, basePersistence);
-    return new PolarisTestMetaStoreManager(metaStoreManager, callCtx);
+    return new PolarisTestMetaStoreManager(clock, metaStoreManager, callCtx);
   }
 
   private static class H2JdbcConfiguration implements RelationalJdbcConfiguration {

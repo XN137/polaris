@@ -29,7 +29,6 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.ws.rs.core.SecurityContext;
 import java.security.Principal;
 import java.time.Clock;
-import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
@@ -294,7 +293,7 @@ public record TestServices(
               callContext.getPolarisCallContext(),
               new PrincipalEntity.Builder()
                   .setName("test-principal")
-                  .setCreateTimestamp(Instant.now().toEpochMilli())
+                  .setCreateTimestamp(clock.millis())
                   .setCredentialRotationRequiredState()
                   .build());
       PolarisPrincipal principal = PolarisPrincipal.of(createdPrincipal.getPrincipal(), Set.of());

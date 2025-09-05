@@ -194,13 +194,13 @@ public abstract class BasePolarisMetaStoreManagerTest {
     Assertions.assertThat(createdEntities).isNull();
   }
 
-  private static TaskEntity createTask(String taskName, long id) {
+  private TaskEntity createTask(String taskName, long id) {
     return new TaskEntity.Builder()
         .setName(taskName)
         .withData("data")
         .setId(id)
         .withTaskType(AsyncTaskType.MANIFEST_FILE_CLEANUP)
-        .setCreateTimestamp(Instant.now().toEpochMilli())
+        .setCreateTimestamp(clock.millis())
         .build();
   }
 
