@@ -574,7 +574,10 @@ public class Resolver {
             if (this.cache != null) {
               refreshedResolvedEntity =
                   this.cache.getAndRefreshIfNeeded(
-                      entity, versions.getEntityVersion(), versions.getGrantRecordsVersion());
+                      polarisMetaStoreManager,
+                      entity,
+                      versions.getEntityVersion(),
+                      versions.getGrantRecordsVersion());
             } else {
               ResolvedEntityResult result =
                   this.polarisMetaStoreManager.refreshResolvedEntity(
@@ -976,6 +979,7 @@ public class Resolver {
     if (this.cache != null) {
       EntityCacheLookupResult lookupResult =
           this.cache.getOrLoadEntityByName(
+              polarisMetaStoreManager,
               new EntityCacheByNameKey(catalogId, parentId, entityType, entityName));
 
       // if not found
@@ -1033,7 +1037,7 @@ public class Resolver {
     if (this.cache != null) {
       // get or load by name
       EntityCacheLookupResult lookupResult =
-          this.cache.getOrLoadEntityById(catalogId, entityId, entityType);
+          this.cache.getOrLoadEntityById(polarisMetaStoreManager, catalogId, entityId, entityType);
 
       // if not found, return null
       if (lookupResult == null) {

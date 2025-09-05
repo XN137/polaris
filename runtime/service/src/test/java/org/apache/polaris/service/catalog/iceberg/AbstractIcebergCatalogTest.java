@@ -258,9 +258,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
   @Nullable
   protected abstract EntityCache createEntityCache(
-      PolarisDiagnostics diagnostics,
-      RealmConfig realmConfig,
-      PolarisMetaStoreManager metaStoreManager);
+      PolarisDiagnostics diagnostics, RealmConfig realmConfig);
 
   protected void bootstrapRealm(String realmName) {}
 
@@ -282,7 +280,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     polarisContext = new PolarisCallContext(realmContext, configurationStore);
     realmConfig = polarisContext.getRealmConfig();
 
-    EntityCache entityCache = createEntityCache(diagServices, realmConfig, metaStoreManager);
+    EntityCache entityCache = createEntityCache(diagServices, realmConfig);
     resolverFactory =
         (callContext, securityContext, referenceCatalogName) ->
             new Resolver(

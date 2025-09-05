@@ -22,6 +22,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisEntityType;
+import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.ResolvedPolarisEntity;
 
 /** Interface for a Polaris entity cache */
@@ -46,6 +47,7 @@ public interface EntityCache {
    */
   @Nullable
   ResolvedPolarisEntity getAndRefreshIfNeeded(
+      @Nonnull PolarisMetaStoreManager metaStoreManager,
       @Nonnull PolarisBaseEntity entityToValidate,
       int entityMinVersion,
       int entityGrantRecordsMinVersion);
@@ -60,7 +62,10 @@ public interface EntityCache {
    */
   @Nullable
   EntityCacheLookupResult getOrLoadEntityById(
-      long entityCatalogId, long entityId, PolarisEntityType entityType);
+      @Nonnull PolarisMetaStoreManager metaStoreManager,
+      long entityCatalogId,
+      long entityId,
+      PolarisEntityType entityType);
 
   /**
    * Get the specified entity by name and load it if it is not found.
@@ -70,5 +75,7 @@ public interface EntityCache {
    *     entity, either as found in the cache or loaded from the backend
    */
   @Nullable
-  EntityCacheLookupResult getOrLoadEntityByName(@Nonnull EntityCacheByNameKey entityNameKey);
+  EntityCacheLookupResult getOrLoadEntityByName(
+      @Nonnull PolarisMetaStoreManager metaStoreManager,
+      @Nonnull EntityCacheByNameKey entityNameKey);
 }

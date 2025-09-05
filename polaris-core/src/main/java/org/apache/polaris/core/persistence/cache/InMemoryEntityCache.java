@@ -43,19 +43,12 @@ public class InMemoryEntityCache implements EntityCache {
 
   private EntityCacheMode cacheMode;
   private final PolarisDiagnostics diagnostics;
-  private final PolarisMetaStoreManager polarisMetaStoreManager;
   private final Cache<Long, ResolvedPolarisEntity> byId;
   private final AbstractMap<EntityCacheByNameKey, ResolvedPolarisEntity> byName;
 
-  /**
-   * Constructor. Cache can be private or shared
-   *
-   * @param polarisMetaStoreManager the meta store manager implementation
-   */
+  /** Constructor. Cache can be private or shared */
   public InMemoryEntityCache(
-      @Nonnull PolarisDiagnostics diagnostics,
-      @Nonnull RealmConfig realmConfig,
-      @Nonnull PolarisMetaStoreManager polarisMetaStoreManager) {
+      @Nonnull PolarisDiagnostics diagnostics, @Nonnull RealmConfig realmConfig) {
     this.diagnostics = diagnostics;
 
     // by name cache
@@ -89,9 +82,6 @@ public class InMemoryEntityCache implements EntityCache {
 
     // use a Caffeine cache to purge entries when those have not been used for a long time.
     this.byId = byIdBuilder.build();
-
-    // remember the meta store manager
-    this.polarisMetaStoreManager = polarisMetaStoreManager;
 
     // enabled by default
     this.cacheMode = EntityCacheMode.ENABLE;
@@ -261,6 +251,7 @@ public class InMemoryEntityCache implements EntityCache {
    */
   @Override
   public @Nullable ResolvedPolarisEntity getAndRefreshIfNeeded(
+      @Nonnull PolarisMetaStoreManager metaStoreManager,
       @Nonnull PolarisBaseEntity entityToValidate,
       int entityMinVersion,
       int entityGrantRecordsMinVersion) {
@@ -300,8 +291,7 @@ public class InMemoryEntityCache implements EntityCache {
       if (existingCacheEntry == null) {
         // try to load it
         refreshedCacheEntry =
-            this.polarisMetaStoreManager.loadResolvedEntityById(
-                entityCatalogId, entityId, entityType);
+            metaStoreManager.loadResolvedEntityById(entityCatalogId, entityId, entityType);
         if (refreshedCacheEntry.isSuccess()) {
           entity = refreshedCacheEntry.getEntity();
           grantRecords = refreshedCacheEntry.getEntityGrantRecords();
@@ -312,7 +302,7 @@ public class InMemoryEntityCache implements EntityCache {
       } else {
         // refresh it
         refreshedCacheEntry =
-            this.polarisMetaStoreManager.refreshResolvedEntity(
+            metaStoreManager.refreshResolvedEntity(
                 existingCacheEntry.getEntity().getEntityVersion(),
                 existingCacheEntry.getEntity().getGrantRecordsVersion(),
                 entityType,
@@ -366,7 +356,10 @@ public class InMemoryEntityCache implements EntityCache {
    */
   @Override
   public @Nullable EntityCacheLookupResult getOrLoadEntityById(
-      long entityCatalogId, long entityId, PolarisEntityType entityType) {
+      @Nonnull PolarisMetaStoreManager metaStoreManager,
+      long entityCatalogId,
+      long entityId,
+      PolarisEntityType entityType) {
 
     // if it exists, we are set
     ResolvedPolarisEntity entry = this.getEntityById(entityId);
@@ -379,7 +372,7 @@ public class InMemoryEntityCache implements EntityCache {
 
       // load it
       ResolvedEntityResult result =
-          polarisMetaStoreManager.loadResolvedEntityById(entityCatalogId, entityId, entityType);
+          metaStoreManager.loadResolvedEntityById(entityCatalogId, entityId, entityType);
 
       // not found, exit
       if (!result.isSuccess()) {
@@ -416,6 +409,7 @@ public class InMemoryEntityCache implements EntityCache {
    */
   @Override
   public @Nullable EntityCacheLookupResult getOrLoadEntityByName(
+      @Nonnull PolarisMetaStoreManager metaStoreManager,
       @Nonnull EntityCacheByNameKey entityNameKey) {
 
     // if it exists, we are set
@@ -429,7 +423,7 @@ public class InMemoryEntityCache implements EntityCache {
 
       // load it
       ResolvedEntityResult result =
-          polarisMetaStoreManager.loadResolvedEntityByName(
+          metaStoreManager.loadResolvedEntityByName(
               entityNameKey.getCatalogId(),
               entityNameKey.getParentId(),
               entityNameKey.getType(),
