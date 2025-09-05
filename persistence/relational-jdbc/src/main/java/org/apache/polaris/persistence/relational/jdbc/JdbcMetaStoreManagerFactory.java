@@ -64,7 +64,6 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcMetaStoreManagerFactory.class);
 
-  final Map<String, PolarisMetaStoreManager> metaStoreManagerMap = new HashMap<>();
   final Map<String, EntityCache> entityCacheMap = new HashMap<>();
   final Map<String, Supplier<BasePersistence>> sessionSupplierMap = new HashMap<>();
 
@@ -109,9 +108,6 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
                 storageIntegrationProvider,
                 realmId,
                 schemaVersion));
-
-    PolarisMetaStoreManager metaStoreManager = createNewMetaStoreManager(realmContext);
-    metaStoreManagerMap.put(realmId, metaStoreManager);
   }
 
   public DatasourceOperations getDatasourceOperations() {
@@ -146,7 +142,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
 
     for (String realm : bootstrapOptions.realms()) {
       RealmContext realmContext = () -> realm;
-      if (!metaStoreManagerMap.containsKey(realm)) {
+      if (!sessionSupplierMap.containsKey(realm)) {
         DatasourceOperations datasourceOperations = getDatasourceOperations();
         try {
           // Run the set-up script to create the tables.
@@ -181,7 +177,6 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
       results.put(realm, result);
 
       sessionSupplierMap.remove(realm);
-      metaStoreManagerMap.remove(realm);
     }
 
     return Map.copyOf(results);
@@ -190,12 +185,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
   @Override
   public synchronized PolarisMetaStoreManager getOrCreateMetaStoreManager(
       RealmContext realmContext) {
-    if (!metaStoreManagerMap.containsKey(realmContext.getRealmIdentifier())) {
-      DatasourceOperations datasourceOperations = getDatasourceOperations();
-      initializeForRealm(datasourceOperations, realmContext, null);
-      checkPolarisServiceBootstrappedForRealm(realmContext);
-    }
-    return metaStoreManagerMap.get(realmContext.getRealmIdentifier());
+    return createNewMetaStoreManager(realmContext);
   }
 
   protected synchronized BasePersistence createPersistenceSession(RealmContext realmContext) {
@@ -223,8 +213,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
       RealmContext realmContext) {
     // While bootstrapping we need to act as a fake privileged context since the real
     // CallContext may not have been resolved yet.
-    PolarisMetaStoreManager metaStoreManager =
-        metaStoreManagerMap.get(realmContext.getRealmIdentifier());
+    PolarisMetaStoreManager metaStoreManager = createNewMetaStoreManager(realmContext);
 
     Optional<PrincipalEntity> preliminaryRootPrincipal = metaStoreManager.findRootPrincipal();
     if (preliminaryRootPrincipal.isPresent()) {
@@ -252,8 +241,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
    * entities
    */
   private void checkPolarisServiceBootstrappedForRealm(RealmContext realmContext) {
-    PolarisMetaStoreManager metaStoreManager =
-        metaStoreManagerMap.get(realmContext.getRealmIdentifier());
+    PolarisMetaStoreManager metaStoreManager = createNewMetaStoreManager(realmContext);
 
     Optional<PrincipalEntity> rootPrincipal = metaStoreManager.findRootPrincipal();
     if (rootPrincipal.isEmpty()) {

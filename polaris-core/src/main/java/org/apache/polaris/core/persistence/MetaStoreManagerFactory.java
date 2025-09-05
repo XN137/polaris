@@ -30,6 +30,7 @@ import org.apache.polaris.core.persistence.dao.entity.PrincipalSecretsResult;
 /** Configuration interface for configuring the {@link PolarisMetaStoreManager}. */
 public interface MetaStoreManagerFactory {
 
+  // FIXME: remove "getOr" prefix as this always creates a new instance
   PolarisMetaStoreManager getOrCreateMetaStoreManager(RealmContext realmContext);
 
   EntityCache getOrCreateEntityCache(RealmContext realmContext, RealmConfig realmConfig);
