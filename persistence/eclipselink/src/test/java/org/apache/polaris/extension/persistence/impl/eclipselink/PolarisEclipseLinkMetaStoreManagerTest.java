@@ -90,7 +90,7 @@ public class PolarisEclipseLinkMetaStoreManagerTest extends BasePolarisMetaStore
     TransactionalMetaStoreManagerImpl metaStoreManager =
         new TransactionalMetaStoreManagerImpl(clock, diagServices);
     PolarisCallContext callCtx = new PolarisCallContext(realmContext, session);
-    return new PolarisTestMetaStoreManager(metaStoreManager, callCtx);
+    return new PolarisTestMetaStoreManager(clock, metaStoreManager, callCtx);
   }
 
   @ParameterizedTest
