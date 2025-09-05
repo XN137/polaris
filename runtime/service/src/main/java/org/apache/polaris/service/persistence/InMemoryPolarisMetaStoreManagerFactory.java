@@ -31,7 +31,6 @@ import java.util.Set;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.persistence.LocalPolarisMetaStoreManagerFactory;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.bootstrap.RootCredentialsSet;
 import org.apache.polaris.core.persistence.dao.entity.PrincipalSecretsResult;
 import org.apache.polaris.core.persistence.transactional.TransactionalPersistence;
@@ -74,16 +73,6 @@ public class InMemoryPolarisMetaStoreManagerFactory
       @Nonnull PolarisDiagnostics diagnostics) {
     return new TreeMapTransactionalPersistenceImpl(
         diagnostics, store, storageIntegration, secretsGenerator(realmContext, rootCredentialsSet));
-  }
-
-  @Override
-  public synchronized PolarisMetaStoreManager getOrCreateMetaStoreManager(
-      RealmContext realmContext) {
-    String realmId = realmContext.getRealmIdentifier();
-    if (!bootstrappedRealms.contains(realmId)) {
-      bootstrapRealmsFromEnvironment(List.of(realmId));
-    }
-    return super.getOrCreateMetaStoreManager(realmContext);
   }
 
   @Override
