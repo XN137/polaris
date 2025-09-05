@@ -19,6 +19,7 @@
 package org.apache.polaris.core.persistence;
 
 import jakarta.annotation.Nonnull;
+import java.time.Clock;
 import java.util.Map;
 import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
@@ -47,10 +48,16 @@ public abstract class BaseMetaStoreManager implements PolarisMetaStoreManager {
     return PolarisStorageConfigurationInfo.deserialize(storageConfigInfoStr);
   }
 
+  private final Clock clock;
   private final PolarisDiagnostics diagnostics;
 
-  protected BaseMetaStoreManager(PolarisDiagnostics diagnostics) {
+  protected BaseMetaStoreManager(Clock clock, PolarisDiagnostics diagnostics) {
+    this.clock = clock;
     this.diagnostics = diagnostics;
+  }
+
+  protected Clock getClock() {
+    return clock;
   }
 
   protected PolarisDiagnostics getDiagnostics() {
@@ -102,14 +109,14 @@ public abstract class BaseMetaStoreManager implements PolarisMetaStoreManager {
             entity);
 
     // creation timestamp must be filled
-    getDiagnostics().check(entity.getCreateTimestamp() != 0, "null_create_timestamp");
+    getDiagnostics().check(entity.getCreateTimestamp() > 0, "invalid_create_timestamp");
 
-    PolarisBaseEntity.Builder entityBuilder = new PolarisBaseEntity.Builder(entity);
-    entityBuilder.lastUpdateTimestamp(entity.getCreateTimestamp());
-    entityBuilder.dropTimestamp(0);
-    entityBuilder.purgeTimestamp(0);
-    entityBuilder.toPurgeTimestamp(0);
-    return entityBuilder.build();
+    return new PolarisBaseEntity.Builder(entity)
+        .lastUpdateTimestamp(entity.getCreateTimestamp())
+        .dropTimestamp(0)
+        .purgeTimestamp(0)
+        .toPurgeTimestamp(0)
+        .build();
   }
 
   /**
@@ -151,17 +158,18 @@ public abstract class BaseMetaStoreManager implements PolarisMetaStoreManager {
 
     // creation timestamp must be filled
     long createTimestamp = entity.getCreateTimestamp();
-    getDiagnostics().check(createTimestamp != 0, "null_create_timestamp", "entity={}", entity);
+    getDiagnostics().check(createTimestamp > 0, "invalid_create_timestamp", "entity={}", entity);
 
+    long updateTimestamp = getClock().millis();
     // ensure time is not moving backward...
-    long now = System.currentTimeMillis();
-    if (now < entity.getCreateTimestamp()) {
-      now = entity.getCreateTimestamp() + 1;
+    if (updateTimestamp < createTimestamp) {
+      updateTimestamp = createTimestamp + 1;
     }
 
-    PolarisBaseEntity.Builder entityBuilder = new PolarisBaseEntity.Builder(entity);
-    entityBuilder.lastUpdateTimestamp(now).entityVersion(entity.getEntityVersion() + 1);
-    return entityBuilder.build();
+    return new PolarisBaseEntity.Builder(entity)
+        .lastUpdateTimestamp(updateTimestamp)
+        .entityVersion(entity.getEntityVersion() + 1)
+        .build();
   }
 
   /** {@inheritDoc} */

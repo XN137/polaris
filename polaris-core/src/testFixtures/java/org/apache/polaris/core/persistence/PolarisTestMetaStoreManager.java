@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Nonnull;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -60,10 +61,8 @@ import org.assertj.core.api.Assertions;
 
 /** Test the Polaris persistence layer */
 public class PolarisTestMetaStoreManager {
-
-  // call context
+  final Clock clock;
   final PolarisCallContext polarisCallContext;
-
   // call metastore manager
   final PolarisMetaStoreManager polarisMetaStoreManager;
 
@@ -78,8 +77,10 @@ public class PolarisTestMetaStoreManager {
 
   // initialize the test
   public PolarisTestMetaStoreManager(
-      PolarisMetaStoreManager polarisMetaStoreManager, PolarisCallContext polarisCallContext) {
-    this(polarisMetaStoreManager, polarisCallContext, System.currentTimeMillis(), true);
+      Clock clock,
+      PolarisMetaStoreManager polarisMetaStoreManager,
+      PolarisCallContext polarisCallContext) {
+    this(clock, polarisMetaStoreManager, polarisCallContext, true);
 
     // bootstrap the Polaris service
     polarisMetaStoreManager.purge(polarisCallContext);
@@ -87,11 +88,12 @@ public class PolarisTestMetaStoreManager {
   }
 
   public PolarisTestMetaStoreManager(
+      Clock clock,
       PolarisMetaStoreManager polarisMetaStoreManager,
       PolarisCallContext polarisCallContext,
-      long testStartTime,
       boolean supportsChangeTracking) {
-    this.testStartTime = testStartTime;
+    this.clock = clock;
+    this.testStartTime = clock.millis();
     this.polarisCallContext = polarisCallContext;
     this.polarisMetaStoreManager = polarisMetaStoreManager;
     this.supportsChangeTracking = supportsChangeTracking;
@@ -419,6 +421,7 @@ public class PolarisTestMetaStoreManager {
             .name(name)
             .internalPropertiesAsMap(
                 Map.of(PolarisEntityConstants.PRINCIPAL_CREDENTIAL_ROTATION_REQUIRED_STATE, "true"))
+            .createTimestamp(clock.millis())
             .build();
 
     CreatePrincipalResult createPrincipalResult =
@@ -661,6 +664,7 @@ public class PolarisTestMetaStoreManager {
             .parentId(parentId)
             .name(name)
             .propertiesAsMap(properties)
+            .createTimestamp(clock.millis())
             .build();
     PolarisBaseEntity entity =
         polarisMetaStoreManager
