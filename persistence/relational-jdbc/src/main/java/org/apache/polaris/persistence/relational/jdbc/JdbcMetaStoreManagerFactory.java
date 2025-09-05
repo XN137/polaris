@@ -87,7 +87,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
 
   protected PolarisMetaStoreManager createNewMetaStoreManager(RealmContext realmContext) {
     return new AtomicOperationMetaStoreManager(
-        clock, diagnostics, realmContext, null, () -> getOrCreateSession(realmContext));
+        clock, diagnostics, realmContext, null, () -> createPersistenceSession(realmContext));
   }
 
   private void initializeForRealm(
@@ -198,7 +198,7 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
     return metaStoreManagerMap.get(realmContext.getRealmIdentifier());
   }
 
-  protected synchronized BasePersistence getOrCreateSession(RealmContext realmContext) {
+  protected synchronized BasePersistence createPersistenceSession(RealmContext realmContext) {
     if (!sessionSupplierMap.containsKey(realmContext.getRealmIdentifier())) {
       DatasourceOperations datasourceOperations = getDatasourceOperations();
       initializeForRealm(datasourceOperations, realmContext, null);

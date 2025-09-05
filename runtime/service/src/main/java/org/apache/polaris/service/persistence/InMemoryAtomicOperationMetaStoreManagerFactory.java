@@ -58,6 +58,10 @@ public class InMemoryAtomicOperationMetaStoreManagerFactory
       RealmContext realmContext,
       RealmConfig realmConfig) {
     return new AtomicOperationMetaStoreManager(
-        clock, diagnostics, realmContext, realmConfig, () -> getOrCreateSession(realmContext));
+        clock,
+        diagnostics,
+        realmContext,
+        realmConfig,
+        () -> createPersistenceSession(realmContext));
   }
 }

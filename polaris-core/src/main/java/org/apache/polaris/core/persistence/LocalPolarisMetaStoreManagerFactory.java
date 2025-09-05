@@ -93,7 +93,11 @@ public abstract class LocalPolarisMetaStoreManagerFactory<StoreType>
       RealmContext realmContext,
       RealmConfig realmConfig) {
     return new TransactionalMetaStoreManagerImpl(
-        clock, diagnostics, realmContext, realmConfig, () -> getOrCreateSession(realmContext));
+        clock,
+        diagnostics,
+        realmContext,
+        realmConfig,
+        () -> createPersistenceSession(realmContext));
   }
 
   private void initializeForRealm(
@@ -155,7 +159,8 @@ public abstract class LocalPolarisMetaStoreManagerFactory<StoreType>
     return metaStoreManagerMap.get(realmContext.getRealmIdentifier());
   }
 
-  protected synchronized TransactionalPersistence getOrCreateSession(RealmContext realmContext) {
+  protected synchronized TransactionalPersistence createPersistenceSession(
+      RealmContext realmContext) {
     if (!sessionSupplierMap.containsKey(realmContext.getRealmIdentifier())) {
       initializeForRealm(realmContext, null);
       checkPolarisServiceBootstrappedForRealm(realmContext);
