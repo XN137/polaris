@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.io.FileIO;
+import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisEntity;
@@ -73,6 +74,7 @@ public class DefaultFileIOFactory implements FileIOFactory {
       @Nonnull Set<PolarisStorageActions> storageActions,
       @Nonnull PolarisResolvedPathWrapper resolvedEntityPath) {
     RealmContext realmContext = callContext.getRealmContext();
+    RealmConfig realmConfig = callContext.getRealmConfig();
     PolarisCredentialVendor credentialVendor =
         metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
 
@@ -84,7 +86,8 @@ public class DefaultFileIOFactory implements FileIOFactory {
         storageInfoEntity.map(
             storageInfo ->
                 FileIOUtil.refreshAccessConfig(
-                    callContext,
+                    realmContext,
+                    realmConfig,
                     storageCredentialCache,
                     credentialVendor,
                     identifier,

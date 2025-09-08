@@ -837,7 +837,8 @@ public class IcebergCatalog extends BaseMetastoreViewCatalog
       return AccessConfig.builder().build();
     }
     return FileIOUtil.refreshAccessConfig(
-        callContext,
+        callContext.getRealmContext(),
+        realmConfig,
         storageCredentialCache,
         getCredentialVendor(),
         tableIdentifier,
