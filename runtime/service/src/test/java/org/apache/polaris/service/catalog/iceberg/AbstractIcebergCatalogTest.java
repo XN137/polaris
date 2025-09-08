@@ -2021,7 +2021,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     TableCleanupTaskHandler handler =
         new TableCleanupTaskHandler(
             Mockito.mock(), clock, metaStoreManagerFactory, taskFileIOSupplier);
-    handler.handleTask(taskEntity, polarisContext);
+    handler.handleTask(realmContext, realmConfig, taskEntity);
     Assertions.assertThat(measured.getNumDeletedFiles()).as("A table was deleted").isGreaterThan(0);
   }
 

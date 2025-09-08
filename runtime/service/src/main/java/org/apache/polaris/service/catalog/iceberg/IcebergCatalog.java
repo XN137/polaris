@@ -432,7 +432,8 @@ public class IcebergCatalog extends BaseMetastoreViewCatalog
           "Scheduled cleanup task {} for table {}",
           dropEntityResult.getCleanupTaskId(),
           tableIdentifier);
-      taskExecutor.addTaskHandlerContext(dropEntityResult.getCleanupTaskId(), callContext);
+      taskExecutor.addTaskHandlerContext(
+          realmContext, realmConfig, dropEntityResult.getCleanupTaskId());
     }
 
     return true;
