@@ -39,6 +39,6 @@ public class PolarisTreeMapMetaStoreManagerTest extends BasePolarisMetaStoreMana
     TransactionalMetaStoreManagerImpl metaStoreManager =
         new TransactionalMetaStoreManagerImpl(clock, diagServices);
     PolarisCallContext callCtx = new PolarisCallContext(() -> "testRealm", metaStore);
-    return new PolarisTestMetaStoreManager(metaStoreManager, callCtx);
+    return new PolarisTestMetaStoreManager(clock, metaStoreManager, callCtx);
   }
 }
