@@ -38,9 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.apache.polaris.core.PolarisCallContext;
-import org.apache.polaris.core.context.CallContext;
-import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisEvent;
 import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
 import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
@@ -57,17 +54,12 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
   private InMemoryBufferPolarisPersistenceEventListener eventListener;
   private PolarisMetaStoreManager polarisMetaStoreManager;
   private MutableClock clock;
-  private CallContext callContext;
 
   private static final int CONFIG_MAX_BUFFER_SIZE = 5;
   private static final Duration CONFIG_TIME_TO_FLUSH_IN_MS = Duration.ofMillis(500);
 
   @BeforeEach
   public void setUp() {
-    callContext = Mockito.mock(CallContext.class);
-    PolarisCallContext polarisCallContext = Mockito.mock(PolarisCallContext.class);
-    when(callContext.getPolarisCallContext()).thenReturn(polarisCallContext);
-
     MetaStoreManagerFactory metaStoreManagerFactory = Mockito.mock(MetaStoreManagerFactory.class);
     polarisMetaStoreManager = Mockito.mock(PolarisMetaStoreManager.class);
     when(metaStoreManagerFactory.getOrCreateMetaStoreManager(any()))
@@ -85,8 +77,6 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
     eventListener =
         new InMemoryBufferPolarisPersistenceEventListener(
             metaStoreManagerFactory, clock, eventListenerConfiguration);
-
-    eventListener.callContext = callContext;
   }
 
   @Test
@@ -108,8 +98,7 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
 
     // Add the last event for realm1 and verify that it did trigger the flush
     PolarisEvent triggeringEvent = createSampleEvent();
-    RealmContext realmContext = () -> realm1;
-    when(callContext.getRealmContext()).thenReturn(realmContext);
+    eventListener.realmContext = () -> realm1;
     eventListener.processEvent(triggeringEvent);
     eventsAddedToBuffer.add(triggeringEvent);
 
@@ -165,7 +154,7 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
   @Test
   public void testProcessEventIsThreadSafe() throws Exception {
     String realmId = "realm1";
-    when(callContext.getRealmContext()).thenReturn(() -> realmId);
+    eventListener.realmContext = () -> realmId;
     int threadCount = 10;
     List<Thread> threads = new ArrayList<>();
     ConcurrentLinkedQueue<Exception> exceptions = new ConcurrentLinkedQueue<>();
@@ -284,8 +273,7 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
     for (int i = 0; i < CONFIG_MAX_BUFFER_SIZE - 1; i++) {
       realmEvents.add(createSampleEvent());
     }
-    RealmContext realmContext = () -> realmId;
-    when(callContext.getRealmContext()).thenReturn(realmContext);
+    eventListener.realmContext = () -> realmId;
     for (PolarisEvent realmEvent : realmEvents) {
       eventListener.processEvent(realmEvent);
     }
