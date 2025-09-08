@@ -40,6 +40,7 @@ import org.apache.polaris.core.admin.model.CatalogProperties;
 import org.apache.polaris.core.admin.model.CreateCatalogRequest;
 import org.apache.polaris.core.admin.model.PolarisCatalog;
 import org.apache.polaris.core.admin.model.StorageConfigInfo;
+import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
@@ -76,6 +77,7 @@ public class FileIOFactoryTest {
 
   private CallContext callContext;
   private RealmContext realmContext;
+  private RealmConfig realmConfig;
   private StsClient stsClient;
   private TestServices testServices;
 
@@ -135,6 +137,7 @@ public class FileIOFactoryTest {
             .build();
 
     callContext = testServices.newCallContext();
+    realmConfig = callContext.getRealmConfig();
   }
 
   @AfterEach
@@ -177,7 +180,8 @@ public class FileIOFactoryTest {
     Assertions.assertThat(tasks).hasSize(1);
     TaskEntity taskEntity = TaskEntity.of(tasks.get(0));
     FileIO fileIO =
-        new TaskFileIOSupplier(testServices.fileIOFactory()).apply(taskEntity, TABLE, callContext);
+        new TaskFileIOSupplier(testServices.fileIOFactory())
+            .apply(realmContext, realmConfig, taskEntity, TABLE);
     Assertions.assertThat(fileIO).isNotNull().isInstanceOf(ExceptionMappingFileIO.class);
     Assertions.assertThat(((ExceptionMappingFileIO) fileIO).getInnerIo())
         .isInstanceOf(InMemoryFileIO.class);

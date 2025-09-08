@@ -237,6 +237,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
   private PolarisMetaStoreManager metaStoreManager;
   private UserSecretsManager userSecretsManager;
   private PolarisCallContext polarisContext;
+  private RealmContext realmContext;
   private RealmConfig realmConfig;
   private PolarisAdminService adminService;
   private ResolverFactory resolverFactory;
@@ -272,7 +273,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
                 testInfo.getTestMethod().map(Method::getName).orElse("test"), System.nanoTime());
     bootstrapRealm(realmName);
 
-    RealmContext realmContext = () -> realmName;
+    realmContext = () -> realmName;
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
     metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
     userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
@@ -1828,7 +1829,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     FileIO fileIO =
         new TaskFileIOSupplier(
                 new DefaultFileIOFactory(storageCredentialCache, metaStoreManagerFactory))
-            .apply(taskEntity, TABLE, polarisContext);
+            .apply(realmContext, realmConfig, taskEntity, TABLE);
     Assertions.assertThat(fileIO).isNotNull().isInstanceOf(ExceptionMappingFileIO.class);
     Assertions.assertThat(((ExceptionMappingFileIO) fileIO).getInnerIo())
         .isInstanceOf(InMemoryFileIO.class);

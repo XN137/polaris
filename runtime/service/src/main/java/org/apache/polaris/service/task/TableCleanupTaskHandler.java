@@ -94,7 +94,11 @@ public class TableCleanupTaskHandler implements TaskHandler {
     // Log a
     // warning and move on
     try (FileIO fileIO =
-        fileIOSupplier.apply(cleanupTask, tableEntity.getTableIdentifier(), callContext)) {
+        fileIOSupplier.apply(
+            callContext.getRealmContext(),
+            callContext.getRealmConfig(),
+            cleanupTask,
+            tableEntity.getTableIdentifier())) {
       if (!TaskUtils.exists(tableEntity.getMetadataLocation(), fileIO)) {
         LOGGER
             .atWarn()
