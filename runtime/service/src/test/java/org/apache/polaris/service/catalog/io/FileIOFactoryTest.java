@@ -40,11 +40,10 @@ import org.apache.polaris.core.admin.model.CatalogProperties;
 import org.apache.polaris.core.admin.model.CreateCatalogRequest;
 import org.apache.polaris.core.admin.model.PolarisCatalog;
 import org.apache.polaris.core.admin.model.StorageConfigInfo;
-import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.TaskEntity;
+import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.pagination.PageToken;
 import org.apache.polaris.service.TestServices;
 import org.apache.polaris.service.catalog.PolarisPassthroughResolutionView;
@@ -75,11 +74,10 @@ public class FileIOFactoryTest {
   public static final String SECRET_ACCESS_KEY = "secret_access_key";
   public static final String SESSION_TOKEN = "session_token";
 
-  private CallContext callContext;
   private RealmContext realmContext;
-  private RealmConfig realmConfig;
   private StsClient stsClient;
   private TestServices testServices;
+  private PolarisMetaStoreManager metaStoreManager;
 
   @BeforeEach
   public void before(TestInfo testInfo) {
@@ -136,8 +134,8 @@ public class FileIOFactoryTest {
             .fileIOFactorySupplier(fileIOFactorySupplier)
             .build();
 
-    callContext = testServices.newCallContext();
-    realmConfig = callContext.getRealmConfig();
+    metaStoreManager =
+        testServices.metaStoreManagerFactory().getOrCreateMetaStoreManager(realmContext);
   }
 
   @AfterEach
@@ -172,16 +170,12 @@ public class FileIOFactoryTest {
     catalog.dropTable(TABLE, true);
 
     List<PolarisBaseEntity> tasks =
-        testServices
-            .metaStoreManagerFactory()
-            .getOrCreateMetaStoreManager(realmContext)
-            .loadTasks("testExecutor", PageToken.fromLimit(1))
-            .getEntities();
+        metaStoreManager.loadTasks("testExecutor", PageToken.fromLimit(1)).getEntities();
     Assertions.assertThat(tasks).hasSize(1);
     TaskEntity taskEntity = TaskEntity.of(tasks.get(0));
     FileIO fileIO =
         new TaskFileIOSupplier(testServices.fileIOFactory())
-            .apply(realmContext, realmConfig, taskEntity, TABLE);
+            .apply(realmContext, testServices.realmConfig(), taskEntity, TABLE);
     Assertions.assertThat(fileIO).isNotNull().isInstanceOf(ExceptionMappingFileIO.class);
     Assertions.assertThat(((ExceptionMappingFileIO) fileIO).getInnerIo())
         .isInstanceOf(InMemoryFileIO.class);
@@ -225,8 +219,10 @@ public class FileIOFactoryTest {
 
     PolarisPassthroughResolutionView passthroughView =
         new PolarisPassthroughResolutionView(
-            callContext,
+            realmContext,
+            services.realmConfig(),
             services.resolutionManifestFactory(),
+            metaStoreManager,
             services.securityContext(),
             CATALOG_NAME);
     IcebergCatalog polarisCatalog =
@@ -235,7 +231,8 @@ public class FileIOFactoryTest {
             services.storageCredentialCache(),
             services.resolverFactory(),
             services.metaStoreManagerFactory().getOrCreateMetaStoreManager(realmContext),
-            callContext,
+            realmContext,
+            services.realmConfig(),
             passthroughView,
             services.securityContext(),
             services.taskExecutor(),

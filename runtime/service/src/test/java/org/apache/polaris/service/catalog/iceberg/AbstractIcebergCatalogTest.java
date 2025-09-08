@@ -87,7 +87,6 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.rest.requests.UpdateTableRequest;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.CharSequenceSet;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.admin.model.AwsStorageConfigInfo;
 import org.apache.polaris.core.admin.model.CreateCatalogRequest;
@@ -99,6 +98,7 @@ import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.PolarisConfigurationStore;
 import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.config.RealmConfigImpl;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
@@ -236,7 +236,6 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
   private String realmName;
   private PolarisMetaStoreManager metaStoreManager;
   private UserSecretsManager userSecretsManager;
-  private PolarisCallContext polarisContext;
   private RealmContext realmContext;
   private RealmConfig realmConfig;
   private PolarisAdminService adminService;
@@ -277,14 +276,17 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
     metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
     userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
-    polarisContext = new PolarisCallContext(realmContext, configurationStore);
-    realmConfig = polarisContext.getRealmConfig();
+    realmConfig = new RealmConfigImpl(configurationStore, realmContext);
 
     EntityCache entityCache = createEntityCache(diagServices, realmConfig);
     resolverFactory =
-        (callContext, securityContext, referenceCatalogName) ->
+        (_realmContext, _realmConfig, _metaStoreManager, securityContext, referenceCatalogName) ->
             new Resolver(
-                diagServices, metaStoreManager, securityContext, entityCache, referenceCatalogName);
+                diagServices,
+                _metaStoreManager,
+                securityContext,
+                entityCache,
+                referenceCatalogName);
     QuarkusMock.installMockForType(resolverFactory, ResolverFactory.class);
 
     resolutionManifestFactory = new ResolutionManifestFactoryImpl(diagServices, resolverFactory);
@@ -302,7 +304,8 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     adminService =
         new PolarisAdminService(
             diagServices,
-            polarisContext,
+            realmContext,
+            realmConfig,
             resolutionManifestFactory,
             metaStoreManager,
             userSecretsManager,
@@ -428,14 +431,20 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
       String catalogName, PolarisMetaStoreManager metaStoreManager, FileIOFactory fileIOFactory) {
     PolarisPassthroughResolutionView passthroughView =
         new PolarisPassthroughResolutionView(
-            polarisContext, resolutionManifestFactory, securityContext, catalogName);
+            realmContext,
+            realmConfig,
+            resolutionManifestFactory,
+            metaStoreManager,
+            securityContext,
+            catalogName);
     TaskExecutor taskExecutor = Mockito.mock(TaskExecutor.class);
     return new IcebergCatalog(
         diagServices,
         storageCredentialCache,
         resolverFactory,
         metaStoreManager,
-        polarisContext,
+        realmContext,
+        realmConfig,
         passthroughView,
         securityContext,
         taskExecutor,
