@@ -156,6 +156,7 @@ public class FileIOFactoryTest {
             Mockito.any(),
             Mockito.any(),
             Mockito.any(),
+            Mockito.any(),
             Mockito.any());
   }
 
@@ -186,6 +187,7 @@ public class FileIOFactoryTest {
     // 3. TaskFileIOSupplier:apply: for clean up metadata files and merge files
     Mockito.verify(testServices.fileIOFactory(), Mockito.times(3))
         .loadFileIO(
+            Mockito.any(),
             Mockito.any(),
             Mockito.any(),
             Mockito.any(),

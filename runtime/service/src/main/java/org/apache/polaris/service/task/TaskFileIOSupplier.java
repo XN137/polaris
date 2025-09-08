@@ -60,6 +60,13 @@ public class TaskFileIOSupplier {
             CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.io.ResolvingFileIO");
 
     return fileIOFactory.loadFileIO(
-        callContext, ioImpl, properties, identifier, locations, storageActions, resolvedPath);
+        callContext.getRealmContext(),
+        callContext.getRealmConfig(),
+        ioImpl,
+        properties,
+        identifier,
+        locations,
+        storageActions,
+        resolvedPath);
   }
 }

@@ -99,7 +99,6 @@ import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.PolarisConfigurationStore;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
@@ -1003,7 +1002,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
     doThrow(new ForbiddenException("Fake failure applying downscoped credentials"))
         .when(fileIOFactory)
-        .loadFileIO(any(), any(), any(), any(), any(), any(), any());
+        .loadFileIO(any(), any(), any(), any(), any(), any(), any(), any());
     Assertions.assertThatThrownBy(() -> catalog.sendNotification(table, request))
         .isInstanceOf(ForbiddenException.class)
         .hasMessageContaining("Fake failure applying downscoped credentials");
@@ -1998,7 +1997,8 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
             new FileIOFactory() {
               @Override
               public FileIO loadFileIO(
-                  @Nonnull CallContext callContext,
+                  @Nonnull RealmContext realmContext,
+                  @Nonnull RealmConfig realmConfig,
                   @Nonnull String ioImplClassName,
                   @Nonnull Map<String, String> properties,
                   @Nonnull TableIdentifier identifier,
@@ -2006,7 +2006,8 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
                   @Nonnull Set<PolarisStorageActions> storageActions,
                   @Nonnull PolarisResolvedPathWrapper resolvedEntityPath) {
                 return measured.loadFileIO(
-                    callContext,
+                    realmContext,
+                    realmConfig,
                     "org.apache.iceberg.inmemory.InMemoryFileIO",
                     Map.of(),
                     TABLE,

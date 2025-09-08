@@ -94,6 +94,7 @@ import org.apache.polaris.core.config.BehaviorChangeConfiguration;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.LocationBasedEntity;
 import org.apache.polaris.core.entity.NamespaceEntity;
@@ -171,6 +172,7 @@ public class IcebergCatalog extends BaseMetastoreViewCatalog
   private final StorageCredentialCache storageCredentialCache;
   private final ResolverFactory resolverFactory;
   private final CallContext callContext;
+  private final RealmContext realmContext;
   private final RealmConfig realmConfig;
   private final PolarisResolutionManifestCatalogView resolvedEntityView;
   private final CatalogEntity catalogEntity;
@@ -212,6 +214,7 @@ public class IcebergCatalog extends BaseMetastoreViewCatalog
     this.storageCredentialCache = storageCredentialCache;
     this.resolverFactory = resolverFactory;
     this.callContext = callContext;
+    this.realmContext = callContext.getRealmContext();
     this.realmConfig = callContext.getRealmConfig();
     this.resolvedEntityView = resolvedEntityView;
     this.catalogEntity =
@@ -837,7 +840,7 @@ public class IcebergCatalog extends BaseMetastoreViewCatalog
       return AccessConfig.builder().build();
     }
     return FileIOUtil.refreshAccessConfig(
-        callContext.getRealmContext(),
+        realmContext,
         realmConfig,
         storageCredentialCache,
         getCredentialVendor(),
@@ -2094,7 +2097,8 @@ public class IcebergCatalog extends BaseMetastoreViewCatalog
     // Reload fileIO based on table specific context
     FileIO fileIO =
         fileIOFactory.loadFileIO(
-            callContext,
+            realmContext,
+            realmConfig,
             ioImplClassName,
             tableProperties,
             identifier,
@@ -2598,7 +2602,14 @@ public class IcebergCatalog extends BaseMetastoreViewCatalog
         new PolarisResolvedPathWrapper(List.of(resolvedCatalogEntity));
     Set<PolarisStorageActions> storageActions = Set.of(PolarisStorageActions.ALL);
     return fileIOFactory.loadFileIO(
-        callContext, ioImpl, properties, identifier, locations, storageActions, resolvedPath);
+        realmContext,
+        realmConfig,
+        ioImpl,
+        properties,
+        identifier,
+        locations,
+        storageActions,
+        resolvedPath);
   }
 
   private int getMaxMetadataRefreshRetries() {
