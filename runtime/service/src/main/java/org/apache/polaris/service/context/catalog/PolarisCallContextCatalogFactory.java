@@ -120,8 +120,7 @@ public class PolarisCallContextCatalogFactory implements CallContextCatalogFacto
 
     catalogProperties.put(CatalogProperties.WAREHOUSE_LOCATION, defaultBaseLocation);
 
-    // TODO: The initialize properties might need to take more from CallContext and the
-    // CatalogEntity.
+    // TODO: The initialize properties might need to take more from the CatalogEntity.
     catalogInstance.initialize(catalogName, catalogProperties);
 
     return catalogInstance;
