@@ -62,7 +62,7 @@ public class InMemoryBufferPolarisPersistenceEventListenerTest {
   public void setUp() {
     MetaStoreManagerFactory metaStoreManagerFactory = Mockito.mock(MetaStoreManagerFactory.class);
     polarisMetaStoreManager = Mockito.mock(PolarisMetaStoreManager.class);
-    when(metaStoreManagerFactory.getOrCreateMetaStoreManager(any()))
+    when(metaStoreManagerFactory.createMetaStoreManager(any(), any()))
         .thenReturn(polarisMetaStoreManager);
 
     InMemoryBufferEventListenerConfiguration eventListenerConfiguration =

@@ -131,7 +131,7 @@ public abstract class LocalPolarisMetaStoreManagerFactory<StoreType>
 
     for (String realm : realms) {
       RealmContext realmContext = () -> realm;
-      PolarisMetaStoreManager metaStoreManager = getOrCreateMetaStoreManager(realmContext);
+      PolarisMetaStoreManager metaStoreManager = createMetaStoreManager(realmContext, null);
 
       BaseResult result = metaStoreManager.purge();
       results.put(realm, result);
@@ -144,9 +144,9 @@ public abstract class LocalPolarisMetaStoreManagerFactory<StoreType>
   }
 
   @Override
-  public synchronized PolarisMetaStoreManager getOrCreateMetaStoreManager(
-      RealmContext realmContext) {
-    return createNewMetaStoreManager(clock, diagnostics, realmContext, null);
+  public synchronized PolarisMetaStoreManager createMetaStoreManager(
+      RealmContext realmContext, RealmConfig realmConfig) {
+    return createNewMetaStoreManager(clock, diagnostics, realmContext, realmConfig);
   }
 
   protected synchronized TransactionalPersistence createPersistenceSession(
@@ -174,7 +174,7 @@ public abstract class LocalPolarisMetaStoreManagerFactory<StoreType>
       RealmContext realmContext) {
     // While bootstrapping we need to act as a fake privileged context since the real
     // CallContext may not have been resolved yet.
-    PolarisMetaStoreManager metaStoreManager = getOrCreateMetaStoreManager(realmContext);
+    PolarisMetaStoreManager metaStoreManager = createMetaStoreManager(realmContext, null);
 
     Optional<PrincipalEntity> preliminaryRootPrincipal = metaStoreManager.findRootPrincipal();
     if (preliminaryRootPrincipal.isPresent()) {
@@ -202,7 +202,7 @@ public abstract class LocalPolarisMetaStoreManagerFactory<StoreType>
    * entities
    */
   private void checkPolarisServiceBootstrappedForRealm(RealmContext realmContext) {
-    PolarisMetaStoreManager metaStoreManager = getOrCreateMetaStoreManager(realmContext);
+    PolarisMetaStoreManager metaStoreManager = createMetaStoreManager(realmContext, null);
 
     Optional<PrincipalEntity> rootPrincipal = metaStoreManager.findRootPrincipal();
     if (rootPrincipal.isEmpty()) {

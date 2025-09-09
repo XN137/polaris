@@ -35,6 +35,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisEvent;
 import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
@@ -60,6 +61,7 @@ public class InMemoryBufferPolarisPersistenceEventListener extends PolarisPersis
   private final int maxBufferSize;
 
   @Inject RealmContext realmContext;
+  @Inject RealmConfig realmConfig;
   @Inject Clock clock;
   @Context SecurityContext securityContext;
   @Context ContainerRequestContext containerRequestContext;
@@ -173,7 +175,7 @@ public class InMemoryBufferPolarisPersistenceEventListener extends PolarisPersis
 
       RealmContext realmContext = () -> realmId;
       PolarisMetaStoreManager metaStoreManager =
-          metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
+          metaStoreManagerFactory.createMetaStoreManager(realmContext, realmConfig);
       metaStoreManager.writeEvents(queue.stream().toList());
 
       if (buffer.get(realmId).size() >= maxBufferSize) {

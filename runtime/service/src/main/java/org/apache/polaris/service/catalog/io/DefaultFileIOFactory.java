@@ -74,7 +74,7 @@ public class DefaultFileIOFactory implements FileIOFactory {
       @Nonnull Set<PolarisStorageActions> storageActions,
       @Nonnull PolarisResolvedPathWrapper resolvedEntityPath) {
     PolarisCredentialVendor credentialVendor =
-        metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
+        metaStoreManagerFactory.createMetaStoreManager(realmContext, realmConfig);
 
     // Get subcoped creds
     properties = new HashMap<>(properties);

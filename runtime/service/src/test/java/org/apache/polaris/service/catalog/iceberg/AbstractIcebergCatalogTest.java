@@ -274,9 +274,9 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
     realmContext = () -> realmName;
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
-    metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
-    userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
     realmConfig = new RealmConfigImpl(configurationStore, realmContext);
+    metaStoreManager = metaStoreManagerFactory.createMetaStoreManager(realmContext, realmConfig);
+    userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
 
     EntityCache entityCache = createEntityCache(diagServices, realmConfig);
     resolverFactory =

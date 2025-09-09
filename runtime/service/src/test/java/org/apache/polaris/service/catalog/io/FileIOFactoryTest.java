@@ -134,8 +134,7 @@ public class FileIOFactoryTest {
             .fileIOFactorySupplier(fileIOFactorySupplier)
             .build();
 
-    metaStoreManager =
-        testServices.metaStoreManagerFactory().getOrCreateMetaStoreManager(realmContext);
+    metaStoreManager = testServices.newMetaStoreManager();
   }
 
   @AfterEach
@@ -230,7 +229,7 @@ public class FileIOFactoryTest {
             services.polarisDiagnostics(),
             services.storageCredentialCache(),
             services.resolverFactory(),
-            services.metaStoreManagerFactory().getOrCreateMetaStoreManager(realmContext),
+            services.newMetaStoreManager(),
             realmContext,
             services.realmConfig(),
             passthroughView,

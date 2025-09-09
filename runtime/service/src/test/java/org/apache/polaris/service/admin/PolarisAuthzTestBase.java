@@ -228,10 +228,10 @@ public abstract class PolarisAuthzTestBase {
     Mockito.when(containerRequestContext.getProperty(Mockito.anyString()))
         .thenReturn("request-id-1");
     QuarkusMock.installMockForType(containerRequestContext, ContainerRequestContext.class);
-    metaStoreManager = managerFactory.getOrCreateMetaStoreManager(realmContext);
-    userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
 
     realmConfig = new RealmConfigImpl(configurationStore, realmContext);
+    metaStoreManager = managerFactory.createMetaStoreManager(realmContext, realmConfig);
+    userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
 
     polarisAuthorizer = new PolarisAuthorizerImpl(realmConfig);
 

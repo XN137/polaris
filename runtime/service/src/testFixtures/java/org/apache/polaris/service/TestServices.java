@@ -117,6 +117,10 @@ public record TestServices(
     }
   }
 
+  public PolarisMetaStoreManager newMetaStoreManager() {
+    return metaStoreManagerFactory.createMetaStoreManager(realmContext, realmConfig);
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -175,7 +179,7 @@ public record TestServices(
       RealmConfig realmConfig = new RealmConfigImpl(configurationStore, realmContext);
 
       PolarisMetaStoreManager metaStoreManager =
-          metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
+          metaStoreManagerFactory.createMetaStoreManager(realmContext, realmConfig);
 
       EntityCache entityCache =
           metaStoreManagerFactory.getOrCreateEntityCache(realmContext, realmConfig);

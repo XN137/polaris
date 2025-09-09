@@ -89,7 +89,7 @@ public class PolarisCallContextCatalogFactory implements CallContextCatalogFacto
     LOGGER.debug("Initializing new BasePolarisCatalog for key: {}", catalogKey);
 
     PolarisMetaStoreManager metaStoreManager =
-        metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
+        metaStoreManagerFactory.createMetaStoreManager(realmContext, realmConfig);
     IcebergCatalog catalogInstance =
         new IcebergCatalog(
             diagnostics,
