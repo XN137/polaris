@@ -24,7 +24,6 @@ import io.quarkus.test.junit.TestProfile;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.SecurityContext;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -253,7 +252,7 @@ public class IcebergCatalogHandlerAuthzTest extends PolarisAuthzTestBase {
             callContext.getPolarisCallContext(),
             new PrincipalEntity.Builder()
                 .setName(principalName)
-                .setCreateTimestamp(Instant.now().toEpochMilli())
+                .setCreateTimestamp(clock.millis())
                 .setCredentialRotationRequiredState()
                 .build());
     adminService.assignPrincipalRole(principalName, PRINCIPAL_ROLE1);

@@ -219,8 +219,7 @@ public class PolarisBaseEntity extends PolarisEntityCore {
   private PolarisBaseEntity(Builder builder) {
     super(builder);
     this.subTypeCode = builder.subTypeCode;
-    this.createTimestamp =
-        builder.createTimestamp == 0L ? System.currentTimeMillis() : builder.createTimestamp;
+    this.createTimestamp = builder.createTimestamp;
     this.dropTimestamp = builder.dropTimestamp;
     this.purgeTimestamp = builder.purgeTimestamp;
     this.toPurgeTimestamp = builder.toPurgeTimestamp;
@@ -253,6 +252,7 @@ public class PolarisBaseEntity extends PolarisEntityCore {
             .name(name)
             .entityVersion(1));
     this.subTypeCode = subTypeCode;
+    // TODO: let callers pass in the timestamp from the Clock
     this.createTimestamp = System.currentTimeMillis();
     this.dropTimestamp = 0;
     this.purgeTimestamp = 0;
