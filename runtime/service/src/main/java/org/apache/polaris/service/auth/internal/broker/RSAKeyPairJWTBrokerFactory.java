@@ -25,9 +25,8 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.context.RealmContext;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.service.auth.AuthenticationConfiguration;
 import org.apache.polaris.service.auth.AuthenticationRealmConfiguration;
 import org.apache.polaris.service.auth.AuthenticationRealmConfiguration.TokenBrokerConfiguration.RSAKeyPairConfiguration;
@@ -46,9 +45,7 @@ public class RSAKeyPairJWTBrokerFactory implements TokenBrokerFactory {
   }
 
   @Override
-  public TokenBroker create(
-      PolarisMetaStoreManager metaStoreManager, PolarisCallContext polarisCallContext) {
-    RealmContext realmContext = polarisCallContext.getRealmContext();
+  public TokenBroker create(RealmContext realmContext, MetaStore metaStore) {
     AuthenticationRealmConfiguration config = authenticationConfiguration.forRealm(realmContext);
     Duration maxTokenGeneration = config.tokenBroker().maxTokenGeneration();
     KeyProvider keyProvider =
@@ -60,8 +57,7 @@ public class RSAKeyPairJWTBrokerFactory implements TokenBrokerFactory {
                     .rsaKeyPair()
                     .map(this::fileSystemKeyPair)
                     .orElseGet(this::generateEphemeralKeyPair));
-    return new RSAKeyPairJWTBroker(
-        metaStoreManager, polarisCallContext, (int) maxTokenGeneration.toSeconds(), keyProvider);
+    return new RSAKeyPairJWTBroker(metaStore, (int) maxTokenGeneration.toSeconds(), keyProvider);
   }
 
   private KeyProvider fileSystemKeyPair(RSAKeyPairConfiguration config) {

@@ -39,11 +39,10 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
-import org.apache.polaris.core.PolarisCallContext;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisEvent;
-import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
+import org.apache.polaris.core.persistence.MetaStore;
+import org.apache.polaris.core.persistence.MetaStoreFactory;
 import org.apache.polaris.service.events.listeners.PolarisPersistenceEventListener;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
@@ -56,9 +55,9 @@ public class InMemoryBufferEventListener extends PolarisPersistenceEventListener
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryBufferEventListener.class);
 
-  @Inject CallContext callContext;
+  @Inject RealmContext realmContext;
   @Inject Clock clock;
-  @Inject MetaStoreManagerFactory metaStoreManagerFactory;
+  @Inject MetaStoreFactory metaStoreFactory;
   @Inject InMemoryBufferEventListenerConfiguration configuration;
 
   @Context SecurityContext securityContext;
@@ -75,7 +74,7 @@ public class InMemoryBufferEventListener extends PolarisPersistenceEventListener
 
   @Override
   protected void processEvent(PolarisEvent event) {
-    var realmId = callContext.getRealmContext().getRealmIdentifier();
+    var realmId = realmContext.getRealmIdentifier();
     processEvent(realmId, event);
   }
 
@@ -119,10 +118,8 @@ public class InMemoryBufferEventListener extends PolarisPersistenceEventListener
   @Fallback(fallbackMethod = "onFlushError")
   protected void flush(String realmId, List<PolarisEvent> events) {
     RealmContext realmContext = () -> realmId;
-    var metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
-    var basePersistence = metaStoreManagerFactory.getOrCreateSession(realmContext);
-    var callContext = new PolarisCallContext(realmContext, basePersistence);
-    metaStoreManager.writeEvents(callContext, events);
+    MetaStore metaStore = metaStoreFactory.create(realmContext);
+    metaStore.writeEvents(events);
   }
 
   @SuppressWarnings("unused")

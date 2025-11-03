@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.apache.polaris.core.entity.PolarisEvent;
+import org.apache.polaris.core.persistence.MetaStoreFactory;
 import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
 import org.junit.jupiter.api.AfterEach;
 
@@ -70,6 +71,8 @@ abstract class InMemoryBufferEventListenerTestBase {
   @Identifier("relational-jdbc")
   @SuppressWarnings("CdiInjectionPointsInspection")
   MetaStoreManagerFactory metaStoreManagerFactory;
+
+  @InjectSpy MetaStoreFactory metaStoreFactory;
 
   @Inject
   @MainEventLoopGroup

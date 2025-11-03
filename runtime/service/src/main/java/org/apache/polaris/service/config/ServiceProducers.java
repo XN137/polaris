@@ -36,7 +36,6 @@ import jakarta.ws.rs.core.SecurityContext;
 import java.security.Principal;
 import java.time.Clock;
 import java.util.stream.Collectors;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDefaultDiagServiceImpl;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.auth.DefaultPolarisAuthorizerFactory;
@@ -45,12 +44,13 @@ import org.apache.polaris.core.auth.PolarisAuthorizerFactory;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.config.PolarisConfigurationStore;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.config.RealmConfigImpl;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.credentials.PolarisCredentialManager;
-import org.apache.polaris.core.persistence.BasePersistence;
+import org.apache.polaris.core.persistence.ManagerBasedMetaStoreFactory;
+import org.apache.polaris.core.persistence.MetaStore;
+import org.apache.polaris.core.persistence.MetaStoreFactory;
 import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.bootstrap.RootCredentialsSet;
 import org.apache.polaris.core.persistence.cache.EntityCache;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactory;
@@ -132,18 +132,9 @@ public class ServiceProducers {
 
   @Produces
   @RequestScoped
-  public CallContext polarisCallContext(
-      RealmContext realmContext,
-      PolarisConfigurationStore configurationStore,
-      MetaStoreManagerFactory metaStoreManagerFactory) {
-    BasePersistence metaStoreSession = metaStoreManagerFactory.getOrCreateSession(realmContext);
-    return new PolarisCallContext(realmContext, metaStoreSession, configurationStore);
-  }
-
-  @Produces
-  @RequestScoped
-  public RealmConfig realmConfig(CallContext callContext) {
-    return callContext.getRealmConfig();
+  public RealmConfig realmConfig(
+      PolarisConfigurationStore configurationStore, RealmContext realmContext) {
+    return new RealmConfigImpl(configurationStore, realmContext);
   }
 
   @Produces
@@ -177,18 +168,11 @@ public class ServiceProducers {
       RealmContext realmContext,
       RealmConfig realmConfig,
       MetaStoreManagerFactory metaStoreManagerFactory,
-      CallContext callContext,
-      PolarisMetaStoreManager polarisMetaStoreManager) {
+      MetaStore metaStore) {
     EntityCache entityCache =
         metaStoreManagerFactory.getOrCreateEntityCache(realmContext, realmConfig);
     return (principal, referenceCatalogName) ->
-        new Resolver(
-            diagnostics,
-            callContext.getPolarisCallContext(),
-            polarisMetaStoreManager,
-            principal,
-            entityCache,
-            referenceCatalogName);
+        new Resolver(diagnostics, metaStore, principal, entityCache, referenceCatalogName);
   }
 
   @Produces
@@ -242,17 +226,24 @@ public class ServiceProducers {
   }
 
   @Produces
+  @ApplicationScoped
+  public MetaStoreFactory metaStoreFactory(
+      MetaStoreManagerFactory metaStoreManagerFactory,
+      PolarisConfigurationStore configurationStore) {
+    return new ManagerBasedMetaStoreFactory(metaStoreManagerFactory, configurationStore);
+  }
+
+  @Produces
   @RequestScoped
-  public PolarisMetaStoreManager polarisMetaStoreManager(
-      RealmContext realmContext, MetaStoreManagerFactory metaStoreManagerFactory) {
-    return metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
+  public MetaStore metaStore(MetaStoreFactory metaStoreFactory, RealmContext realmContext) {
+    return metaStoreFactory.create(realmContext);
   }
 
   @Produces
   @RequestScoped
   public StorageCredentialsVendor storageCredentialsVendor(
-      PolarisMetaStoreManager metaStoreManager, CallContext callContext) {
-    return new StorageCredentialsVendor(metaStoreManager, callContext);
+      RealmContext realmContext, RealmConfig realmConfig, MetaStore metaStore) {
+    return new StorageCredentialsVendor(realmContext, realmConfig, metaStore);
   }
 
   @Produces
@@ -397,15 +388,15 @@ public class ServiceProducers {
   @Produces
   @RequestScoped
   public TokenBroker tokenBroker(
+      RealmContext realmContext,
       AuthenticationRealmConfiguration config,
       @Any Instance<TokenBrokerFactory> tokenBrokerFactories,
-      PolarisMetaStoreManager polarisMetaStoreManager,
-      CallContext callContext) {
+      MetaStore metaStore) {
     String type =
         config.type() == AuthenticationType.EXTERNAL ? "none" : config.tokenBroker().type();
     TokenBrokerFactory tokenBrokerFactory =
         tokenBrokerFactories.select(Identifier.Literal.of(type)).get();
-    return tokenBrokerFactory.create(polarisMetaStoreManager, callContext.getPolarisCallContext());
+    return tokenBrokerFactory.create(realmContext, metaStore);
   }
 
   // other beans

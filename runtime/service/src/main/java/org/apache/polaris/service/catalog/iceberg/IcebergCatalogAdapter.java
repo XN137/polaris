@@ -64,11 +64,10 @@ import org.apache.polaris.core.auth.PolarisAuthorizer;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.catalog.ExternalCatalogFactory;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.credentials.PolarisCredentialManager;
 import org.apache.polaris.core.entity.PolarisEntity;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.ResolvedPolarisEntity;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactory;
 import org.apache.polaris.core.persistence.resolver.Resolver;
@@ -136,12 +135,11 @@ public class IcebergCatalogAdapter
 
   private final PolarisDiagnostics diagnostics;
   private final RealmContext realmContext;
-  private final CallContext callContext;
   private final RealmConfig realmConfig;
   private final CallContextCatalogFactory catalogFactory;
   private final ResolutionManifestFactory resolutionManifestFactory;
   private final ResolverFactory resolverFactory;
-  private final PolarisMetaStoreManager metaStoreManager;
+  private final MetaStore metaStore;
   private final PolarisCredentialManager credentialManager;
   private final PolarisAuthorizer polarisAuthorizer;
   private final CatalogPrefixParser prefixParser;
@@ -155,11 +153,11 @@ public class IcebergCatalogAdapter
   public IcebergCatalogAdapter(
       PolarisDiagnostics diagnostics,
       RealmContext realmContext,
-      CallContext callContext,
+      RealmConfig realmConfig,
       CallContextCatalogFactory catalogFactory,
       ResolverFactory resolverFactory,
       ResolutionManifestFactory resolutionManifestFactory,
-      PolarisMetaStoreManager metaStoreManager,
+      MetaStore metaStore,
       PolarisCredentialManager credentialManager,
       PolarisAuthorizer polarisAuthorizer,
       CatalogPrefixParser prefixParser,
@@ -170,12 +168,11 @@ public class IcebergCatalogAdapter
       PolarisMetricsReporter metricsReporter) {
     this.diagnostics = diagnostics;
     this.realmContext = realmContext;
-    this.callContext = callContext;
-    this.realmConfig = callContext.getRealmConfig();
+    this.realmConfig = realmConfig;
     this.catalogFactory = catalogFactory;
     this.resolutionManifestFactory = resolutionManifestFactory;
     this.resolverFactory = resolverFactory;
-    this.metaStoreManager = metaStoreManager;
+    this.metaStore = metaStore;
     this.credentialManager = credentialManager;
     this.polarisAuthorizer = polarisAuthorizer;
     this.prefixParser = prefixParser;
@@ -212,9 +209,10 @@ public class IcebergCatalogAdapter
 
     return new IcebergCatalogHandler(
         diagnostics,
-        callContext,
+        realmContext,
+        realmConfig,
         resolutionManifestFactory,
-        metaStoreManager,
+        metaStore,
         credentialManager,
         principal,
         catalogFactory,

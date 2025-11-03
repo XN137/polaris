@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.entity.CatalogEntity;
@@ -41,7 +40,7 @@ import org.apache.polaris.core.entity.PolarisEntityId;
 import org.apache.polaris.core.entity.PolarisEntityType;
 import org.apache.polaris.core.entity.PolarisGrantRecord;
 import org.apache.polaris.core.entity.PolarisPrivilege;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.ResolvedPolarisEntity;
 import org.apache.polaris.core.persistence.cache.EntityCache;
 import org.apache.polaris.core.persistence.cache.EntityCacheByNameKey;
@@ -55,19 +54,11 @@ import org.apache.polaris.core.persistence.dao.entity.ResolvedEntityResult;
  */
 public class Resolver {
 
-  // we stash the Polaris call context here
-  private final @Nonnull PolarisCallContext polarisCallContext;
-
-  // the diagnostic services
   private final @Nonnull PolarisDiagnostics diagnostics;
+  private final @Nonnull MetaStore metaStore;
+  private final @Nullable EntityCache cache;
 
-  // the polaris metastore manager
-  private final @Nonnull PolarisMetaStoreManager polarisMetaStoreManager;
-
-  // the cache of entities
-  @Nullable private final EntityCache cache;
-
-  // the id of the principal making the call or 0 if unknown
+  // the principal making the call
   private final @Nonnull PolarisPrincipal polarisPrincipal;
 
   // reference catalog name for name resolution
@@ -113,8 +104,7 @@ public class Resolver {
   /**
    * Constructor, effectively starts an entity resolver session
    *
-   * @param polarisCallContext the polaris call context
-   * @param polarisMetaStoreManager meta store manager
+   * @param metaStore meta store manager
    * @param principal The {@link PolarisPrincipal} for the current request
    * @param cache shared entity cache
    * @param referenceCatalogName if not null, specifies the name of the reference catalog. The
@@ -127,21 +117,17 @@ public class Resolver {
    */
   public Resolver(
       @Nonnull PolarisDiagnostics diagnostics,
-      @Nonnull PolarisCallContext polarisCallContext,
-      @Nonnull PolarisMetaStoreManager polarisMetaStoreManager,
+      @Nonnull MetaStore metaStore,
       @Nonnull PolarisPrincipal principal,
       @Nullable EntityCache cache,
       @Nullable String referenceCatalogName) {
-    this.polarisCallContext = polarisCallContext;
     this.diagnostics = diagnostics;
-    this.polarisMetaStoreManager = polarisMetaStoreManager;
+    this.metaStore = metaStore;
     this.cache = cache;
     this.referenceCatalogName = referenceCatalogName;
 
     // validate inputs
-    this.diagnostics.checkNotNull(polarisCallContext, "unexpected_null_polarisCallContext");
-    this.diagnostics.checkNotNull(
-        polarisMetaStoreManager, "unexpected_null_polarisMetaStoreManager");
+    this.diagnostics.checkNotNull(metaStore, "unexpected_null_polarisMetaStoreManager");
     this.diagnostics.checkNotNull(principal, "principal_must_be_specified");
 
     this.polarisPrincipal = principal;
@@ -518,7 +504,7 @@ public class Resolver {
    * @return true if none of the entities has changed
    */
   private boolean bulkValidate(List<ResolvedPolarisEntity> toValidate) {
-    if (!polarisMetaStoreManager.requiresEntityReload()) {
+    if (!metaStore.requiresEntityReload()) {
       return true;
     }
 
@@ -542,8 +528,7 @@ public class Resolver {
 
       // now get the current backend versions of all these entities
       ChangeTrackingResult changeTrackingResult =
-          this.polarisMetaStoreManager.loadEntitiesChangeTracking(
-              this.polarisCallContext, entityIds);
+          this.metaStore.loadEntitiesChangeTracking(entityIds);
 
       // refresh any entity which is not fresh. If an entity is missing, reload it
       Iterator<ResolvedPolarisEntity> entityIterator = toValidate.iterator();
@@ -574,14 +559,13 @@ public class Resolver {
             if (this.cache != null) {
               refreshedResolvedEntity =
                   this.cache.getAndRefreshIfNeeded(
-                      this.polarisCallContext,
+                      this.metaStore,
                       entity,
                       versions.getEntityVersion(),
                       versions.getGrantRecordsVersion());
             } else {
               ResolvedEntityResult result =
-                  this.polarisMetaStoreManager.refreshResolvedEntity(
-                      this.polarisCallContext,
+                  this.metaStore.refreshResolvedEntity(
                       entity.getEntityVersion(),
                       entity.getGrantRecordsVersion(),
                       entity.getType(),
@@ -974,7 +958,7 @@ public class Resolver {
     if (this.cache != null) {
       EntityCacheLookupResult lookupResult =
           this.cache.getOrLoadEntityByName(
-              this.polarisCallContext,
+              this.metaStore,
               new EntityCacheByNameKey(catalogId, parentId, entityType, entityName));
 
       // if not found
@@ -996,8 +980,7 @@ public class Resolver {
     } else {
       // If no cache, load directly from metastore manager.
       ResolvedEntityResult result =
-          this.polarisMetaStoreManager.loadResolvedEntityByName(
-              this.polarisCallContext, catalogId, parentId, entityType, entityName);
+          this.metaStore.loadResolvedEntityByName(catalogId, parentId, entityType, entityName);
       if (!result.isSuccess()) {
         // not found
         return null;
@@ -1032,7 +1015,7 @@ public class Resolver {
     if (this.cache != null) {
       // get or load by name
       EntityCacheLookupResult lookupResult =
-          this.cache.getOrLoadEntityById(this.polarisCallContext, catalogId, entityId, entityType);
+          this.cache.getOrLoadEntityById(this.metaStore, catalogId, entityId, entityType);
 
       // if not found, return null
       if (lookupResult == null) {
@@ -1053,8 +1036,7 @@ public class Resolver {
     } else {
       // If no cache, load directly from metastore manager.
       ResolvedEntityResult result =
-          polarisMetaStoreManager.loadResolvedEntityById(
-              this.polarisCallContext, catalogId, entityId, entityType);
+          metaStore.loadResolvedEntityById(catalogId, entityId, entityType);
       if (!result.isSuccess()) {
         // not found
         return null;

@@ -23,28 +23,30 @@ import jakarta.annotation.Nonnull;
 import java.util.Optional;
 import java.util.Set;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisEntity;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.dao.entity.ScopedCredentialsResult;
 
 public class StorageCredentialsVendor {
 
-  private final PolarisCredentialVendor polarisCredentialVendor;
-  private final CallContext callContext;
+  private final RealmContext realmContext;
+  private final RealmConfig realmConfig;
+  private final MetaStore metaStore;
 
   public StorageCredentialsVendor(
-      PolarisCredentialVendor polarisCredentialVendor, CallContext callContext) {
-    this.polarisCredentialVendor = polarisCredentialVendor;
-    this.callContext = callContext;
+      RealmContext realmContext, RealmConfig realmConfig, MetaStore metaStore) {
+    this.realmContext = realmContext;
+    this.realmConfig = realmConfig;
+    this.metaStore = metaStore;
   }
 
   public RealmContext getRealmContext() {
-    return callContext.getRealmContext();
+    return realmContext;
   }
 
   public RealmConfig getRealmConfig() {
-    return callContext.getRealmConfig();
+    return realmConfig;
   }
 
   /**
@@ -68,8 +70,7 @@ public class StorageCredentialsVendor {
       @Nonnull Set<String> allowedReadLocations,
       @Nonnull Set<String> allowedWriteLocations,
       Optional<String> refreshCredentialsEndpoint) {
-    return polarisCredentialVendor.getSubscopedCredsForEntity(
-        callContext.getPolarisCallContext(),
+    return metaStore.getSubscopedCredsForEntity(
         entity.getCatalogId(),
         entity.getId(),
         entity.getType(),

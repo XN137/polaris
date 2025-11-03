@@ -32,7 +32,6 @@ import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.view.View;
 import org.apache.iceberg.view.ViewCatalogTests;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.admin.model.CreateCatalogRequest;
 import org.apache.polaris.core.admin.model.FileStorageConfigInfo;
@@ -42,12 +41,11 @@ import org.apache.polaris.core.auth.PolarisAuthorizerImpl;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.PrincipalEntity;
 import org.apache.polaris.core.identity.provider.ServiceIdentityProvider;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactory;
 import org.apache.polaris.core.persistence.resolver.ResolverFactory;
 import org.apache.polaris.core.secrets.UserSecretsManager;
@@ -107,9 +105,8 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
   @Inject PolarisEventListener polarisEventListener;
   @Inject ResolverFactory resolverFactory;
   @Inject ResolutionManifestFactory resolutionManifestFactory;
-  @Inject PolarisMetaStoreManager metaStoreManager;
+  @Inject MetaStore metaStore;
   @Inject UserSecretsManager userSecretsManager;
-  @Inject CallContext callContext;
   @Inject RealmConfig realmConfig;
   @Inject StorageAccessConfigProvider storageAccessConfigProvider;
   @Inject FileIOFactory fileIOFactory;
@@ -117,7 +114,7 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
   private IcebergCatalog catalog;
 
   private String realmName;
-  private PolarisCallContext polarisContext;
+  private RealmContext realmContext;
 
   private TestPolarisEventListener testPolarisEventListener;
 
@@ -147,12 +144,10 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
             .formatted(
                 testInfo.getTestMethod().map(Method::getName).orElse("test"), System.nanoTime());
     bootstrapRealm(realmName);
-    RealmContext realmContext = () -> realmName;
+    realmContext = () -> realmName;
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
-    polarisContext = callContext.getPolarisCallContext();
 
-    PrincipalEntity rootPrincipal =
-        metaStoreManager.findRootPrincipal(polarisContext).orElseThrow();
+    PrincipalEntity rootPrincipal = metaStore.findRootPrincipal().orElseThrow();
     PolarisPrincipal authenticatedRoot = PolarisPrincipal.of(rootPrincipal, Set.of());
 
     PolarisAuthorizer authorizer = new PolarisAuthorizerImpl(realmConfig);
@@ -160,9 +155,9 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
 
     PolarisAdminService adminService =
         new PolarisAdminService(
-            polarisContext,
+            realmConfig,
             resolutionManifestFactory,
-            metaStoreManager,
+            metaStore,
             userSecretsManager,
             serviceIdentityProvider,
             authenticatedRoot,
@@ -196,8 +191,9 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
         new IcebergCatalog(
             diagServices,
             resolverFactory,
-            metaStoreManager,
-            polarisContext,
+            metaStore,
+            realmContext,
+            realmConfig,
             passthroughView,
             authenticatedRoot,
             Mockito.mock(),
@@ -215,7 +211,7 @@ public abstract class AbstractIcebergCatalogViewTest extends ViewCatalogTests<Ic
   @AfterEach
   public void after() throws IOException {
     catalog().close();
-    metaStoreManager.purge(polarisContext);
+    metaStore.purge();
   }
 
   @Override

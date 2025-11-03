@@ -34,6 +34,8 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDefaultDiagServiceImpl;
 import org.apache.polaris.core.PolarisDiagnostics;
+import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisChangeTrackingVersions;
 import org.apache.polaris.core.entity.PolarisEntity;
@@ -43,6 +45,8 @@ import org.apache.polaris.core.entity.PolarisEntityType;
 import org.apache.polaris.core.entity.PolarisGrantRecord;
 import org.apache.polaris.core.entity.PolarisPrivilege;
 import org.apache.polaris.core.entity.table.IcebergTableLikeEntity;
+import org.apache.polaris.core.persistence.ManagerBasedMetaStore;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.PolarisTestMetaStoreManager;
 import org.apache.polaris.core.persistence.ResolvedPolarisEntity;
@@ -64,9 +68,10 @@ public class InMemoryEntityCacheTest {
 
   public static final Logger LOGGER = LoggerFactory.getLogger(InMemoryEntityCache.class);
   private final PolarisDiagnostics diagServices;
-  private final PolarisCallContext callCtx;
+  private final RealmContext realmContext = () -> "testRealm";
+  private final RealmConfig realmConfig;
   private final PolarisTestMetaStoreManager tm;
-  private final PolarisMetaStoreManager metaStoreManager;
+  private final MetaStore metaStore;
 
   /**
    * Initialize and create the test metadata
@@ -96,19 +101,22 @@ public class InMemoryEntityCacheTest {
     TransactionalPersistence metaStore =
         new TreeMapTransactionalPersistenceImpl(
             diagServices, store, Mockito.mock(), RANDOM_SECRETS);
-    metaStoreManager = new TransactionalMetaStoreManagerImpl(Clock.systemUTC(), diagServices);
-    callCtx = new PolarisCallContext(() -> "testRealm", metaStore);
+    PolarisCallContext callCtx = new PolarisCallContext(realmContext, metaStore);
+    realmConfig = callCtx.getRealmConfig();
+    PolarisMetaStoreManager metaStoreManager =
+        new TransactionalMetaStoreManagerImpl(Clock.systemUTC(), diagServices);
 
     // bootstrap the meta store with our test schema
     tm = new PolarisTestMetaStoreManager(metaStoreManager, callCtx);
     tm.testCreateTestCatalog();
+    this.metaStore = new ManagerBasedMetaStore(metaStoreManager, callCtx);
   }
 
   /**
    * @return new cache for the entity store
    */
   InMemoryEntityCache allocateNewCache() {
-    return new InMemoryEntityCache(diagServices, callCtx.getRealmConfig(), this.metaStoreManager);
+    return new InMemoryEntityCache(diagServices, realmConfig);
   }
 
   @Test
@@ -119,7 +127,7 @@ public class InMemoryEntityCacheTest {
     // should exist and no cache hit
     EntityCacheLookupResult lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
+            metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
     assertThat(lookup).isNotNull();
     assertThat(lookup.isCacheHit()).isFalse();
     assertThat(lookup.getCacheEntry()).isNotNull();
@@ -132,14 +140,14 @@ public class InMemoryEntityCacheTest {
     // do it again, should be found in the cache
     lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
+            metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
     assertThat(lookup).isNotNull();
     assertThat(lookup.isCacheHit()).isTrue();
 
     // do it again by id, should be found in the cache
     lookup =
         cache.getOrLoadEntityById(
-            this.callCtx, catalog.getCatalogId(), catalog.getId(), catalog.getType());
+            metaStore, catalog.getCatalogId(), catalog.getId(), catalog.getType());
     assertThat(lookup).isNotNull();
     assertThat(lookup.isCacheHit()).isTrue();
     assertThat(lookup.getCacheEntry()).isNotNull();
@@ -158,7 +166,7 @@ public class InMemoryEntityCacheTest {
     assertThat(cacheEntry).isNull();
 
     // try to find it in the cache by id. Should not be there, i.e. no cache hit
-    lookup = cache.getOrLoadEntityById(this.callCtx, N1.getCatalogId(), N1.getId(), N1.getType());
+    lookup = cache.getOrLoadEntityById(metaStore, N1.getCatalogId(), N1.getId(), N1.getType());
     assertThat(lookup).isNotNull();
     assertThat(lookup.isCacheHit()).isFalse();
 
@@ -181,18 +189,17 @@ public class InMemoryEntityCacheTest {
     assertThat(N1_entry.getGrantRecordsAsSecurable()).isNotNull();
 
     // negative tests, load an entity which does not exist
-    lookup = cache.getOrLoadEntityById(this.callCtx, N1.getCatalogId(), 10000, N1.getType());
+    lookup = cache.getOrLoadEntityById(metaStore, N1.getCatalogId(), 10000, N1.getType());
     assertThat(lookup).isNull();
     lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx,
-            new EntityCacheByNameKey(PolarisEntityType.CATALOG, "non_existant_catalog"));
+            metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "non_existant_catalog"));
     assertThat(lookup).isNull();
 
     // lookup N2 to validate grants
     EntityCacheByNameKey N2_name =
         new EntityCacheByNameKey(catalog.getId(), N1.getId(), PolarisEntityType.NAMESPACE, "N2");
-    lookup = cache.getOrLoadEntityByName(callCtx, N2_name);
+    lookup = cache.getOrLoadEntityByName(metaStore, N2_name);
     assertThat(lookup).isNotNull();
     ResolvedPolarisEntity cacheEntry_N1 = lookup.getCacheEntry();
     assertThat(cacheEntry_N1).isNotNull();
@@ -203,7 +210,7 @@ public class InMemoryEntityCacheTest {
     EntityCacheByNameKey R1_name =
         new EntityCacheByNameKey(
             catalog.getId(), catalog.getId(), PolarisEntityType.CATALOG_ROLE, "R1");
-    lookup = cache.getOrLoadEntityByName(callCtx, R1_name);
+    lookup = cache.getOrLoadEntityByName(metaStore, R1_name);
     assertThat(lookup).isNotNull();
     ResolvedPolarisEntity cacheEntry_R1 = lookup.getCacheEntry();
     assertThat(cacheEntry_R1).isNotNull();
@@ -241,7 +248,7 @@ public class InMemoryEntityCacheTest {
     // lookup principal role PR1
     EntityCacheByNameKey PR1_name =
         new EntityCacheByNameKey(PolarisEntityType.PRINCIPAL_ROLE, "PR1");
-    lookup = cache.getOrLoadEntityByName(callCtx, PR1_name);
+    lookup = cache.getOrLoadEntityByName(metaStore, PR1_name);
     assertThat(lookup).isNotNull();
     ResolvedPolarisEntity cacheEntry_PR1 = lookup.getCacheEntry();
     assertThat(cacheEntry_PR1).isNotNull();
@@ -279,7 +286,7 @@ public class InMemoryEntityCacheTest {
     // should exist and no cache hit
     EntityCacheLookupResult lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
+            metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
     assertThat(lookup).isNotNull();
     assertThat(lookup.isCacheHit()).isFalse();
 
@@ -309,7 +316,7 @@ public class InMemoryEntityCacheTest {
     // now load that table in the cache
     cacheEntry =
         cache.getAndRefreshIfNeeded(
-            this.callCtx, T6v1, T6v1.getEntityVersion(), T6v1.getGrantRecordsVersion());
+            metaStore, T6v1, T6v1.getEntityVersion(), T6v1.getGrantRecordsVersion());
     assertThat(cacheEntry).isNotNull();
     assertThat(cacheEntry.getEntity()).isNotNull();
     assertThat(cacheEntry.getGrantRecordsAsSecurable()).isNotNull();
@@ -330,7 +337,7 @@ public class InMemoryEntityCacheTest {
     // now refresh that entity. But because we don't change the versions, nothing should be reloaded
     cacheEntry =
         cache.getAndRefreshIfNeeded(
-            this.callCtx, T6v1, T6v1.getEntityVersion(), T6v1.getGrantRecordsVersion());
+            metaStore, T6v1, T6v1.getEntityVersion(), T6v1.getGrantRecordsVersion());
     assertThat(cacheEntry).isNotNull();
     assertThat(cacheEntry.getEntity()).isNotNull();
     assertThat(cacheEntry.getGrantRecordsAsSecurable()).isNotNull();
@@ -342,7 +349,7 @@ public class InMemoryEntityCacheTest {
     // now refresh again, this time with the new versions. Should be reloaded
     cacheEntry =
         cache.getAndRefreshIfNeeded(
-            this.callCtx, T6v2, T6v2.getEntityVersion(), T6v2.getGrantRecordsVersion());
+            metaStore, T6v2, T6v2.getEntityVersion(), T6v2.getGrantRecordsVersion());
     assertThat(cacheEntry).isNotNull();
     assertThat(cacheEntry.getEntity()).isNotNull();
     assertThat(cacheEntry.getGrantRecordsAsSecurable()).isNotNull();
@@ -371,7 +378,7 @@ public class InMemoryEntityCacheTest {
     // load that namespace
     cacheEntry =
         cache.getAndRefreshIfNeeded(
-            this.callCtx, N2, N2.getEntityVersion(), N2.getGrantRecordsVersion());
+            metaStore, N2, N2.getEntityVersion(), N2.getGrantRecordsVersion());
 
     // should have one single grant
     assertThat(cacheEntry).isNotNull();
@@ -392,7 +399,7 @@ public class InMemoryEntityCacheTest {
     // the cache is outdated now
     lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx,
+            metaStore,
             new EntityCacheByNameKey(
                 catalog.getId(), N1.getId(), PolarisEntityType.NAMESPACE, "N2"));
     assertThat(lookup).isNotNull();
@@ -407,7 +414,7 @@ public class InMemoryEntityCacheTest {
     // now refresh
     cacheEntry =
         cache.getAndRefreshIfNeeded(
-            this.callCtx, N2, N2v2.getEntityVersion(), N2v2.getGrantRecordsVersion());
+            metaStore, N2, N2v2.getEntityVersion(), N2v2.getGrantRecordsVersion());
     assertThat(cacheEntry).isNotNull();
     assertThat(cacheEntry.getEntity()).isNotNull();
     assertThat(cacheEntry.getGrantRecordsAsSecurable()).isNotNull();
@@ -423,19 +430,19 @@ public class InMemoryEntityCacheTest {
 
     EntityCacheLookupResult lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
+            metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
     assertThat(lookup).isNotNull();
     assertThat(lookup.getCacheEntry()).isNotNull();
     PolarisBaseEntity catalog = lookup.getCacheEntry().getEntity();
 
     PolarisBaseEntity N1 =
         this.tm.ensureExistsByName(List.of(catalog), PolarisEntityType.NAMESPACE, "N1");
-    lookup = cache.getOrLoadEntityById(this.callCtx, N1.getCatalogId(), N1.getId(), N1.getType());
+    lookup = cache.getOrLoadEntityById(metaStore, N1.getCatalogId(), N1.getId(), N1.getType());
     assertThat(lookup).isNotNull();
 
     EntityCacheByNameKey T4_name =
         new EntityCacheByNameKey(N1.getCatalogId(), N1.getId(), PolarisEntityType.TABLE_LIKE, "T4");
-    lookup = cache.getOrLoadEntityByName(callCtx, T4_name);
+    lookup = cache.getOrLoadEntityByName(metaStore, T4_name);
     assertThat(lookup).isNotNull();
     ResolvedPolarisEntity cacheEntry_T4 = lookup.getCacheEntry();
     assertThat(cacheEntry_T4).isNotNull();
@@ -450,7 +457,7 @@ public class InMemoryEntityCacheTest {
     EntityCacheByNameKey T4_renamed =
         new EntityCacheByNameKey(
             N1.getCatalogId(), N1.getId(), PolarisEntityType.TABLE_LIKE, "T4_renamed");
-    lookup = cache.getOrLoadEntityByName(callCtx, T4_renamed);
+    lookup = cache.getOrLoadEntityByName(metaStore, T4_renamed);
     assertThat(lookup).isNotNull();
     ResolvedPolarisEntity cacheEntry_T4_renamed = lookup.getCacheEntry();
     assertThat(cacheEntry_T4_renamed).isNotNull();
@@ -458,7 +465,7 @@ public class InMemoryEntityCacheTest {
 
     // new entry if lookup by id
     EntityCacheLookupResult lookupResult =
-        cache.getOrLoadEntityById(callCtx, T4.getCatalogId(), T4.getId(), T4.getType());
+        cache.getOrLoadEntityById(metaStore, T4.getCatalogId(), T4.getId(), T4.getType());
     assertThat(lookupResult).isNotNull();
     assertThat(lookupResult.getCacheEntry()).isNotNull();
     assertThat(lookupResult.getCacheEntry().getEntity().getName()).isEqualTo("T4_renamed");
@@ -468,13 +475,13 @@ public class InMemoryEntityCacheTest {
 
     // refreshing should return null since our current held T4 is outdated
     cache.getAndRefreshIfNeeded(
-        callCtx,
+        metaStore,
         T4,
         T4_renamed_entity.getEntityVersion(),
         T4_renamed_entity.getGrantRecordsVersion());
 
     // now the loading by the old name should return null
-    assertThat(cache.getOrLoadEntityByName(callCtx, T4_name)).isNull();
+    assertThat(cache.getOrLoadEntityByName(metaStore, T4_name)).isNull();
   }
 
   /* Helper for `testEntityWeigher` */
@@ -512,7 +519,7 @@ public class InMemoryEntityCacheTest {
     // Load catalog into cache
     EntityCacheLookupResult lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
+            metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
     assertThat(lookup).isNotNull();
     PolarisBaseEntity catalog = lookup.getCacheEntry().getEntity();
 
@@ -525,7 +532,7 @@ public class InMemoryEntityCacheTest {
         this.tm.ensureExistsByName(List.of(catalog, N5), PolarisEntityType.NAMESPACE, "N6");
 
     // Pre-load N1 into cache
-    cache.getOrLoadEntityById(this.callCtx, N1.getCatalogId(), N1.getId(), N1.getType());
+    cache.getOrLoadEntityById(metaStore, N1.getCatalogId(), N1.getId(), N1.getType());
 
     // Create list of entity IDs - N1 is already cached, N5, N5_N6 are not
     List<PolarisEntityId> entityIds =
@@ -533,7 +540,7 @@ public class InMemoryEntityCacheTest {
 
     // Test batch loading by entity IDs (all are namespaces)
     List<EntityCacheLookupResult> results =
-        cache.getOrLoadResolvedEntities(this.callCtx, PolarisEntityType.NAMESPACE, entityIds);
+        cache.getOrLoadResolvedEntities(metaStore, PolarisEntityType.NAMESPACE, entityIds);
 
     // Verify all entities were found
     assertThat(results).hasSize(3);
@@ -555,7 +562,7 @@ public class InMemoryEntityCacheTest {
     List<PolarisEntityId> nonExistentIds =
         List.of(new PolarisEntityId(catalog.getCatalogId(), 99999L));
     List<EntityCacheLookupResult> nonExistentResults =
-        cache.getOrLoadResolvedEntities(this.callCtx, PolarisEntityType.NAMESPACE, nonExistentIds);
+        cache.getOrLoadResolvedEntities(metaStore, PolarisEntityType.NAMESPACE, nonExistentIds);
 
     assertThat(nonExistentResults).hasSize(1);
     assertThat(nonExistentResults.get(0)).isNull();
@@ -571,7 +578,7 @@ public class InMemoryEntityCacheTest {
     List<PolarisEntityId> tableIds = List.of(getPolarisEntityId(T6));
 
     List<EntityCacheLookupResult> tableResults =
-        cache.getOrLoadResolvedEntities(this.callCtx, PolarisEntityType.TABLE_LIKE, tableIds);
+        cache.getOrLoadResolvedEntities(metaStore, PolarisEntityType.TABLE_LIKE, tableIds);
 
     assertThat(tableResults).hasSize(1);
     assertThat(tableResults.get(0)).isNotNull();
@@ -586,7 +593,7 @@ public class InMemoryEntityCacheTest {
     // Load catalog into cache
     EntityCacheLookupResult lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
+            metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
     assertThat(lookup).isNotNull();
     PolarisBaseEntity catalog = lookup.getCacheEntry().getEntity();
 
@@ -603,7 +610,7 @@ public class InMemoryEntityCacheTest {
             "T6");
 
     // Load T6 into cache initially
-    cache.getOrLoadEntityById(this.callCtx, T6v1.getCatalogId(), T6v1.getId(), T6v1.getType());
+    cache.getOrLoadEntityById(metaStore, T6v1.getCatalogId(), T6v1.getId(), T6v1.getType());
 
     // Verify it's in cache with original version
     ResolvedPolarisEntity cachedT6 = cache.getEntityById(T6v1.getId());
@@ -625,8 +632,7 @@ public class InMemoryEntityCacheTest {
     List<PolarisEntityId> entityIds = List.of(getPolarisEntityId(T6v2));
 
     // Call batch load - this should detect the stale version and reload
-    results =
-        cache.getOrLoadResolvedEntities(this.callCtx, PolarisEntityType.TABLE_LIKE, entityIds);
+    results = cache.getOrLoadResolvedEntities(metaStore, PolarisEntityType.TABLE_LIKE, entityIds);
 
     // Verify the entity was reloaded with the new version
     assertThat(results).hasSize(1);
@@ -650,7 +656,7 @@ public class InMemoryEntityCacheTest {
     // Load catalog into cache
     EntityCacheLookupResult lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
+            metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
     assertThat(lookup).isNotNull();
     PolarisBaseEntity catalog = lookup.getCacheEntry().getEntity();
 
@@ -664,7 +670,7 @@ public class InMemoryEntityCacheTest {
 
     // Load N2 into cache initially
     cache.getOrLoadEntityByName(
-        this.callCtx,
+        metaStore,
         new EntityCacheByNameKey(catalog.getId(), N1.getId(), PolarisEntityType.NAMESPACE, "N2"));
 
     // Verify it's in cache with original grant version
@@ -685,7 +691,7 @@ public class InMemoryEntityCacheTest {
 
     // Call batch load - this should detect the stale grant version and reload
     List<EntityCacheLookupResult> results =
-        cache.getOrLoadResolvedEntities(this.callCtx, PolarisEntityType.NAMESPACE, entityIds);
+        cache.getOrLoadResolvedEntities(metaStore, PolarisEntityType.NAMESPACE, entityIds);
 
     // Verify the entity was reloaded with the new grant version
     assertThat(results).hasSize(1);
@@ -708,15 +714,14 @@ public class InMemoryEntityCacheTest {
 
   @Test
   public void testBatchLoadVersionRetryLogic() {
+    MetaStore metaStore = Mockito.spy(this.metaStore);
     // get a new cache
-    PolarisMetaStoreManager metaStoreManager = Mockito.spy(this.metaStoreManager);
-    InMemoryEntityCache cache =
-        new InMemoryEntityCache(diagServices, callCtx.getRealmConfig(), metaStoreManager);
+    InMemoryEntityCache cache = new InMemoryEntityCache(diagServices, realmConfig);
 
     // Load catalog into cache
     EntityCacheLookupResult lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
+            metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
     assertThat(lookup).isNotNull();
     PolarisBaseEntity catalog = lookup.getCacheEntry().getEntity();
 
@@ -728,7 +733,7 @@ public class InMemoryEntityCacheTest {
 
     // Load N2 into cache initially
     cache.getOrLoadEntityByName(
-        this.callCtx,
+        metaStore,
         new EntityCacheByNameKey(catalog.getId(), N1.getId(), PolarisEntityType.NAMESPACE, "N2"));
 
     // Verify it's in cache with original version
@@ -746,11 +751,9 @@ public class InMemoryEntityCacheTest {
             new ChangeTrackingResult(
                 List.of(
                     changeTrackingFor(catalog), changeTrackingFor(N1), changeTrackingFor(N2v2))))
-        .when(metaStoreManager)
-        .loadEntitiesChangeTracking(Mockito.any(), Mockito.any());
-    Mockito.doCallRealMethod()
-        .when(metaStoreManager)
-        .loadEntitiesChangeTracking(Mockito.any(), Mockito.any());
+        .when(metaStore)
+        .loadEntitiesChangeTracking(Mockito.any());
+    Mockito.doCallRealMethod().when(metaStore).loadEntitiesChangeTracking(Mockito.any());
 
     // update again to create v3, which isn't returned in the change tracking result
     PolarisBaseEntity N2v3 =
@@ -766,7 +769,7 @@ public class InMemoryEntityCacheTest {
 
     // Call batch load - this should detect the stale versions and reload until consistent
     List<EntityCacheLookupResult> results =
-        cache.getOrLoadResolvedEntities(this.callCtx, PolarisEntityType.NAMESPACE, entityIds);
+        cache.getOrLoadResolvedEntities(metaStore, PolarisEntityType.NAMESPACE, entityIds);
 
     // Verify the entity was reloaded with the latest version
     assertThat(results).hasSize(3);
@@ -789,15 +792,14 @@ public class InMemoryEntityCacheTest {
 
   @Test
   public void testBatchLoadVersionRetryFailsAfterMaxAttempts() {
+    MetaStore metaStore = Mockito.spy(this.metaStore);
     // get a new cache
-    PolarisMetaStoreManager metaStoreManager = Mockito.spy(this.metaStoreManager);
-    InMemoryEntityCache cache =
-        new InMemoryEntityCache(diagServices, callCtx.getRealmConfig(), metaStoreManager);
+    InMemoryEntityCache cache = new InMemoryEntityCache(diagServices, realmConfig);
 
     // Load catalog into cache
     EntityCacheLookupResult lookup =
         cache.getOrLoadEntityByName(
-            this.callCtx, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
+            metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
     assertThat(lookup).isNotNull();
     PolarisBaseEntity catalog = lookup.getCacheEntry().getEntity();
 
@@ -809,7 +811,7 @@ public class InMemoryEntityCacheTest {
 
     // Load N2 into cache initially
     cache.getOrLoadEntityByName(
-        this.callCtx,
+        metaStore,
         new EntityCacheByNameKey(catalog.getId(), N1.getId(), PolarisEntityType.NAMESPACE, "N2"));
 
     // Verify it's in cache with original version
@@ -826,8 +828,8 @@ public class InMemoryEntityCacheTest {
             new ChangeTrackingResult(
                 List.of(
                     changeTrackingFor(catalog), changeTrackingFor(N1), changeTrackingFor(N2v2))))
-        .when(metaStoreManager)
-        .loadEntitiesChangeTracking(Mockito.any(), Mockito.any());
+        .when(metaStore)
+        .loadEntitiesChangeTracking(Mockito.any());
 
     // update again to create v3, which isn't returned in the change tracking result
     PolarisBaseEntity N2v3 =
@@ -842,8 +844,7 @@ public class InMemoryEntityCacheTest {
         List.of(getPolarisEntityId(catalog), getPolarisEntityId(N1), getPolarisEntityId(N2));
     Assertions.assertThatThrownBy(
             () ->
-                cache.getOrLoadResolvedEntities(
-                    this.callCtx, PolarisEntityType.NAMESPACE, entityIds))
+                cache.getOrLoadResolvedEntities(metaStore, PolarisEntityType.NAMESPACE, entityIds))
         .isInstanceOf(RuntimeException.class);
   }
 
@@ -857,7 +858,7 @@ public class InMemoryEntityCacheTest {
     EntityCacheLookupResult lookup =
         allocateNewCache()
             .getOrLoadEntityByName(
-                this.callCtx, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
+                metaStore, new EntityCacheByNameKey(PolarisEntityType.CATALOG, "test"));
     assertThat(lookup).isNotNull();
     PolarisBaseEntity catalog = lookup.getCacheEntry().getEntity();
 
@@ -890,12 +891,11 @@ public class InMemoryEntityCacheTest {
         this.tm.updateEntity(
             List.of(catalog, N1), N2v2, "{\"concurrent_test\": \"client2_version\"}", null);
 
-    // Mock the metastore manager to control the timing of method calls
-    PolarisMetaStoreManager mockedMetaStoreManager = Mockito.spy(this.metaStoreManager);
+    // Mock the metastore to control the timing of method calls
+    MetaStore mockedMetaStore = Mockito.spy(this.metaStore);
 
     // Create caches with the mocked metastore manager
-    InMemoryEntityCache cache =
-        new InMemoryEntityCache(diagServices, callCtx.getRealmConfig(), mockedMetaStoreManager);
+    InMemoryEntityCache cache = new InMemoryEntityCache(diagServices, realmConfig);
 
     // Synchronization primitives for controlling execution order
     CountDownLatch client1ChangeTrackingResult = new CountDownLatch(1);
@@ -934,8 +934,8 @@ public class InMemoryEntityCacheTest {
                       changeTrackingFor(N5),
                       changeTrackingFor(N5_N6)));
             })
-        .when(mockedMetaStoreManager)
-        .loadEntitiesChangeTracking(Mockito.any(), Mockito.any());
+        .when(mockedMetaStore)
+        .loadEntitiesChangeTracking(Mockito.any());
 
     // Mock loadResolvedEntities to control timing - client1 blocks until client2 completes
     // client1 receives the older version of all entities, while client2 receives the newer version
@@ -984,8 +984,8 @@ public class InMemoryEntityCacheTest {
         };
     Mockito.doAnswer(client1Answer)
         .doAnswer(client2Answer)
-        .when(mockedMetaStoreManager)
-        .loadResolvedEntities(Mockito.any(), Mockito.any(), Mockito.any());
+        .when(mockedMetaStore)
+        .loadResolvedEntities(Mockito.any(), Mockito.any());
 
     // ExecutorService isn't AutoCloseable in JDK 11 :(
     ExecutorService executorService = Executors.newFixedThreadPool(2);
@@ -999,7 +999,7 @@ public class InMemoryEntityCacheTest {
                   // - loadEntitiesChangeTracking returns older version for N2
                   // - loadResolvedEntities will block until client2 completes
                   return cache.getOrLoadResolvedEntities(
-                      this.callCtx, PolarisEntityType.NAMESPACE, entityIds);
+                      mockedMetaStore, PolarisEntityType.NAMESPACE, entityIds);
                 } catch (Exception e) {
                   client1Exception.set(e);
                   return null;
@@ -1016,7 +1016,7 @@ public class InMemoryEntityCacheTest {
                   // - loadResolvedEntities executes normally and signals client1 when done
                   client1ChangeTrackingResult.await();
                   return cache.getOrLoadResolvedEntities(
-                      this.callCtx, PolarisEntityType.NAMESPACE, entityIds);
+                      mockedMetaStore, PolarisEntityType.NAMESPACE, entityIds);
                 } catch (Exception e) {
                   client2Exception.set(e);
                   client1ResolvedEntitiesBlocker.release(); // Release in case of error

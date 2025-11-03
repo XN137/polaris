@@ -61,7 +61,6 @@ import org.apache.polaris.core.catalog.ExternalCatalogFactory;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.PolarisConfiguration;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.CatalogRoleEntity;
 import org.apache.polaris.core.entity.PolarisPrivilege;
@@ -121,9 +120,10 @@ public class IcebergCatalogHandlerAuthzTest extends PolarisAuthzTestBase {
         PolarisPrincipal.of(principalEntity, activatedPrincipalRoles);
     return new IcebergCatalogHandler(
         diagServices,
-        callContext,
+        realmContext,
+        realmConfig,
         resolutionManifestFactory,
-        metaStoreManager,
+        metaStore,
         credentialManager,
         authenticatedPrincipal,
         factory,
@@ -245,8 +245,7 @@ public class IcebergCatalogHandlerAuthzTest extends PolarisAuthzTestBase {
   public void testInsufficientPermissionsPriorToSecretRotation() {
     String principalName = "all_the_powers";
     CreatePrincipalResult newPrincipal =
-        metaStoreManager.createPrincipal(
-            callContext.getPolarisCallContext(),
+        metaStore.createPrincipal(
             new PrincipalEntity.Builder()
                 .setName(principalName)
                 .setCreateTimestamp(Instant.now().toEpochMilli())
@@ -260,9 +259,10 @@ public class IcebergCatalogHandlerAuthzTest extends PolarisAuthzTestBase {
     IcebergCatalogHandler wrapper =
         new IcebergCatalogHandler(
             diagServices,
-            callContext,
+            realmContext,
+            realmConfig,
             resolutionManifestFactory,
-            metaStoreManager,
+            metaStore,
             credentialManager,
             authenticatedPrincipal,
             callContextCatalogFactory,
@@ -290,16 +290,16 @@ public class IcebergCatalogHandlerAuthzTest extends PolarisAuthzTestBase {
             newPrincipal.getPrincipalSecrets().getPrincipalClientId(),
             newPrincipal.getPrincipalSecrets().getMainSecret());
     PrincipalEntity refreshPrincipal =
-        rotateAndRefreshPrincipal(
-            metaStoreManager, principalName, credentials, callContext.getPolarisCallContext());
+        rotateAndRefreshPrincipal(metaStore, principalName, credentials);
     PolarisPrincipal authenticatedPrincipal1 =
         PolarisPrincipal.of(refreshPrincipal, Set.of(PRINCIPAL_ROLE1, PRINCIPAL_ROLE2));
     IcebergCatalogHandler refreshedWrapper =
         new IcebergCatalogHandler(
             diagServices,
-            callContext,
+            realmContext,
+            realmConfig,
             resolutionManifestFactory,
-            metaStoreManager,
+            metaStore,
             credentialManager,
             authenticatedPrincipal1,
             callContextCatalogFactory,
@@ -1134,9 +1134,6 @@ public class IcebergCatalogHandlerAuthzTest extends PolarisAuthzTestBase {
     PolarisPrincipal authenticatedPrincipal =
         PolarisPrincipal.of(principalEntity, activatedPrincipalRoles);
 
-    // Create a custom CallContext that returns a custom RealmConfig
-    CallContext mockCallContext = Mockito.mock(CallContext.class);
-
     // Create a simple RealmConfig implementation that overrides just what we need
     RealmConfig customRealmConfig =
         new RealmConfig() {
@@ -1166,16 +1163,12 @@ public class IcebergCatalogHandlerAuthzTest extends PolarisAuthzTestBase {
           }
         };
 
-    // Mock the regular CallContext calls
-    Mockito.when(mockCallContext.getRealmConfig()).thenReturn(customRealmConfig);
-    Mockito.when(mockCallContext.getPolarisCallContext())
-        .thenReturn(callContext.getPolarisCallContext());
-
     return new IcebergCatalogHandler(
         diagServices,
-        mockCallContext,
+        realmContext,
+        customRealmConfig,
         resolutionManifestFactory,
-        metaStoreManager,
+        metaStore,
         credentialManager,
         authenticatedPrincipal,
         factory,
@@ -1892,8 +1885,9 @@ public class IcebergCatalogHandlerAuthzTest extends PolarisAuthzTestBase {
             storageAccessConfigProvider,
             fileIOFactory,
             polarisEventListener,
-            metaStoreManager,
-            callContext,
+            metaStore,
+            realmContext,
+            realmConfig,
             authenticatedRoot) {
           @Override
           public Catalog createCallContextCatalog(PolarisResolutionManifest resolvedManifest) {

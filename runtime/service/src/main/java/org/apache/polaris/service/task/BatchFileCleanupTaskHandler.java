@@ -23,7 +23,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.io.FileIO;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.entity.AsyncTaskType;
 import org.apache.polaris.core.entity.TaskEntity;
 import org.slf4j.Logger;
@@ -49,7 +48,7 @@ public class BatchFileCleanupTaskHandler extends FileCleanupTaskHandler {
   }
 
   @Override
-  public boolean handleTask(TaskEntity task, CallContext callContext) {
+  public boolean handleTask(TaskEntity task, TaskContext taskContext) {
     BatchFileCleanupTask cleanupTask = task.readData(BatchFileCleanupTask.class);
     TableIdentifier tableId = cleanupTask.tableId();
     List<String> batchFiles = cleanupTask.batchFiles();

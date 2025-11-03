@@ -21,7 +21,6 @@ package org.apache.polaris.service.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
@@ -33,13 +32,11 @@ import org.apache.iceberg.exceptions.NotAuthorizedException;
 import org.apache.polaris.core.admin.model.PrincipalWithCredentials;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.entity.PolarisEntityConstants;
-import org.apache.polaris.core.entity.PolarisEntityType;
 import org.apache.polaris.core.entity.PrincipalEntity;
 import org.apache.polaris.service.admin.PolarisAuthzTestBase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.mockito.Mockito;
 
 @QuarkusTest
 @TestProfile(PolarisAuthzTestBase.Profile.class)
@@ -66,8 +63,7 @@ public class DefaultAuthenticatorTest extends PolarisAuthzTestBase {
                 .build());
 
     principalNoRoles =
-        rotateAndRefreshPrincipal(
-            metaStoreManager, PRINCIPAL_NO_ROLES, principal.getCredentials(), polarisContext);
+        rotateAndRefreshPrincipal(metaStore, PRINCIPAL_NO_ROLES, principal.getCredentials());
   }
 
   @Test
@@ -107,10 +103,6 @@ public class DefaultAuthenticatorTest extends PolarisAuthzTestBase {
     // Given: credentials with a non-existent principal ID
     PolarisCredential credentials =
         PolarisCredential.of(123L, null, Set.of(DefaultAuthenticator.PRINCIPAL_ROLE_ALL));
-
-    metaStoreManager = Mockito.spy(metaStoreManager);
-    when(metaStoreManager.loadEntity(polarisContext, 0L, 123L, PolarisEntityType.PRINCIPAL))
-        .thenThrow(new RuntimeException("Metastore exception"));
 
     assertUnauthorized(credentials);
   }

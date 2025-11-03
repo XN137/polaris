@@ -25,6 +25,7 @@ import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.PolarisEntityId;
 import org.apache.polaris.core.entity.PolarisEntityType;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.ResolvedPolarisEntity;
 
 /** Interface for a Polaris entity cache */
@@ -40,7 +41,7 @@ public interface EntityCache {
    * Refresh the cache if needs be with a version of the entity/grant records matching the minimum
    * specified version.
    *
-   * @param callContext the Polaris call context
+   * @param metaStore the metastore to use for persistence access
    * @param entityToValidate copy of the entity held by the caller to validate
    * @param entityMinVersion minimum expected version. Should be reloaded if found in a cache with a
    *     version less than this one
@@ -50,7 +51,7 @@ public interface EntityCache {
    */
   @Nullable
   ResolvedPolarisEntity getAndRefreshIfNeeded(
-      @Nonnull PolarisCallContext callContext,
+      @Nonnull MetaStore metaStore,
       @Nonnull PolarisBaseEntity entityToValidate,
       int entityMinVersion,
       int entityGrantRecordsMinVersion);
@@ -58,7 +59,7 @@ public interface EntityCache {
   /**
    * Get the specified entity by name and load it if it is not found.
    *
-   * @param callContext the Polaris call context
+   * @param metaStore the metastore to use for loading
    * @param entityCatalogId id of the catalog where this entity resides or NULL_ID if top-level
    * @param entityId id of the entity to lookup
    * @return null if the entity does not exist or was dropped. Else return the entry for that
@@ -66,7 +67,7 @@ public interface EntityCache {
    */
   @Nullable
   EntityCacheLookupResult getOrLoadEntityById(
-      @Nonnull PolarisCallContext callContext,
+      @Nonnull MetaStore metaStore,
       long entityCatalogId,
       long entityId,
       PolarisEntityType entityType);
@@ -74,14 +75,14 @@ public interface EntityCache {
   /**
    * Get the specified entity by name and load it if it is not found.
    *
-   * @param callContext the Polaris call context
+   * @param metaStore the metastore to use for loading
    * @param entityNameKey name of the entity to load
    * @return null if the entity does not exist or was dropped. Else return the entry for that
    *     entity, either as found in the cache or loaded from the backend
    */
   @Nullable
   EntityCacheLookupResult getOrLoadEntityByName(
-      @Nonnull PolarisCallContext callContext, @Nonnull EntityCacheByNameKey entityNameKey);
+      @Nonnull MetaStore metaStore, @Nonnull EntityCacheByNameKey entityNameKey);
 
   /**
    * Load multiple entities by id, returning those found in the cache and loading those not found.
@@ -97,17 +98,15 @@ public interface EntityCache {
    * record is stale, but the Principal Role is refreshed, the Principal may be incorrectly
    * authorized to access the Catalog.
    *
-   * @param callCtx the Polaris call context
+   * @param metaStore the metastore to use for loading
    * @param entityType the entity type
    * @param entityIds the list of entity ids to load
    * @return the list of resolved entities, in the same order as the requested entity ids. As in
-   *     {@link
-   *     org.apache.polaris.core.persistence.PolarisMetaStoreManager#loadResolvedEntities(PolarisCallContext,
-   *     PolarisEntityType, List)}, elements in the returned list may be null if the corresponding
-   *     entity id does not exist.
+   *     {@link MetaStore#loadResolvedEntities(PolarisEntityType, List)}, elements in the returned
+   *     list may be null if the corresponding entity id does not exist.
    */
   List<EntityCacheLookupResult> getOrLoadResolvedEntities(
-      @Nonnull PolarisCallContext callCtx,
+      @Nonnull MetaStore metaStore,
       @Nonnull PolarisEntityType entityType,
       @Nonnull List<PolarisEntityId> entityIds);
 }

@@ -36,9 +36,8 @@ import org.apache.polaris.core.auth.PolarisAuthorizer;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.identity.provider.ServiceIdentityProvider;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactory;
 import org.apache.polaris.core.secrets.UserSecretsManager;
 import org.apache.polaris.service.config.ReservedProperties;
@@ -49,11 +48,10 @@ import org.mockito.Mockito;
 public class PolarisServiceImplTest {
 
   private ResolutionManifestFactory resolutionManifestFactory;
-  private PolarisMetaStoreManager metaStoreManager;
+  private MetaStore metaStore;
   private UserSecretsManager userSecretsManager;
   private ServiceIdentityProvider serviceIdentityProvider;
   private PolarisAuthorizer polarisAuthorizer;
-  private CallContext callContext;
   private ReservedProperties reservedProperties;
   private RealmConfig realmConfig;
 
@@ -63,16 +61,14 @@ public class PolarisServiceImplTest {
   @BeforeEach
   void setUp() {
     resolutionManifestFactory = Mockito.mock(ResolutionManifestFactory.class);
-    metaStoreManager = Mockito.mock(PolarisMetaStoreManager.class);
+    metaStore = Mockito.mock(MetaStore.class);
     userSecretsManager = Mockito.mock(UserSecretsManager.class);
     serviceIdentityProvider = Mockito.mock(ServiceIdentityProvider.class);
     polarisAuthorizer = Mockito.mock(PolarisAuthorizer.class);
-    callContext = Mockito.mock(CallContext.class);
     reservedProperties = Mockito.mock(ReservedProperties.class);
     realmConfig = Mockito.mock(RealmConfig.class);
     PolarisPrincipal principal = Mockito.mock(PolarisPrincipal.class);
 
-    when(callContext.getRealmConfig()).thenReturn(realmConfig);
     when(realmConfig.getConfig(FeatureConfiguration.SUPPORTED_CATALOG_CONNECTION_TYPES))
         .thenReturn(List.of("ICEBERG_REST"));
     when(realmConfig.getConfig(
@@ -81,9 +77,9 @@ public class PolarisServiceImplTest {
 
     adminService =
         new PolarisAdminService(
-            callContext,
+            realmConfig,
             resolutionManifestFactory,
-            metaStoreManager,
+            metaStore,
             userSecretsManager,
             serviceIdentityProvider,
             principal,
