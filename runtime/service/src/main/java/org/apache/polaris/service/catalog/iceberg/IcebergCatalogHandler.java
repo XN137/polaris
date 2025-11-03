@@ -82,9 +82,10 @@ import org.apache.polaris.core.auth.PolarisAuthorizer;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.catalog.ExternalCatalogFactory;
 import org.apache.polaris.core.config.FeatureConfiguration;
+import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.connection.ConnectionConfigInfoDpo;
 import org.apache.polaris.core.connection.ConnectionType;
-import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.credentials.PolarisCredentialManager;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.PolarisEntity;
@@ -99,6 +100,7 @@ import org.apache.polaris.core.persistence.dao.entity.EntityWithPath;
 import org.apache.polaris.core.persistence.pagination.Page;
 import org.apache.polaris.core.persistence.pagination.PageToken;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactory;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.apache.polaris.core.storage.PolarisStorageActions;
 import org.apache.polaris.core.storage.StorageAccessConfig;
 import org.apache.polaris.core.storage.StorageUtil;
@@ -134,7 +136,7 @@ import org.slf4j.LoggerFactory;
 public class IcebergCatalogHandler extends CatalogHandler implements AutoCloseable {
   private static final Logger LOGGER = LoggerFactory.getLogger(IcebergCatalogHandler.class);
 
-  private final PolarisMetaStoreManager metaStoreManager;
+  private final MetaStoreSession metaStoreSession;
   private final CallContextCatalogFactory catalogFactory;
   private final ReservedProperties reservedProperties;
   private final CatalogHandlerUtils catalogHandlerUtils;
@@ -152,9 +154,10 @@ public class IcebergCatalogHandler extends CatalogHandler implements AutoCloseab
 
   public IcebergCatalogHandler(
       PolarisDiagnostics diagnostics,
-      CallContext callContext,
+      RealmContext realmContext,
+      RealmConfig realmConfig,
       ResolutionManifestFactory resolutionManifestFactory,
-      PolarisMetaStoreManager metaStoreManager,
+      MetaStoreSession metaStoreSession,
       PolarisCredentialManager credentialManager,
       PolarisPrincipal principal,
       CallContextCatalogFactory catalogFactory,
@@ -167,14 +170,15 @@ public class IcebergCatalogHandler extends CatalogHandler implements AutoCloseab
       StorageAccessConfigProvider storageAccessConfigProvider) {
     super(
         diagnostics,
-        callContext,
+        realmContext,
+        realmConfig,
         resolutionManifestFactory,
         principal,
         catalogName,
         authorizer,
         credentialManager,
         externalCatalogFactories);
-    this.metaStoreManager = metaStoreManager;
+    this.metaStoreSession = metaStoreSession;
     this.catalogFactory = catalogFactory;
     this.reservedProperties = reservedProperties;
     this.catalogHandlerUtils = catalogHandlerUtils;
@@ -994,8 +998,10 @@ public class IcebergCatalogHandler extends CatalogHandler implements AutoCloseab
     // only go into an in-memory collection that we can commit as a single atomic unit after all
     // validations.
     TransactionWorkspaceMetaStoreManager transactionMetaStoreManager =
-        new TransactionWorkspaceMetaStoreManager(diagnostics, metaStoreManager);
-    ((IcebergCatalog) baseCatalog).setMetaStoreManager(transactionMetaStoreManager);
+        new TransactionWorkspaceMetaStoreManager(
+            diagnostics, metaStoreSession.getMetaStoreManager());
+    PolarisMetaStoreManager oldMetaStoreManager =
+        metaStoreSession.swapMetaStoreManager(transactionMetaStoreManager);
 
     commitTransactionRequest.tableChanges().stream()
         .forEach(
@@ -1051,9 +1057,8 @@ public class IcebergCatalogHandler extends CatalogHandler implements AutoCloseab
 
     // Commit the collected updates in a single atomic operation
     List<EntityWithPath> pendingUpdates = transactionMetaStoreManager.getPendingUpdates();
-    EntitiesResult result =
-        metaStoreManager.updateEntitiesPropertiesIfNotChanged(
-            callContext.getPolarisCallContext(), pendingUpdates);
+    metaStoreSession.swapMetaStoreManager(oldMetaStoreManager);
+    EntitiesResult result = metaStoreSession.updateEntitiesPropertiesIfNotChanged(pendingUpdates);
     if (!result.isSuccess()) {
       // TODO: Retries and server-side cleanup on failure, review possible exceptions
       throw new CommitFailedException(

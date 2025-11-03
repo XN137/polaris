@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.io.FileIO;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.entity.TaskEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +50,7 @@ public abstract class FileCleanupTaskHandler implements TaskHandler {
   public abstract boolean canHandleTask(TaskEntity task);
 
   @Override
-  public abstract boolean handleTask(TaskEntity task, CallContext callContext);
+  public abstract boolean handleTask(TaskEntity task, TaskContext taskContext);
 
   public CompletableFuture<Void> tryDelete(
       TableIdentifier tableId,

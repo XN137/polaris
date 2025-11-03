@@ -23,6 +23,7 @@ import jakarta.inject.Singleton;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.config.PolarisConfigurationStore;
 import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
+import org.apache.polaris.core.persistence.session.MetaStoreSessionFactory;
 import org.apache.polaris.service.context.RealmContextResolver;
 import org.junit.jupiter.api.TestInfo;
 
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.TestInfo;
 public class PolarisIntegrationTestHelper {
 
   @Inject MetaStoreManagerFactory metaStoreManagerFactory;
+  @Inject MetaStoreSessionFactory metaStoreSessionFactory;
   @Inject RealmContextResolver realmContextResolver;
   @Inject PolarisDiagnostics diagServices;
   @Inject PolarisConfigurationStore configurationStore;

@@ -26,11 +26,12 @@ import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.auth.PolarisPrincipal;
-import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.CatalogEntity;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.resolver.PolarisResolutionManifest;
 import org.apache.polaris.core.persistence.resolver.ResolverFactory;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.apache.polaris.service.catalog.iceberg.IcebergCatalog;
 import org.apache.polaris.service.catalog.io.FileIOFactory;
 import org.apache.polaris.service.catalog.io.StorageAccessConfigProvider;
@@ -50,8 +51,9 @@ public class PolarisCallContextCatalogFactory implements CallContextCatalogFacto
   private final FileIOFactory fileIOFactory;
   private final ResolverFactory resolverFactory;
   private final PolarisEventListener polarisEventListener;
-  private final PolarisMetaStoreManager metaStoreManager;
-  private final CallContext callContext;
+  private final MetaStoreSession metaStoreSession;
+  private final RealmContext realmContext;
+  private final RealmConfig realmConfig;
   private final PolarisPrincipal principal;
 
   @Inject
@@ -62,8 +64,9 @@ public class PolarisCallContextCatalogFactory implements CallContextCatalogFacto
       StorageAccessConfigProvider storageAccessConfigProvider,
       FileIOFactory fileIOFactory,
       PolarisEventListener polarisEventListener,
-      PolarisMetaStoreManager metaStoreManager,
-      CallContext callContext,
+      MetaStoreSession metaStoreSession,
+      RealmContext realmContext,
+      RealmConfig realmConfig,
       PolarisPrincipal principal) {
     this.diagnostics = diagnostics;
     this.resolverFactory = resolverFactory;
@@ -71,8 +74,9 @@ public class PolarisCallContextCatalogFactory implements CallContextCatalogFacto
     this.storageAccessConfigProvider = storageAccessConfigProvider;
     this.fileIOFactory = fileIOFactory;
     this.polarisEventListener = polarisEventListener;
-    this.metaStoreManager = metaStoreManager;
-    this.callContext = callContext;
+    this.metaStoreSession = metaStoreSession;
+    this.realmContext = realmContext;
+    this.realmConfig = realmConfig;
     this.principal = principal;
   }
 
@@ -81,7 +85,7 @@ public class PolarisCallContextCatalogFactory implements CallContextCatalogFacto
     CatalogEntity catalog = resolvedManifest.getResolvedCatalogEntity();
     String catalogName = catalog.getName();
 
-    String realm = callContext.getRealmContext().getRealmIdentifier();
+    String realm = realmContext.getRealmIdentifier();
     String catalogKey = realm + "/" + catalogName;
     LOGGER.debug("Initializing new BasePolarisCatalog for key: {}", catalogKey);
 
@@ -89,8 +93,9 @@ public class PolarisCallContextCatalogFactory implements CallContextCatalogFacto
         new IcebergCatalog(
             diagnostics,
             resolverFactory,
-            metaStoreManager,
-            callContext,
+            metaStoreSession,
+            realmContext,
+            realmConfig,
             resolvedManifest,
             principal,
             taskExecutor,
@@ -112,11 +117,7 @@ public class PolarisCallContextCatalogFactory implements CallContextCatalogFacto
     }
 
     catalogProperties.put(CatalogProperties.WAREHOUSE_LOCATION, defaultBaseLocation);
-
-    // TODO: The initialize properties might need to take more from CallContext and the
-    // CatalogEntity.
     catalogInstance.initialize(catalogName, catalogProperties);
-
     return catalogInstance;
   }
 }

@@ -37,9 +37,7 @@ import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.inmemory.InMemoryFileIO;
 import org.apache.iceberg.io.FileIO;
-import org.apache.polaris.core.PolarisCallContext;
-import org.apache.polaris.core.config.PolarisConfigurationStore;
-import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.AsyncTaskType;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
@@ -47,9 +45,8 @@ import org.apache.polaris.core.entity.PolarisEntitySubType;
 import org.apache.polaris.core.entity.PolarisEntityType;
 import org.apache.polaris.core.entity.TaskEntity;
 import org.apache.polaris.core.entity.table.IcebergTableLikeEntity;
-import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.pagination.PageToken;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.apache.polaris.service.TestFileIOFactory;
 import org.apache.polaris.service.catalog.io.StorageAccessConfigProvider;
 import org.assertj.core.api.Assertions;
@@ -61,11 +58,10 @@ import org.slf4j.LoggerFactory;
 @QuarkusTest
 class TableCleanupTaskHandlerTest {
   @Inject Clock clock;
-  @Inject MetaStoreManagerFactory metaStoreManagerFactory;
-  @Inject PolarisConfigurationStore configurationStore;
+  @Inject RealmConfig realmConfig;
+  @Inject MetaStoreSession metaStoreSession;
 
-  private PolarisMetaStoreManager metaStoreManager;
-  private CallContext callContext;
+  private TaskContext taskContext;
 
   private final RealmContext realmContext = () -> "realmName";
 
@@ -73,20 +69,14 @@ class TableCleanupTaskHandlerTest {
     TaskFileIOSupplier taskFileIOSupplier =
         new TaskFileIOSupplier(
             new TestFileIOFactory(fileIO), Mockito.mock(StorageAccessConfigProvider.class));
-    return new TableCleanupTaskHandler(
-        Mockito.mock(), clock, metaStoreManagerFactory, taskFileIOSupplier);
+    return new TableCleanupTaskHandler(Mockito.mock(), clock, taskFileIOSupplier);
   }
 
   @BeforeEach
   void setup() {
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
 
-    metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
-    callContext =
-        new PolarisCallContext(
-            realmContext,
-            metaStoreManagerFactory.getOrCreateSession(realmContext),
-            configurationStore);
+    taskContext = new TaskContext(realmContext, realmConfig, metaStoreSession);
   }
 
   @Test
@@ -124,12 +114,9 @@ class TableCleanupTaskHandlerTest {
     task = addTaskLocation(task);
     Assertions.assertThatPredicate(handler::canHandleTask).accepts(task);
 
-    handler.handleTask(task, callContext);
+    handler.handleTask(task, taskContext);
 
-    assertThat(
-            metaStoreManager
-                .loadTasks(callContext.getPolarisCallContext(), "test", PageToken.fromLimit(2))
-                .getEntities())
+    assertThat(metaStoreSession.loadTasks("test", PageToken.fromLimit(2)).getEntities())
         .hasSize(2)
         .satisfiesExactlyInAnyOrder(
             taskEntity ->
@@ -196,15 +183,11 @@ class TableCleanupTaskHandlerTest {
     // handle the same task twice
     // the first one should successfully delete the metadata
     List<Boolean> results =
-        List.of(handler.handleTask(task, callContext), handler.handleTask(task, callContext));
+        List.of(handler.handleTask(task, taskContext), handler.handleTask(task, taskContext));
     assertThat(results).containsExactly(true, true);
 
     // both tasks successfully executed, but only one should queue subtasks
-    assertThat(
-            metaStoreManager
-                .loadTasks(callContext.getPolarisCallContext(), "test", PageToken.fromLimit(5))
-                .getEntities())
-        .hasSize(2);
+    assertThat(metaStoreSession.loadTasks("test", PageToken.fromLimit(5)).getEntities()).hasSize(2);
   }
 
   @Test
@@ -253,14 +236,11 @@ class TableCleanupTaskHandlerTest {
     // handle the same task twice
     // the first one should successfully delete the metadata
     List<Boolean> results =
-        List.of(handler.handleTask(task, callContext), handler.handleTask(task, callContext));
+        List.of(handler.handleTask(task, taskContext), handler.handleTask(task, taskContext));
     assertThat(results).containsExactly(true, true);
 
     // both tasks successfully executed, but only one should queue subtasks
-    assertThat(
-            metaStoreManager
-                .loadTasks(callContext.getPolarisCallContext(), "test", PageToken.fromLimit(5))
-                .getEntities())
+    assertThat(metaStoreSession.loadTasks("test", PageToken.fromLimit(5)).getEntities())
         .hasSize(4)
         .satisfiesExactlyInAnyOrder(
             taskEntity ->
@@ -367,12 +347,10 @@ class TableCleanupTaskHandlerTest {
     task = addTaskLocation(task);
     Assertions.assertThatPredicate(handler::canHandleTask).accepts(task);
 
-    handler.handleTask(task, callContext);
+    handler.handleTask(task, taskContext);
 
     List<PolarisBaseEntity> entities =
-        metaStoreManager
-            .loadTasks(callContext.getPolarisCallContext(), "test", PageToken.fromLimit(5))
-            .getEntities();
+        metaStoreSession.loadTasks("test", PageToken.fromLimit(5)).getEntities();
 
     List<PolarisBaseEntity> manifestCleanupTasks =
         entities.stream()
@@ -534,12 +512,10 @@ class TableCleanupTaskHandlerTest {
 
     Assertions.assertThatPredicate(handler::canHandleTask).accepts(task);
 
-    handler.handleTask(task, callContext);
+    handler.handleTask(task, taskContext);
 
     List<PolarisBaseEntity> entities =
-        metaStoreManager
-            .loadTasks(callContext.getPolarisCallContext(), "test", PageToken.fromLimit(6))
-            .getEntities();
+        metaStoreSession.loadTasks("test", PageToken.fromLimit(6)).getEntities();
 
     List<PolarisBaseEntity> manifestCleanupTasks =
         entities.stream()

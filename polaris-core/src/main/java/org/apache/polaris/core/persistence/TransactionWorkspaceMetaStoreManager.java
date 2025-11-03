@@ -140,7 +140,7 @@ public class TransactionWorkspaceMetaStoreManager implements PolarisMetaStoreMan
       @Nonnull PolarisEntityType entityType,
       @Nonnull PolarisEntitySubType entitySubType,
       @Nonnull PageToken pageToken) {
-    diagnostics.fail("illegal_method_in_transaction_workspace", "loadEntities");
+    diagnostics.fail("illegal_method_in_transaction_workspace", "listFullEntities");
     return null;
   }
 
@@ -167,7 +167,7 @@ public class TransactionWorkspaceMetaStoreManager implements PolarisMetaStoreMan
   @Override
   public void deletePrincipalSecrets(
       @Nonnull PolarisCallContext callCtx, @Nonnull String clientId, long principalId) {
-    diagnostics.fail("illegal_method_in_transaction_workspace", "loadPrincipalSecrets");
+    diagnostics.fail("illegal_method_in_transaction_workspace", "deletePrincipalSecrets");
   }
 
   @Override
@@ -317,8 +317,7 @@ public class TransactionWorkspaceMetaStoreManager implements PolarisMetaStoreMan
   @Override
   public ChangeTrackingResult loadEntitiesChangeTracking(
       @Nonnull PolarisCallContext callCtx, @Nonnull List<PolarisEntityId> entityIds) {
-    diagnostics.fail("illegal_method_in_transaction_workspace", "loadEntitiesChangeTracking");
-    return null;
+    return delegate.loadEntitiesChangeTracking(callCtx, entityIds);
   }
 
   @Override

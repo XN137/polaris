@@ -25,24 +25,19 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Optional;
-import org.apache.polaris.core.PolarisCallContext;
-import org.apache.polaris.core.config.PolarisConfigurationStore;
 import org.apache.polaris.core.entity.PolarisPrincipalSecrets;
 import org.apache.polaris.core.entity.PrincipalEntity;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.dao.entity.PrincipalSecretsResult;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.apache.polaris.service.types.TokenType;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 @QuarkusTest
 public class RSAKeyPairJWTBrokerTest {
-
-  @Inject protected PolarisConfigurationStore configurationStore;
 
   @Test
   public void testSuccessfulTokenGeneration() throws Exception {
@@ -52,20 +47,18 @@ public class RSAKeyPairJWTBrokerTest {
     final String clientId = "test-client-id";
     final String scope = "PRINCIPAL_ROLE:TEST";
 
-    PolarisCallContext polarisCallContext = new PolarisCallContext(null, null, configurationStore);
-    PolarisMetaStoreManager metastoreManager = Mockito.mock(PolarisMetaStoreManager.class);
+    MetaStoreSession metaStoreSession = Mockito.mock(MetaStoreSession.class);
     String mainSecret = "client-secret";
     PolarisPrincipalSecrets principalSecrets =
         new PolarisPrincipalSecrets(principalId, clientId, mainSecret, "otherSecret");
-    Mockito.when(metastoreManager.loadPrincipalSecrets(polarisCallContext, clientId))
+    Mockito.when(metaStoreSession.loadPrincipalSecrets(clientId))
         .thenReturn(new PrincipalSecretsResult(principalSecrets));
     PrincipalEntity principal =
         new PrincipalEntity.Builder().setId(principalId).setName("principal").build();
-    Mockito.when(metastoreManager.findPrincipalById(polarisCallContext, principalId))
+    Mockito.when(metaStoreSession.findPrincipalById(principalId))
         .thenReturn(Optional.of(principal));
     KeyProvider provider = new LocalRSAKeyProvider(keyPair);
-    TokenBroker tokenBroker =
-        new RSAKeyPairJWTBroker(metastoreManager, polarisCallContext, 420, provider);
+    TokenBroker tokenBroker = new RSAKeyPairJWTBroker(metaStoreSession, 420, provider);
     TokenResponse token =
         tokenBroker.generateFromClientSecrets(
             clientId,

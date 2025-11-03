@@ -42,7 +42,6 @@ import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.AlreadyExistsException;
 import org.apache.iceberg.types.Types;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.admin.model.AwsStorageConfigInfo;
 import org.apache.polaris.core.admin.model.CreateCatalogRequest;
@@ -53,16 +52,16 @@ import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.PolarisConfigurationStore;
 import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.config.RealmConfigImpl;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.PolarisEntity;
 import org.apache.polaris.core.entity.PrincipalEntity;
 import org.apache.polaris.core.identity.provider.ServiceIdentityProvider;
-import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.PolicyMappingAlreadyExistsException;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactory;
 import org.apache.polaris.core.persistence.resolver.ResolverFactory;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.apache.polaris.core.policy.PredefinedPolicyTypes;
 import org.apache.polaris.core.policy.exceptions.NoSuchPolicyException;
 import org.apache.polaris.core.policy.exceptions.PolicyInUseException;
@@ -124,7 +123,6 @@ public abstract class AbstractPolicyCatalogTest {
       new PolicyAttachmentTarget(
           PolicyAttachmentTarget.TypeEnum.TABLE_LIKE, List.of(TABLE.toString().split("\\.")));
 
-  @Inject MetaStoreManagerFactory metaStoreManagerFactory;
   @Inject UserSecretsManagerFactory userSecretsManagerFactory;
   @Inject ServiceIdentityProvider serviceIdentityProvider;
   @Inject PolarisConfigurationStore configurationStore;
@@ -133,14 +131,14 @@ public abstract class AbstractPolicyCatalogTest {
   @Inject PolarisDiagnostics diagServices;
   @Inject ResolverFactory resolverFactory;
   @Inject ResolutionManifestFactory resolutionManifestFactory;
+  @Inject MetaStoreSession metaStoreSession;
 
   private PolicyCatalog policyCatalog;
   private IcebergCatalog icebergCatalog;
   private AwsStorageConfigInfo storageConfigModel;
   private String realmName;
-  private PolarisMetaStoreManager metaStoreManager;
   private UserSecretsManager userSecretsManager;
-  private PolarisCallContext polarisContext;
+  private RealmContext realmContext;
   private RealmConfig realmConfig;
   private PolarisAdminService adminService;
   private FileIOFactory fileIOFactory;
@@ -168,23 +166,17 @@ public abstract class AbstractPolicyCatalogTest {
                 testInfo.getTestMethod().map(Method::getName).orElse("test"), System.nanoTime());
     bootstrapRealm(realmName);
 
-    RealmContext realmContext = () -> realmName;
+    realmContext = () -> realmName;
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
-    metaStoreManager = metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
+
     userSecretsManager = userSecretsManagerFactory.getOrCreateUserSecretsManager(realmContext);
-    polarisContext =
-        new PolarisCallContext(
-            realmContext,
-            metaStoreManagerFactory.getOrCreateSession(realmContext),
-            configurationStore);
-    realmConfig = polarisContext.getRealmConfig();
+    realmConfig = new RealmConfigImpl(configurationStore, realmContext);
     StorageCredentialsVendor storageCredentialsVendor =
-        new StorageCredentialsVendor(metaStoreManager, polarisContext);
+        new StorageCredentialsVendor(realmContext, realmConfig, metaStoreSession);
     storageAccessConfigProvider =
         new StorageAccessConfigProvider(storageCredentialCache, storageCredentialsVendor);
 
-    PrincipalEntity rootPrincipal =
-        metaStoreManager.findRootPrincipal(polarisContext).orElseThrow();
+    PrincipalEntity rootPrincipal = metaStoreSession.findRootPrincipal().orElseThrow();
     authenticatedRoot = PolarisPrincipal.of(rootPrincipal, Set.of());
 
     PolarisAuthorizer authorizer = new PolarisAuthorizerImpl(realmConfig);
@@ -192,9 +184,9 @@ public abstract class AbstractPolicyCatalogTest {
 
     adminService =
         new PolarisAdminService(
-            polarisContext,
+            realmConfig,
             resolutionManifestFactory,
-            metaStoreManager,
+            metaStoreSession,
             userSecretsManager,
             serviceIdentityProvider,
             authenticatedRoot,
@@ -252,13 +244,14 @@ public abstract class AbstractPolicyCatalogTest {
             isA(AwsStorageConfigurationInfo.class)))
         .thenReturn((PolarisStorageIntegration) storageIntegration);
 
-    this.policyCatalog = new PolicyCatalog(metaStoreManager, polarisContext, passthroughView);
+    this.policyCatalog = new PolicyCatalog(metaStoreSession, passthroughView);
     this.icebergCatalog =
         new IcebergCatalog(
             diagServices,
             resolverFactory,
-            metaStoreManager,
-            polarisContext,
+            metaStoreSession,
+            realmContext,
+            realmConfig,
             passthroughView,
             authenticatedRoot,
             taskExecutor,
@@ -273,7 +266,7 @@ public abstract class AbstractPolicyCatalogTest {
 
   @AfterEach
   public void after() throws IOException {
-    metaStoreManager.purge(polarisContext);
+    metaStoreSession.purge();
   }
 
   @Test

@@ -31,9 +31,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.context.RealmContext;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.apache.polaris.service.auth.AuthenticationConfiguration;
 import org.apache.polaris.service.auth.AuthenticationRealmConfiguration;
 import org.apache.polaris.service.auth.AuthenticationRealmConfiguration.TokenBrokerConfiguration.SymmetricKeyConfiguration;
@@ -52,9 +51,7 @@ public class SymmetricKeyJWTBrokerFactory implements TokenBrokerFactory {
   }
 
   @Override
-  public TokenBroker create(
-      PolarisMetaStoreManager metaStoreManager, PolarisCallContext polarisCallContext) {
-    RealmContext realmContext = polarisCallContext.getRealmContext();
+  public TokenBroker create(RealmContext realmContext, MetaStoreSession metaStoreSession) {
     AuthenticationRealmConfiguration config = authenticationConfiguration.forRealm(realmContext);
     Duration maxTokenGeneration = config.tokenBroker().maxTokenGeneration();
     Supplier<String> secretSupplier =
@@ -74,7 +71,7 @@ public class SymmetricKeyJWTBrokerFactory implements TokenBrokerFactory {
               return () -> Objects.requireNonNullElseGet(secret, () -> readSecretFromDisk(file));
             });
     return new SymmetricKeyJWTBroker(
-        metaStoreManager, polarisCallContext, (int) maxTokenGeneration.toSeconds(), secretSupplier);
+        metaStoreSession, (int) maxTokenGeneration.toSeconds(), secretSupplier);
   }
 
   private static String readSecretFromDisk(Path file) {

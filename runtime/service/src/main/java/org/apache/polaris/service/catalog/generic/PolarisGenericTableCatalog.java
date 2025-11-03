@@ -27,19 +27,18 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.polaris.core.catalog.GenericTableCatalog;
 import org.apache.polaris.core.catalog.PolarisCatalogHelpers;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.PolarisEntity;
 import org.apache.polaris.core.entity.PolarisEntitySubType;
 import org.apache.polaris.core.entity.PolarisEntityType;
 import org.apache.polaris.core.entity.table.GenericTableEntity;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.PolarisResolvedPathWrapper;
 import org.apache.polaris.core.persistence.dao.entity.BaseResult;
 import org.apache.polaris.core.persistence.dao.entity.DropEntityResult;
 import org.apache.polaris.core.persistence.dao.entity.EntityResult;
 import org.apache.polaris.core.persistence.pagination.PageToken;
 import org.apache.polaris.core.persistence.resolver.PolarisResolutionManifestCatalogView;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,21 +47,17 @@ public class PolarisGenericTableCatalog implements GenericTableCatalog {
 
   private String name;
 
-  private final CallContext callContext;
+  private final MetaStoreSession metaStoreSession;
   private final PolarisResolutionManifestCatalogView resolvedEntityView;
   private final CatalogEntity catalogEntity;
   private long catalogId = -1;
-  private PolarisMetaStoreManager metaStoreManager;
 
   public PolarisGenericTableCatalog(
-      PolarisMetaStoreManager metaStoreManager,
-      CallContext callContext,
-      PolarisResolutionManifestCatalogView resolvedEntityView) {
-    this.callContext = callContext;
+      MetaStoreSession metaStoreSession, PolarisResolutionManifestCatalogView resolvedEntityView) {
+    this.metaStoreSession = metaStoreSession;
     this.resolvedEntityView = resolvedEntityView;
     this.catalogEntity = resolvedEntityView.getResolvedCatalogEntity();
     this.catalogId = catalogEntity.getId();
-    this.metaStoreManager = metaStoreManager;
   }
 
   @Override
@@ -101,10 +96,7 @@ public class PolarisGenericTableCatalog implements GenericTableCatalog {
               .setCatalogId(this.catalogId)
               .setParentNamespace(tableIdentifier.namespace())
               .setParentId(resolvedParent.getRawLeafEntity().getId())
-              .setId(
-                  this.metaStoreManager
-                      .generateNewEntityId(this.callContext.getPolarisCallContext())
-                      .getId())
+              .setId(metaStoreSession.generateNewEntityId().getId())
               .setProperties(properties)
               .setDoc(doc)
               .setBaseLocation(baseLocation)
@@ -116,10 +108,7 @@ public class PolarisGenericTableCatalog implements GenericTableCatalog {
     }
 
     EntityResult res =
-        this.metaStoreManager.createEntityIfNotExists(
-            this.callContext.getPolarisCallContext(),
-            PolarisEntity.toCoreList(catalogPath),
-            entity);
+        metaStoreSession.createEntityIfNotExists(PolarisEntity.toCoreList(catalogPath), entity);
     if (!res.isSuccess()) {
       switch (res.getReturnStatus()) {
         case BaseResult.ReturnStatus.ENTITY_ALREADY_EXISTS:
@@ -168,12 +157,8 @@ public class PolarisGenericTableCatalog implements GenericTableCatalog {
     PolarisEntity leafEntity = resolvedEntities.getRawLeafEntity();
 
     DropEntityResult dropEntityResult =
-        this.metaStoreManager.dropEntityIfExists(
-            this.callContext.getPolarisCallContext(),
-            PolarisEntity.toCoreList(catalogPath),
-            leafEntity,
-            Map.of(),
-            false);
+        metaStoreSession.dropEntityIfExists(
+            PolarisEntity.toCoreList(catalogPath), leafEntity, Map.of(), false);
 
     return dropEntityResult.isSuccess();
   }
@@ -188,9 +173,8 @@ public class PolarisGenericTableCatalog implements GenericTableCatalog {
     List<PolarisEntity> catalogPath = resolvedEntities.getRawFullPath();
     List<PolarisEntity.NameAndId> entities =
         PolarisEntity.toNameAndIdList(
-            this.metaStoreManager
+            metaStoreSession
                 .listEntities(
-                    this.callContext.getPolarisCallContext(),
                     PolarisEntity.toCoreList(catalogPath),
                     PolarisEntityType.TABLE_LIKE,
                     PolarisEntitySubType.GENERIC_TABLE,
