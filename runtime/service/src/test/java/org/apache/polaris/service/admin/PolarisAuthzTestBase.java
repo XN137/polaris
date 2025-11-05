@@ -31,6 +31,7 @@ import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import java.io.IOException;
+import java.time.Clock;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -190,6 +191,7 @@ public abstract class PolarisAuthzTestBase {
           required(4, "data", Types.StringType.get()));
   protected final ReservedProperties reservedProperties = ReservedProperties.NONE;
 
+  @Inject protected Clock clock;
   @Inject protected MetaStoreManagerFactory managerFactory;
   @Inject protected ResolutionManifestFactory resolutionManifestFactory;
   @Inject protected CallContextCatalogFactory callContextCatalogFactory;

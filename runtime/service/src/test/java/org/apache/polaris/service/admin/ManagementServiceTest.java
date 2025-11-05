@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import jakarta.ws.rs.core.Response;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -390,7 +389,7 @@ public class ManagementServiceTest {
       PolarisMetaStoreManager metaStoreManager, PolarisCallContext callContext, String name) {
     return new PrincipalEntity.Builder()
         .setName(name)
-        .setCreateTimestamp(Instant.now().toEpochMilli())
+        .setCreateTimestamp(services.clock().millis())
         .setId(metaStoreManager.generateNewEntityId(callContext).getId())
         .build();
   }
@@ -405,8 +404,7 @@ public class ManagementServiceTest {
         .setName(name)
         .setFederated(isFederated)
         .setProperties(Map.of())
-        .setCreateTimestamp(Instant.now().toEpochMilli())
-        .setLastUpdateTimestamp(Instant.now().toEpochMilli())
+        .setCreateTimestamp(services.clock().millis())
         .build();
   }
 

@@ -89,11 +89,8 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
   private static final Logger LOGGER =
       LoggerFactory.getLogger(AtomicOperationMetaStoreManager.class);
 
-  private final Clock clock;
-
   public AtomicOperationMetaStoreManager(Clock clock, PolarisDiagnostics diagnostics) {
-    super(diagnostics);
-    this.clock = clock;
+    super(clock, diagnostics);
   }
 
   /**
@@ -581,7 +578,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
         new PrincipalEntity.Builder()
             .setId(rootPrincipalId)
             .setName(PolarisEntityConstants.getRootPrincipalName())
-            .setCreateTimestamp(System.currentTimeMillis())
+            .setCreateTimestamp(getClock().millis())
             .build();
     this.createPrincipal(callCtx, rootPrincipal);
 
@@ -591,7 +588,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
         new PrincipalRoleEntity.Builder()
             .setId(serviceAdminPrincipalRoleId)
             .setName(PolarisEntityConstants.getNameOfPrincipalServiceAdminRole())
-            .setCreateTimestamp(System.currentTimeMillis())
+            .setCreateTimestamp(getClock().millis())
             .build();
     this.persistNewEntity(callCtx, ms, serviceAdminPrincipalRole);
 
@@ -1265,7 +1262,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
               .name("entityCleanup_" + entityToDrop.getId())
               .typeCode(PolarisEntityType.TASK.getCode())
               .subTypeCode(PolarisEntitySubType.NULL_SUBTYPE.getCode())
-              .createTimestamp(clock.millis());
+              .createTimestamp(getClock().millis());
       if (cleanupProperties != null) {
         taskEntityBuilder.internalPropertiesAsMap(cleanupProperties);
       }
@@ -1537,7 +1534,7 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
                           PolarisTaskConstants.TASK_TIMEOUT_MILLIS);
               return taskState == null
                   || taskState.executor == null
-                  || clock.millis() - taskState.lastAttemptStartTime > taskAgeTimeout;
+                  || getClock().millis() - taskState.lastAttemptStartTime > taskAgeTimeout;
             },
             Function.identity(),
             pageToken);
@@ -1552,7 +1549,8 @@ public class AtomicOperationMetaStoreManager extends BaseMetaStoreManager {
                   Map<String, String> properties = task.getPropertiesAsMap();
                   properties.put(PolarisTaskConstants.LAST_ATTEMPT_EXECUTOR_ID, executorId);
                   properties.put(
-                      PolarisTaskConstants.LAST_ATTEMPT_START_TIME, String.valueOf(clock.millis()));
+                      PolarisTaskConstants.LAST_ATTEMPT_START_TIME,
+                      String.valueOf(getClock().millis()));
                   properties.put(
                       PolarisTaskConstants.ATTEMPT_COUNT,
                       String.valueOf(
