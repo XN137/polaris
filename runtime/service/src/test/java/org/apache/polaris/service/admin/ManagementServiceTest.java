@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.apache.iceberg.exceptions.ValidationException;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.admin.model.AuthenticationParameters;
 import org.apache.polaris.core.admin.model.AwsStorageConfigInfo;
 import org.apache.polaris.core.admin.model.Catalog;
@@ -50,10 +49,10 @@ import org.apache.polaris.core.entity.PolarisEntitySubType;
 import org.apache.polaris.core.entity.PolarisEntityType;
 import org.apache.polaris.core.entity.PrincipalEntity;
 import org.apache.polaris.core.entity.PrincipalRoleEntity;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.dao.entity.BaseResult;
 import org.apache.polaris.core.persistence.dao.entity.CreateCatalogResult;
 import org.apache.polaris.core.persistence.dao.entity.EntityResult;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.apache.polaris.core.secrets.UnsafeInMemorySecretsManager;
 import org.apache.polaris.service.TestServices;
 import org.apache.polaris.service.config.ReservedProperties;
@@ -367,8 +366,7 @@ public class ManagementServiceTest {
             "Explicitly setting polaris.config.enable-sub-catalog-rbac-for-federated-catalogs is not allowed because ALLOW_SETTING_SUB_CATALOG_RBAC_FOR_FEDERATED_CATALOGS is set to false.");
   }
 
-  private PolarisAdminService setupPolarisAdminService(
-      PolarisMetaStoreManager metaStoreManager, PolarisCallContext callContext) {
+  private PolarisAdminService setupPolarisAdminService(MetaStoreSession metaStoreSession) {
     PolarisPrincipal principal =
         PolarisPrincipal.of(
             new PrincipalEntity.Builder()
@@ -376,9 +374,9 @@ public class ManagementServiceTest {
                 .build(),
             Set.of(PolarisEntityConstants.getNameOfPrincipalServiceAdminRole()));
     return new PolarisAdminService(
-        callContext,
+        services.realmConfig(),
         services.resolutionManifestFactory(),
-        metaStoreManager,
+        metaStoreSession,
         new UnsafeInMemorySecretsManager(),
         new DefaultServiceIdentityProvider(),
         principal,
@@ -386,22 +384,18 @@ public class ManagementServiceTest {
         ReservedProperties.NONE);
   }
 
-  private PrincipalEntity createPrincipal(
-      PolarisMetaStoreManager metaStoreManager, PolarisCallContext callContext, String name) {
+  private PrincipalEntity createPrincipal(MetaStoreSession metaStoreSession, String name) {
     return new PrincipalEntity.Builder()
         .setName(name)
         .setCreateTimestamp(Instant.now().toEpochMilli())
-        .setId(metaStoreManager.generateNewEntityId(callContext).getId())
+        .setId(metaStoreSession.generateNewEntityId().getId())
         .build();
   }
 
   private PrincipalRoleEntity createRole(
-      PolarisMetaStoreManager metaStoreManager,
-      PolarisCallContext callContext,
-      String name,
-      boolean isFederated) {
+      MetaStoreSession metaStoreSession, String name, boolean isFederated) {
     return new PrincipalRoleEntity.Builder()
-        .setId(metaStoreManager.generateNewEntityId(callContext).getId())
+        .setId(metaStoreSession.generateNewEntityId().getId())
         .setName(name)
         .setFederated(isFederated)
         .setProperties(Map.of())
@@ -412,16 +406,14 @@ public class ManagementServiceTest {
 
   @Test
   public void testCannotAssignFederatedEntities() {
-    PolarisMetaStoreManager metaStoreManager = services.metaStoreManager();
-    PolarisCallContext callContext = services.newCallContext();
-    PolarisAdminService polarisAdminService =
-        setupPolarisAdminService(metaStoreManager, callContext);
+    MetaStoreSession metaStoreSession = services.metaStoreSession();
+    PolarisAdminService polarisAdminService = setupPolarisAdminService(metaStoreSession);
 
-    PrincipalEntity principal = createPrincipal(metaStoreManager, callContext, "principal_id");
-    metaStoreManager.createPrincipal(callContext, principal);
+    PrincipalEntity principal = createPrincipal(metaStoreSession, "principal_id");
+    metaStoreSession.createPrincipal(principal);
 
-    PrincipalRoleEntity role = createRole(metaStoreManager, callContext, "federated_role_id", true);
-    EntityResult result = metaStoreManager.createEntityIfNotExists(callContext, null, role);
+    PrincipalRoleEntity role = createRole(metaStoreSession, "federated_role_id", true);
+    EntityResult result = metaStoreSession.createEntityIfNotExists(null, role);
     assertThat(result.isSuccess()).isTrue();
 
     assertThatThrownBy(
@@ -431,17 +423,14 @@ public class ManagementServiceTest {
 
   @Test
   public void testCanListCatalogs() {
-    PolarisMetaStoreManager metaStoreManager = services.metaStoreManager();
-    PolarisCallContext callContext = services.newCallContext();
-    PolarisAdminService polarisAdminService =
-        setupPolarisAdminService(metaStoreManager, callContext);
+    MetaStoreSession metaStoreSession = services.metaStoreSession();
+    PolarisAdminService polarisAdminService = setupPolarisAdminService(metaStoreSession);
 
     CreateCatalogResult catalog1 =
-        metaStoreManager.createCatalog(
-            callContext,
+        metaStoreSession.createCatalog(
             new PolarisBaseEntity(
                 PolarisEntityConstants.getNullId(),
-                metaStoreManager.generateNewEntityId(callContext).getId(),
+                metaStoreSession.generateNewEntityId().getId(),
                 PolarisEntityType.CATALOG,
                 PolarisEntitySubType.NULL_SUBTYPE,
                 PolarisEntityConstants.getRootEntityId(),
@@ -450,11 +439,10 @@ public class ManagementServiceTest {
     assertThat(catalog1.isSuccess()).isTrue();
 
     CreateCatalogResult catalog2 =
-        metaStoreManager.createCatalog(
-            callContext,
+        metaStoreSession.createCatalog(
             new PolarisBaseEntity(
                 PolarisEntityConstants.getNullId(),
-                metaStoreManager.generateNewEntityId(callContext).getId(),
+                metaStoreSession.generateNewEntityId().getId(),
                 PolarisEntityType.CATALOG,
                 PolarisEntitySubType.NULL_SUBTYPE,
                 PolarisEntityConstants.getRootEntityId(),
@@ -471,10 +459,8 @@ public class ManagementServiceTest {
 
   @Test
   public void testCreateCatalogReturnErrorOnFailure() {
-    PolarisMetaStoreManager metaStoreManager = Mockito.spy(services.metaStoreManager());
-    PolarisCallContext callContext = services.newCallContext();
-    PolarisAdminService polarisAdminService =
-        setupPolarisAdminService(metaStoreManager, callContext);
+    MetaStoreSession metaStoreSession = Mockito.spy(services.metaStoreSession());
+    PolarisAdminService polarisAdminService = setupPolarisAdminService(metaStoreSession);
 
     AwsStorageConfigInfo awsConfigModel =
         AwsStorageConfigInfo.builder()
@@ -496,8 +482,8 @@ public class ManagementServiceTest {
         new CreateCatalogResult(
             BaseResult.ReturnStatus.UNEXPECTED_ERROR_SIGNALED, "Unexpected Error Occurred");
     Mockito.doAnswer(invocation -> resultWithError)
-        .when(metaStoreManager)
-        .createCatalog(Mockito.any(), Mockito.any(), Mockito.any());
+        .when(metaStoreSession)
+        .createCatalog(Mockito.any(), Mockito.any());
     Assertions.assertThatThrownBy(
             () -> polarisAdminService.createCatalog(new CreateCatalogRequest(catalog)))
         .isInstanceOf(IllegalStateException.class)

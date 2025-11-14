@@ -23,6 +23,7 @@ import static org.apache.polaris.service.task.TaskTestUtils.addTaskLocation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatPredicate;
 
+import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.io.IOException;
@@ -38,36 +39,38 @@ import org.apache.iceberg.inmemory.InMemoryFileIO;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.io.PositionOutputStream;
-import org.apache.polaris.core.PolarisCallContext;
+import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.AsyncTaskType;
 import org.apache.polaris.core.entity.TaskEntity;
-import org.apache.polaris.core.persistence.BasePersistence;
-import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.apache.polaris.service.TestFileIOFactory;
 import org.apache.polaris.service.catalog.io.StorageAccessConfigProvider;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 @QuarkusTest
 class ManifestFileCleanupTaskHandlerTest {
-  @Inject MetaStoreManagerFactory metaStoreManagerFactory;
+  @Inject RealmConfig realmConfig;
+  @Inject MetaStoreSession metaStoreSession;
 
   private final RealmContext realmContext = () -> "realmName";
+  private TaskContext taskContext;
 
   private TaskFileIOSupplier buildTaskFileIOSupplier(FileIO fileIO) {
     return new TaskFileIOSupplier(
         new TestFileIOFactory(fileIO), Mockito.mock(StorageAccessConfigProvider.class));
   }
 
-  private PolarisCallContext newCallContext() {
-    BasePersistence metaStore = metaStoreManagerFactory.getOrCreateSession(realmContext);
-    return new PolarisCallContext(realmContext, metaStore);
+  @BeforeEach
+  void setup() {
+    QuarkusMock.installMockForType(realmContext, RealmContext.class);
+    taskContext = new TaskContext(realmContext, realmConfig, metaStoreSession);
   }
 
   @Test
   public void testCleanupFileNotExists() throws IOException {
-    PolarisCallContext polarisCallContext = newCallContext();
     FileIO fileIO = new InMemoryFileIO();
     TableIdentifier tableIdentifier = TableIdentifier.of(Namespace.of("db1", "schema1"), "table1");
 
@@ -88,12 +91,11 @@ class ManifestFileCleanupTaskHandlerTest {
             .build();
     task = addTaskLocation(task);
     assertThatPredicate(handler::canHandleTask).accepts(task);
-    assertThat(handler.handleTask(task, polarisCallContext)).isTrue();
+    assertThat(handler.handleTask(task, taskContext)).isTrue();
   }
 
   @Test
   public void testCleanupFileManifestExistsDataFilesDontExist() throws IOException {
-    PolarisCallContext polarisCallContext = newCallContext();
     FileIO fileIO = new InMemoryFileIO();
     TableIdentifier tableIdentifier = TableIdentifier.of(Namespace.of("db1", "schema1"), "table1");
     ManifestFileCleanupTaskHandler handler =
@@ -112,12 +114,11 @@ class ManifestFileCleanupTaskHandlerTest {
             .build();
     task = addTaskLocation(task);
     assertThatPredicate(handler::canHandleTask).accepts(task);
-    assertThat(handler.handleTask(task, polarisCallContext)).isTrue();
+    assertThat(handler.handleTask(task, taskContext)).isTrue();
   }
 
   @Test
   public void testCleanupFiles() throws IOException {
-    PolarisCallContext polarisCallContext = newCallContext();
     FileIO fileIO =
         new InMemoryFileIO() {
           @Override
@@ -151,14 +152,13 @@ class ManifestFileCleanupTaskHandlerTest {
             .build();
     task = addTaskLocation(task);
     assertThatPredicate(handler::canHandleTask).accepts(task);
-    assertThat(handler.handleTask(task, polarisCallContext)).isTrue();
+    assertThat(handler.handleTask(task, taskContext)).isTrue();
     assertThatPredicate((String f) -> TaskUtils.exists(f, fileIO)).rejects(dataFile1Path);
     assertThatPredicate((String f) -> TaskUtils.exists(f, fileIO)).rejects(dataFile2Path);
   }
 
   @Test
   public void testCleanupFilesWithRetries() throws IOException {
-    PolarisCallContext polarisCallContext = newCallContext();
     Map<String, AtomicInteger> retryCounter = new HashMap<>();
     FileIO fileIO =
         new InMemoryFileIO() {
@@ -206,7 +206,7 @@ class ManifestFileCleanupTaskHandlerTest {
             .build();
     task = addTaskLocation(task);
     assertThatPredicate(handler::canHandleTask).accepts(task);
-    assertThat(handler.handleTask(task, polarisCallContext)).isTrue();
+    assertThat(handler.handleTask(task, taskContext)).isTrue();
     assertThatPredicate((String f) -> TaskUtils.exists(f, fileIO)).rejects(dataFile1Path);
     assertThatPredicate((String f) -> TaskUtils.exists(f, fileIO)).rejects(dataFile2Path);
   }

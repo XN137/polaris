@@ -31,15 +31,16 @@ import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.catalog.ExternalCatalogFactory;
 import org.apache.polaris.core.catalog.GenericTableCatalog;
 import org.apache.polaris.core.config.FeatureConfiguration;
+import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.connection.ConnectionConfigInfoDpo;
 import org.apache.polaris.core.connection.ConnectionType;
-import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.credentials.PolarisCredentialManager;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.PolarisEntitySubType;
 import org.apache.polaris.core.entity.table.GenericTableEntity;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactory;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.apache.polaris.service.catalog.common.CatalogHandler;
 import org.apache.polaris.service.types.GenericTable;
 import org.apache.polaris.service.types.ListGenericTablesResponse;
@@ -50,15 +51,15 @@ import org.slf4j.LoggerFactory;
 public class GenericTableCatalogHandler extends CatalogHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(GenericTableCatalogHandler.class);
 
-  private PolarisMetaStoreManager metaStoreManager;
-
+  private final MetaStoreSession metaStoreSession;
   private GenericTableCatalog genericTableCatalog;
 
   public GenericTableCatalogHandler(
       PolarisDiagnostics diagnostics,
-      CallContext callContext,
+      RealmContext realmContext,
+      RealmConfig realmConfig,
       ResolutionManifestFactory resolutionManifestFactory,
-      PolarisMetaStoreManager metaStoreManager,
+      MetaStoreSession metaStoreSession,
       PolarisPrincipal principal,
       String catalogName,
       PolarisAuthorizer authorizer,
@@ -66,14 +67,15 @@ public class GenericTableCatalogHandler extends CatalogHandler {
       Instance<ExternalCatalogFactory> externalCatalogFactories) {
     super(
         diagnostics,
-        callContext,
+        realmContext,
+        realmConfig,
         resolutionManifestFactory,
         principal,
         catalogName,
         authorizer,
         polarisCredentialManager,
         externalCatalogFactories);
-    this.metaStoreManager = metaStoreManager;
+    this.metaStoreSession = metaStoreSession;
   }
 
   @Override
@@ -110,7 +112,7 @@ public class GenericTableCatalogHandler extends CatalogHandler {
     } else {
       LOGGER.atInfo().log("Initializing non-federated catalog");
       this.genericTableCatalog =
-          new PolarisGenericTableCatalog(metaStoreManager, callContext, this.resolutionManifest);
+          new PolarisGenericTableCatalog(metaStoreSession, this.resolutionManifest);
       this.genericTableCatalog.initialize(catalogName, Map.of());
     }
   }

@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDefaultDiagServiceImpl;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.auth.PolarisAuthorizer;
@@ -43,21 +42,22 @@ import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.catalog.ExternalCatalogFactory;
 import org.apache.polaris.core.config.PolarisConfigurationStore;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.config.RealmConfigImpl;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.credentials.PolarisCredentialManager;
 import org.apache.polaris.core.credentials.connection.ConnectionCredentialVendor;
 import org.apache.polaris.core.entity.PrincipalEntity;
 import org.apache.polaris.core.identity.provider.ServiceIdentityProvider;
-import org.apache.polaris.core.persistence.BasePersistence;
 import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.cache.EntityCache;
 import org.apache.polaris.core.persistence.dao.entity.CreatePrincipalResult;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactory;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactoryImpl;
 import org.apache.polaris.core.persistence.resolver.Resolver;
 import org.apache.polaris.core.persistence.resolver.ResolverFactory;
+import org.apache.polaris.core.persistence.session.ManagerBasedMetaStoreSessionFactory;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
+import org.apache.polaris.core.persistence.session.MetaStoreSessionFactory;
 import org.apache.polaris.core.secrets.UserSecretsManager;
 import org.apache.polaris.core.secrets.UserSecretsManagerFactory;
 import org.apache.polaris.core.storage.StorageCredentialsVendor;
@@ -86,6 +86,7 @@ import org.apache.polaris.service.persistence.InMemoryPolarisMetaStoreManagerFac
 import org.apache.polaris.service.reporting.DefaultMetricsReporter;
 import org.apache.polaris.service.secrets.UnsafeInMemorySecretsManagerFactory;
 import org.apache.polaris.service.storage.PolarisStorageIntegrationProviderImpl;
+import org.apache.polaris.service.task.TaskContext;
 import org.apache.polaris.service.task.TaskExecutor;
 import org.mockito.Mockito;
 import software.amazon.awssdk.services.sts.StsClient;
@@ -109,7 +110,7 @@ public record TestServices(
     RealmConfig realmConfig,
     PolarisPrincipal principal,
     SecurityContext securityContext,
-    PolarisMetaStoreManager metaStoreManager,
+    MetaStoreSession metaStoreSession,
     FileIOFactory fileIOFactory,
     TaskExecutor taskExecutor,
     PolarisEventListener polarisEventListener,
@@ -199,17 +200,14 @@ public record TestServices(
       UserSecretsManagerFactory userSecretsManagerFactory =
           new UnsafeInMemorySecretsManagerFactory();
 
-      BasePersistence metaStoreSession = metaStoreManagerFactory.getOrCreateSession(realmContext);
-      CallContext callContext =
-          new PolarisCallContext(realmContext, metaStoreSession, configurationStore);
-      RealmConfig realmConfig = callContext.getRealmConfig();
+      RealmConfig realmConfig = new RealmConfigImpl(configurationStore, realmContext);
 
-      PolarisMetaStoreManager metaStoreManager =
-          metaStoreManagerFactory.getOrCreateMetaStoreManager(realmContext);
+      MetaStoreSessionFactory metaStoreSessionFactory =
+          new ManagerBasedMetaStoreSessionFactory(metaStoreManagerFactory, configurationStore);
+      MetaStoreSession metaStoreSession = metaStoreSessionFactory.create(realmContext);
 
       CreatePrincipalResult createdPrincipal =
-          metaStoreManager.createPrincipal(
-              callContext.getPolarisCallContext(),
+          metaStoreSession.createPrincipal(
               new PrincipalEntity.Builder()
                   .setName("test-principal")
                   .setCreateTimestamp(Instant.now().toEpochMilli())
@@ -245,12 +243,7 @@ public record TestServices(
       ResolverFactory resolverFactory =
           (_principal, referenceCatalogName) ->
               new Resolver(
-                  diagnostics,
-                  callContext.getPolarisCallContext(),
-                  metaStoreManager,
-                  _principal,
-                  entityCache,
-                  referenceCatalogName);
+                  diagnostics, metaStoreSession, _principal, entityCache, referenceCatalogName);
 
       ResolutionManifestFactory resolutionManifestFactory =
           new ResolutionManifestFactoryImpl(diagnostics, realmContext, resolverFactory);
@@ -275,7 +268,7 @@ public record TestServices(
           new DefaultPolarisCredentialManager(realmContext, mockCredentialVendors);
 
       StorageCredentialsVendor storageCredentialsVendor =
-          new StorageCredentialsVendor(metaStoreManager, callContext);
+          new StorageCredentialsVendor(realmContext, realmConfig, metaStoreSession);
       StorageAccessConfigProvider storageAccessConfigProvider =
           new StorageAccessConfigProvider(storageCredentialCache, storageCredentialsVendor);
       FileIOFactory fileIOFactory = fileIOFactorySupplier.get();
@@ -291,8 +284,9 @@ public record TestServices(
               storageAccessConfigProvider,
               fileIOFactory,
               polarisEventListener,
-              metaStoreManager,
-              callContext,
+              metaStoreSession,
+              realmContext,
+              realmConfig,
               principal);
 
       ReservedProperties reservedProperties = ReservedProperties.NONE;
@@ -308,11 +302,11 @@ public record TestServices(
           new IcebergCatalogAdapter(
               diagnostics,
               realmContext,
-              callContext,
+              realmConfig,
               callContextFactory,
               resolverFactory,
               resolutionManifestFactory,
-              metaStoreManager,
+              metaStoreSession,
               credentialManager,
               authorizer,
               new DefaultCatalogPrefixParser(),
@@ -329,9 +323,9 @@ public record TestServices(
 
       PolarisAdminService adminService =
           new PolarisAdminService(
-              callContext,
+              realmConfig,
               resolutionManifestFactory,
-              metaStoreManager,
+              metaStoreSession,
               userSecretsManager,
               serviceIdentityProvider,
               principal,
@@ -358,7 +352,7 @@ public record TestServices(
           realmConfig,
           principal,
           securityContext,
-          metaStoreManager,
+          metaStoreSession,
           fileIOFactory,
           taskExecutor,
           polarisEventListener,
@@ -366,8 +360,7 @@ public record TestServices(
     }
   }
 
-  public PolarisCallContext newCallContext() {
-    BasePersistence metaStore = metaStoreManagerFactory.getOrCreateSession(realmContext);
-    return new PolarisCallContext(realmContext, metaStore, configurationStore);
+  public TaskContext newTaskContext() {
+    return new TaskContext(realmContext, realmConfig, metaStoreSession);
   }
 }

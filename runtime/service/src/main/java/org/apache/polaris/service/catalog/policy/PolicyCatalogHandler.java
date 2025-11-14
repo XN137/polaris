@@ -35,15 +35,16 @@ import org.apache.polaris.core.auth.PolarisAuthorizer;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.catalog.ExternalCatalogFactory;
 import org.apache.polaris.core.catalog.PolarisCatalogHelpers;
-import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.credentials.PolarisCredentialManager;
 import org.apache.polaris.core.entity.PolarisEntitySubType;
 import org.apache.polaris.core.entity.PolarisEntityType;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
 import org.apache.polaris.core.persistence.PolarisResolvedPathWrapper;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactory;
 import org.apache.polaris.core.persistence.resolver.ResolverPath;
 import org.apache.polaris.core.persistence.resolver.ResolverStatus;
+import org.apache.polaris.core.persistence.session.MetaStoreSession;
 import org.apache.polaris.core.policy.PolicyType;
 import org.apache.polaris.core.policy.exceptions.NoSuchPolicyException;
 import org.apache.polaris.service.catalog.common.CatalogHandler;
@@ -59,15 +60,15 @@ import org.apache.polaris.service.types.UpdatePolicyRequest;
 
 public class PolicyCatalogHandler extends CatalogHandler {
 
-  private PolarisMetaStoreManager metaStoreManager;
-
+  private final MetaStoreSession metaStoreSession;
   private PolicyCatalog policyCatalog;
 
   public PolicyCatalogHandler(
       PolarisDiagnostics diagnostics,
-      CallContext callContext,
+      RealmContext realmContext,
+      RealmConfig realmConfig,
       ResolutionManifestFactory resolutionManifestFactory,
-      PolarisMetaStoreManager metaStoreManager,
+      MetaStoreSession metaStoreSession,
       PolarisPrincipal principal,
       String catalogName,
       PolarisAuthorizer authorizer,
@@ -75,19 +76,20 @@ public class PolicyCatalogHandler extends CatalogHandler {
       Instance<ExternalCatalogFactory> externalCatalogFactories) {
     super(
         diagnostics,
-        callContext,
+        realmContext,
+        realmConfig,
         resolutionManifestFactory,
         principal,
         catalogName,
         authorizer,
         polarisCredentialManager,
         externalCatalogFactories);
-    this.metaStoreManager = metaStoreManager;
+    this.metaStoreSession = metaStoreSession;
   }
 
   @Override
   protected void initializeCatalog() {
-    this.policyCatalog = new PolicyCatalog(metaStoreManager, callContext, this.resolutionManifest);
+    this.policyCatalog = new PolicyCatalog(metaStoreSession, this.resolutionManifest);
   }
 
   public ListPoliciesResponse listPolicies(Namespace parent, @Nullable PolicyType policyType) {

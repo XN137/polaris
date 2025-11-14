@@ -38,7 +38,7 @@ import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.catalog.ExternalCatalogFactory;
 import org.apache.polaris.core.catalog.PolarisCatalogHelpers;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.credentials.PolarisCredentialManager;
 import org.apache.polaris.core.entity.PolarisEntitySubType;
 import org.apache.polaris.core.entity.PolarisEntityType;
@@ -66,13 +66,14 @@ public abstract class CatalogHandler {
   protected final Instance<ExternalCatalogFactory> externalCatalogFactories;
 
   protected final PolarisDiagnostics diagnostics;
-  protected final CallContext callContext;
+  protected final RealmContext realmContext;
   protected final RealmConfig realmConfig;
   protected final PolarisPrincipal polarisPrincipal;
 
   public CatalogHandler(
       PolarisDiagnostics diagnostics,
-      CallContext callContext,
+      RealmContext realmContext,
+      RealmConfig realmConfig,
       ResolutionManifestFactory resolutionManifestFactory,
       PolarisPrincipal principal,
       String catalogName,
@@ -80,8 +81,8 @@ public abstract class CatalogHandler {
       PolarisCredentialManager credentialManager,
       Instance<ExternalCatalogFactory> externalCatalogFactories) {
     this.diagnostics = diagnostics;
-    this.callContext = callContext;
-    this.realmConfig = callContext.getRealmConfig();
+    this.realmContext = realmContext;
+    this.realmConfig = realmConfig;
     this.resolutionManifestFactory = resolutionManifestFactory;
     this.catalogName = catalogName;
     this.polarisPrincipal = principal;

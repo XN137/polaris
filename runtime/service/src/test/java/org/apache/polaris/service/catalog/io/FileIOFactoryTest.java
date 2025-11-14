@@ -41,7 +41,7 @@ import org.apache.polaris.core.admin.model.CatalogProperties;
 import org.apache.polaris.core.admin.model.CreateCatalogRequest;
 import org.apache.polaris.core.admin.model.PolarisCatalog;
 import org.apache.polaris.core.admin.model.StorageConfigInfo;
-import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.PolarisBaseEntity;
 import org.apache.polaris.core.entity.TaskEntity;
@@ -75,7 +75,7 @@ public class FileIOFactoryTest {
   public static final String SECRET_ACCESS_KEY = "secret_access_key";
   public static final String SESSION_TOKEN = "session_token";
 
-  private CallContext callContext;
+  private RealmConfig realmConfig;
   private RealmContext realmContext;
   private StsClient stsClient;
   private TestServices testServices;
@@ -135,7 +135,7 @@ public class FileIOFactoryTest {
             .fileIOFactorySupplier(fileIOFactorySupplier)
             .build();
 
-    callContext = testServices.newCallContext();
+    realmConfig = testServices.realmConfig();
   }
 
   @AfterEach
@@ -163,8 +163,8 @@ public class FileIOFactoryTest {
 
     List<PolarisBaseEntity> tasks =
         testServices
-            .metaStoreManager()
-            .loadTasks(callContext.getPolarisCallContext(), "testExecutor", PageToken.fromLimit(1))
+            .metaStoreSession()
+            .loadTasks("testExecutor", PageToken.fromLimit(1))
             .getEntities();
     Assertions.assertThat(tasks).hasSize(1);
     TaskEntity taskEntity = TaskEntity.of(tasks.get(0));
@@ -212,8 +212,9 @@ public class FileIOFactoryTest {
         new IcebergCatalog(
             services.polarisDiagnostics(),
             services.resolverFactory(),
-            services.metaStoreManager(),
-            callContext,
+            services.metaStoreSession(),
+            realmContext,
+            realmConfig,
             passthroughView,
             services.principal(),
             services.taskExecutor(),
