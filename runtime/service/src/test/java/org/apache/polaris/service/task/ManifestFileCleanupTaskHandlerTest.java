@@ -41,11 +41,11 @@ import org.apache.iceberg.inmemory.InMemoryFileIO;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.io.PositionOutputStream;
-import org.apache.polaris.core.PolarisCallContext;
-import org.apache.polaris.core.context.CallContext;
+import org.apache.polaris.core.config.RealmConfig;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.AsyncTaskType;
 import org.apache.polaris.core.entity.TaskEntity;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,18 +53,19 @@ import org.mockito.Mockito;
 
 @QuarkusTest
 class ManifestFileCleanupTaskHandlerTest {
-  @Inject CallContext callContext;
   @InjectMock TaskFileIOSupplier taskFileIOSupplier;
+  @Inject RealmConfig realmConfig;
+  @Inject MetaStore metaStore;
 
   private final RealmContext realmContext = () -> "realmName";
-  private PolarisCallContext polarisCallContext;
   private ExecutorService executor;
+  private TaskContext taskContext;
 
   @BeforeEach
   public void beforeEach() {
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
-    polarisCallContext = callContext.getPolarisCallContext();
     executor = Executors.newSingleThreadExecutor();
+    taskContext = new TaskContext(realmContext, realmConfig, metaStore);
   }
 
   @AfterEach
@@ -97,7 +98,7 @@ class ManifestFileCleanupTaskHandlerTest {
             .build();
     task = addTaskLocation(task);
     assertThatPredicate(handler::canHandleTask).accepts(task);
-    assertThat(handler.handleTask(task, polarisCallContext)).isTrue();
+    assertThat(handler.handleTask(task, taskContext)).isTrue();
   }
 
   @Test
@@ -118,7 +119,7 @@ class ManifestFileCleanupTaskHandlerTest {
             .build();
     task = addTaskLocation(task);
     assertThatPredicate(handler::canHandleTask).accepts(task);
-    assertThat(handler.handleTask(task, polarisCallContext)).isTrue();
+    assertThat(handler.handleTask(task, taskContext)).isTrue();
   }
 
   @Test
@@ -154,7 +155,7 @@ class ManifestFileCleanupTaskHandlerTest {
             .build();
     task = addTaskLocation(task);
     assertThatPredicate(handler::canHandleTask).accepts(task);
-    assertThat(handler.handleTask(task, polarisCallContext)).isTrue();
+    assertThat(handler.handleTask(task, taskContext)).isTrue();
     assertThatPredicate((String f) -> TaskUtils.exists(f, fileIO)).rejects(dataFile1Path);
     assertThatPredicate((String f) -> TaskUtils.exists(f, fileIO)).rejects(dataFile2Path);
   }
@@ -206,7 +207,7 @@ class ManifestFileCleanupTaskHandlerTest {
             .build();
     task = addTaskLocation(task);
     assertThatPredicate(handler::canHandleTask).accepts(task);
-    assertThat(handler.handleTask(task, polarisCallContext)).isTrue();
+    assertThat(handler.handleTask(task, taskContext)).isTrue();
     assertThatPredicate((String f) -> TaskUtils.exists(f, fileIO)).rejects(dataFile1Path);
     assertThatPredicate((String f) -> TaskUtils.exists(f, fileIO)).rejects(dataFile2Path);
   }

@@ -27,10 +27,9 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Optional;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.entity.PolarisPrincipalSecrets;
 import org.apache.polaris.core.entity.PrincipalEntity;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.dao.entity.PrincipalSecretsResult;
 import org.apache.polaris.service.types.TokenType;
 import org.junit.jupiter.api.Test;
@@ -46,20 +45,17 @@ public class RSAKeyPairJWTBrokerTest {
     final String clientId = "test-client-id";
     final String scope = "PRINCIPAL_ROLE:TEST";
 
-    PolarisCallContext polarisCallContext = Mockito.mock(PolarisCallContext.class);
-    PolarisMetaStoreManager metastoreManager = Mockito.mock(PolarisMetaStoreManager.class);
+    MetaStore metaStore = Mockito.mock(MetaStore.class);
     String mainSecret = "client-secret";
     PolarisPrincipalSecrets principalSecrets =
         new PolarisPrincipalSecrets(principalId, clientId, mainSecret, "otherSecret");
-    Mockito.when(metastoreManager.loadPrincipalSecrets(polarisCallContext, clientId))
+    Mockito.when(metaStore.loadPrincipalSecrets(clientId))
         .thenReturn(new PrincipalSecretsResult(principalSecrets));
     PrincipalEntity principal =
         new PrincipalEntity.Builder().setId(principalId).setName("principal").build();
-    Mockito.when(metastoreManager.findPrincipalById(polarisCallContext, principalId))
-        .thenReturn(Optional.of(principal));
+    Mockito.when(metaStore.findPrincipalById(principalId)).thenReturn(Optional.of(principal));
     KeyProvider provider = new LocalRSAKeyProvider(keyPair);
-    TokenBroker tokenBroker =
-        new RSAKeyPairJWTBroker(metastoreManager, polarisCallContext, 420, provider);
+    TokenBroker tokenBroker = new RSAKeyPairJWTBroker(metaStore, 420, provider);
     TokenResponse token =
         tokenBroker.generateFromClientSecrets(
             clientId,

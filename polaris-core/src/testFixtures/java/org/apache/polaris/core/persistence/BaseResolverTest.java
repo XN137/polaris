@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDefaultDiagServiceImpl;
 import org.apache.polaris.core.auth.PolarisPrincipal;
@@ -38,7 +37,6 @@ import org.apache.polaris.core.entity.PolarisEntityType;
 import org.apache.polaris.core.entity.PolarisGrantRecord;
 import org.apache.polaris.core.entity.PolarisPrivilege;
 import org.apache.polaris.core.entity.PrincipalEntity;
-import org.apache.polaris.core.entity.PrincipalRoleEntity;
 import org.apache.polaris.core.persistence.cache.InMemoryEntityCache;
 import org.apache.polaris.core.persistence.dao.entity.ResolvedEntityResult;
 import org.apache.polaris.core.persistence.resolver.Resolver;
@@ -51,6 +49,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public abstract class BaseResolverTest {
   protected final PolarisDefaultDiagServiceImpl diagServices = new PolarisDefaultDiagServiceImpl();
+
+  protected MetaStore metaStore;
 
   // Principal P1
   protected PolarisBaseEntity P1;
@@ -105,6 +105,14 @@ public abstract class BaseResolverTest {
 
   // the meta store manager
   protected abstract PolarisMetaStoreManager metaStoreManager();
+
+  // the meta store
+  protected MetaStore metaStore() {
+    if (metaStore == null) {
+      metaStore = new ManagerBasedMetaStore(metaStoreManager(), callCtx());
+    }
+    return metaStore;
+  }
 
   protected static boolean supportEntityCache = true;
 
@@ -418,28 +426,14 @@ public abstract class BaseResolverTest {
 
     // create a new cache if needs be
     if (cache == null) {
-      this.cache =
-          new InMemoryEntityCache(diagServices, callCtx().getRealmConfig(), metaStoreManager());
+      this.cache = new InMemoryEntityCache(diagServices, callCtx().getRealmConfig());
     }
-    boolean allRoles = principalRolesScope == null;
-    Optional<List<PrincipalRoleEntity>> roleEntities =
-        Optional.ofNullable(principalRolesScope)
-            .map(
-                scopes ->
-                    scopes.stream()
-                        .map(
-                            roleName ->
-                                metaStoreManager().findPrincipalRoleByName(callCtx(), roleName))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .collect(Collectors.toList()));
     PolarisPrincipal authenticatedPrincipal =
         PolarisPrincipal.of(
             PrincipalEntity.of(P1), Optional.ofNullable(principalRolesScope).orElse(Set.of()));
     return new Resolver(
         diagServices,
-        callCtx(),
-        metaStoreManager(),
+        metaStore(),
         authenticatedPrincipal,
         this.shouldUseCache ? this.cache : null,
         referenceCatalogName);
@@ -631,8 +625,7 @@ public abstract class BaseResolverTest {
       // the principal does not exist, check that this is the case
       if (principalName != null) {
         // see if the principal exists
-        Optional<PrincipalEntity> principal =
-            metaStoreManager().findPrincipalByName(callCtx(), principalName);
+        Optional<PrincipalEntity> principal = metaStore().findPrincipalByName(principalName);
         // if found, ensure properly resolved
         if (principal.isPresent()) {
           // the principal exist, check that this is the case
@@ -831,9 +824,9 @@ public abstract class BaseResolverTest {
 
     // reload the cached entry from the backend
     ResolvedEntityResult refResolvedEntity =
-        metaStoreManager()
+        metaStore()
             .loadResolvedEntityById(
-                callCtx(), refEntity.getCatalogId(), refEntity.getId(), refEntity.getType());
+                refEntity.getCatalogId(), refEntity.getId(), refEntity.getType());
 
     // should exist
     Assertions.assertThat(refResolvedEntity).isNotNull();

@@ -16,27 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.polaris.service.auth.internal.broker;
 
-import com.auth0.jwt.algorithms.Algorithm;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+package org.apache.polaris.service.task;
+
+import org.apache.polaris.core.config.RealmConfig;
+import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.persistence.MetaStore;
 
-/** Generates a JWT using a Public/Private RSA Key */
-public class RSAKeyPairJWTBroker extends JWTBroker {
-
-  private final KeyProvider keyProvider;
-
-  RSAKeyPairJWTBroker(
-      MetaStore metaStore, int maxTokenGenerationInSeconds, KeyProvider keyProvider) {
-    super(metaStore, maxTokenGenerationInSeconds);
-    this.keyProvider = keyProvider;
-  }
-
-  @Override
-  public Algorithm getAlgorithm() {
-    return Algorithm.RSA256(
-        (RSAPublicKey) keyProvider.publicKey(), (RSAPrivateKey) keyProvider.privateKey());
-  }
-}
+public record TaskContext(
+    RealmContext realmContext, RealmConfig realmConfig, MetaStore metaStore) {}

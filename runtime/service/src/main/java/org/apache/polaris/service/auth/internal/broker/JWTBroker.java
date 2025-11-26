@@ -27,9 +27,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.entity.PrincipalEntity;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.dao.entity.PrincipalSecretsResult;
 import org.apache.polaris.service.auth.DefaultAuthenticator;
 import org.apache.polaris.service.auth.PolarisCredential;
@@ -48,16 +47,11 @@ public abstract class JWTBroker implements TokenBroker {
   private static final String CLAIM_KEY_PRINCIPAL_ID = "principalId";
   private static final String CLAIM_KEY_SCOPE = "scope";
 
-  private final PolarisMetaStoreManager metaStoreManager;
-  private final PolarisCallContext polarisCallContext;
+  private final MetaStore metaStore;
   private final int maxTokenGenerationInSeconds;
 
-  JWTBroker(
-      PolarisMetaStoreManager metaStoreManager,
-      PolarisCallContext polarisCallContext,
-      int maxTokenGenerationInSeconds) {
-    this.metaStoreManager = metaStoreManager;
-    this.polarisCallContext = polarisCallContext;
+  JWTBroker(MetaStore metaStore, int maxTokenGenerationInSeconds) {
+    this.metaStore = metaStore;
     this.maxTokenGenerationInSeconds = maxTokenGenerationInSeconds;
   }
 
@@ -109,7 +103,7 @@ public abstract class JWTBroker implements TokenBroker {
       return TokenResponse.of(OAuthError.invalid_client);
     }
     Optional<PrincipalEntity> principalLookup =
-        metaStoreManager.findPrincipalById(polarisCallContext, decodedToken.getPrincipalId());
+        metaStore.findPrincipalById(decodedToken.getPrincipalId());
     if (principalLookup.isEmpty()) {
       return TokenResponse.of(OAuthError.unauthorized_client);
     }
@@ -180,15 +174,13 @@ public abstract class JWTBroker implements TokenBroker {
 
   private Optional<PrincipalEntity> findPrincipalEntity(String clientId, String clientSecret) {
     // Validate the principal is present and secrets match
-    PrincipalSecretsResult principalSecrets =
-        metaStoreManager.loadPrincipalSecrets(polarisCallContext, clientId);
+    PrincipalSecretsResult principalSecrets = metaStore.loadPrincipalSecrets(clientId);
     if (!principalSecrets.isSuccess()) {
       return Optional.empty();
     }
     if (!principalSecrets.getPrincipalSecrets().matchesSecret(clientSecret)) {
       return Optional.empty();
     }
-    return metaStoreManager.findPrincipalById(
-        polarisCallContext, principalSecrets.getPrincipalSecrets().getPrincipalId());
+    return metaStore.findPrincipalById(principalSecrets.getPrincipalSecrets().getPrincipalId());
   }
 }

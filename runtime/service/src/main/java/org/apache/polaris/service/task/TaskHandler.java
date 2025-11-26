@@ -18,11 +18,10 @@
  */
 package org.apache.polaris.service.task;
 
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.entity.TaskEntity;
 
 public interface TaskHandler {
   boolean canHandleTask(TaskEntity task);
 
-  boolean handleTask(TaskEntity task, CallContext callContext);
+  boolean handleTask(TaskEntity task, TaskContext taskContext);
 }

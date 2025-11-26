@@ -1,0 +1,682 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.polaris.core.persistence;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import org.apache.polaris.core.entity.LocationBasedEntity;
+import org.apache.polaris.core.entity.PolarisBaseEntity;
+import org.apache.polaris.core.entity.PolarisEntity;
+import org.apache.polaris.core.entity.PolarisEntityConstants;
+import org.apache.polaris.core.entity.PolarisEntityCore;
+import org.apache.polaris.core.entity.PolarisEntityId;
+import org.apache.polaris.core.entity.PolarisEntitySubType;
+import org.apache.polaris.core.entity.PolarisEntityType;
+import org.apache.polaris.core.entity.PolarisEvent;
+import org.apache.polaris.core.entity.PolarisPrivilege;
+import org.apache.polaris.core.entity.PrincipalEntity;
+import org.apache.polaris.core.persistence.dao.entity.BaseResult;
+import org.apache.polaris.core.persistence.dao.entity.ChangeTrackingResult;
+import org.apache.polaris.core.persistence.dao.entity.CreateCatalogResult;
+import org.apache.polaris.core.persistence.dao.entity.CreatePrincipalResult;
+import org.apache.polaris.core.persistence.dao.entity.DropEntityResult;
+import org.apache.polaris.core.persistence.dao.entity.EntitiesResult;
+import org.apache.polaris.core.persistence.dao.entity.EntityResult;
+import org.apache.polaris.core.persistence.dao.entity.EntityWithPath;
+import org.apache.polaris.core.persistence.dao.entity.GenerateEntityIdResult;
+import org.apache.polaris.core.persistence.dao.entity.ListEntitiesResult;
+import org.apache.polaris.core.persistence.dao.entity.LoadGrantsResult;
+import org.apache.polaris.core.persistence.dao.entity.LoadPolicyMappingsResult;
+import org.apache.polaris.core.persistence.dao.entity.PolicyAttachmentResult;
+import org.apache.polaris.core.persistence.dao.entity.PrincipalSecretsResult;
+import org.apache.polaris.core.persistence.dao.entity.PrivilegeResult;
+import org.apache.polaris.core.persistence.dao.entity.ResolvedEntitiesResult;
+import org.apache.polaris.core.persistence.dao.entity.ResolvedEntityResult;
+import org.apache.polaris.core.persistence.dao.entity.ScopedCredentialsResult;
+import org.apache.polaris.core.persistence.pagination.Page;
+import org.apache.polaris.core.persistence.pagination.PageToken;
+import org.apache.polaris.core.policy.PolicyEntity;
+import org.apache.polaris.core.policy.PolicyType;
+
+/**
+ * Polaris Metastore stores all Polaris entities and associated grant records metadata for
+ * authorization. It represents the underlying persistent metastore to store and retrieve Polaris
+ * metadata
+ */
+public interface MetaStore {
+
+  /**
+   * Purge all metadata associated with the Polaris service, resetting the metastore to the state it
+   * was in prior to bootstrapping.
+   *
+   * <p>*************************** WARNING ************************
+   *
+   * <p>This will destroy whatever Polaris metadata exists in the metastore
+   *
+   * @return always success or unexpected error
+   */
+  @Nonnull
+  BaseResult purge();
+
+  /**
+   * Resolve an entity by name. Can be a top-level entity like a catalog or an entity inside a
+   * catalog like a namespace, a role, a table like entity, or a principal. If the entity is inside
+   * a catalog, the parameter catalogPath must be specified
+   *
+   * @param catalogPath path inside a catalog to that entity, rooted by the catalog. If null, the
+   *     entity being resolved is a top-level account entity like a catalog.
+   * @param entityType entity type
+   * @param entitySubType entity subtype. Can be the special value ANY_SUBTYPE to match any
+   *     subtypes. Else exact match on the subtype will be required.
+   * @param name name of the entity, cannot be null
+   * @return the result of the lookup operation. ENTITY_NOT_FOUND is returned if the specified
+   *     entity is not found in the specified path. CONCURRENT_MODIFICATION_DETECTED_NEED_RETRY is
+   *     returned if the specified catalog path cannot be resolved.
+   */
+  @Nonnull
+  EntityResult readEntityByName(
+      @Nullable List<PolarisEntityCore> catalogPath,
+      @Nonnull PolarisEntityType entityType,
+      @Nonnull PolarisEntitySubType entitySubType,
+      @Nonnull String name);
+
+  /**
+   * List lightweight information about entities matching the given criteria. If all properties of
+   * the entity are required,use {@link #listFullEntities} instead.
+   *
+   * @param catalogPath path inside a catalog. If null or empty, the entities to list are top-level,
+   *     like catalogs
+   * @param entityType entity type
+   * @param entitySubType entity subtype. Can be the special value ANY_SUBTYPE to match any subtype.
+   *     Else exact match will be performed.
+   * @return all entities name, ids and subtype under the specified namespace.
+   */
+  @Nonnull
+  ListEntitiesResult listEntities(
+      @Nullable List<PolarisEntityCore> catalogPath,
+      @Nonnull PolarisEntityType entityType,
+      @Nonnull PolarisEntitySubType entitySubType,
+      @Nonnull PageToken pageToken);
+
+  /**
+   * Load full entities matching the given criteria with pagination. If only the entity name/id/type
+   * is required, use {@link #listEntities} instead. If no pagination is required, use {@link
+   * #listFullEntitiesAll} instead.
+   *
+   * @param catalogPath path inside a catalog. If null or empty, the entities to list are top-level,
+   *     like catalogs
+   * @param entityType type of entities to list
+   * @param entitySubType subType of entities to list (or ANY_SUBTYPE)
+   * @return paged list of matching entities
+   */
+  @Nonnull
+  Page<PolarisBaseEntity> listFullEntities(
+      @Nullable List<PolarisEntityCore> catalogPath,
+      @Nonnull PolarisEntityType entityType,
+      @Nonnull PolarisEntitySubType entitySubType,
+      @Nonnull PageToken pageToken);
+
+  /**
+   * Load full entities matching the given criteria into an unpaged list. If pagination is required
+   * use {@link #listFullEntities} instead. If only the entity name/id/type is required, use {@link
+   * #listEntities} instead.
+   *
+   * @param catalogPath path inside a catalog. If null or empty, the entities to list are top-level,
+   *     like catalogs
+   * @param entityType type of entities to list
+   * @param entitySubType subType of entities to list (or ANY_SUBTYPE)
+   * @return list of all matching entities
+   */
+  @Nonnull
+  default List<PolarisBaseEntity> listFullEntitiesAll(
+      @Nullable List<PolarisEntityCore> catalogPath,
+      @Nonnull PolarisEntityType entityType,
+      @Nonnull PolarisEntitySubType entitySubType) {
+    return listFullEntities(catalogPath, entityType, entitySubType, PageToken.readEverything())
+        .items();
+  }
+
+  /**
+   * Generate a new unique id that can be used by the Polaris client when it needs to create a new
+   * entity
+   *
+   * @return the newly created id, not expected to fail
+   */
+  @Nonnull
+  GenerateEntityIdResult generateNewEntityId();
+
+  /**
+   * Create a new principal. This not only creates the new principal entity but also generates a
+   * client_id/secret pair for this new principal.
+   *
+   * @param principal the principal entity to create
+   * @return the client_id/secret for the new principal which was created. Will return
+   *     ENTITY_ALREADY_EXISTS if the principal already exists
+   */
+  @Nonnull
+  CreatePrincipalResult createPrincipal(@Nonnull PrincipalEntity principal);
+
+  /**
+   * Create a new catalog. This not only creates the new catalog entity but also the initial admin
+   * role required to admin this catalog. If inline storage integration property is provided, create
+   * a storage integration.
+   *
+   * @param catalog the catalog entity to create
+   * @param principalRoles once the catalog has been created, list of principal roles to grant its
+   *     catalog_admin role to. If no principal role is specified, we will grant the catalog_admin
+   *     role of the newly created catalog to the service admin role.
+   * @return if success, the catalog which was created and its admin role.
+   */
+  @Nonnull
+  CreateCatalogResult createCatalog(
+      @Nonnull PolarisBaseEntity catalog, @Nonnull List<PolarisEntityCore> principalRoles);
+
+  /**
+   * Persist a newly created entity under the specified catalog path if specified, else this is a
+   * top-level entity. We will re-resolve the specified path to ensure nothing has changed since the
+   * Polaris app resolved the path. If the entity already exists with the same specified id, we will
+   * simply return it. This can happen when the client retries. If a catalogPath is specified and
+   * cannot be resolved, we will return null. And of course if another entity exists with the same
+   * name, we will fail and also return null.
+   *
+   * @param catalogPath path inside a catalog. If null, the entity to persist is assumed to be
+   *     top-level.
+   * @param entity entity to write
+   * @return the newly created entity. If this entity was already created, we will simply return the
+   *     already created entity. We will return null if a different entity with the same name exists
+   *     or if the catalogPath couldn't be resolved. If null is returned, the client app should
+   *     retry this operation.
+   */
+  @Nonnull
+  EntityResult createEntityIfNotExists(
+      @Nullable List<PolarisEntityCore> catalogPath, @Nonnull PolarisBaseEntity entity);
+
+  /**
+   * Persist a batch of newly created entities under the specified catalog path if specified, else
+   * these are top-level entities. We will re-resolve the specified path to ensure nothing has
+   * changed since the Polaris app resolved the path. If any of the entities already exists with the
+   * same specified id, we will simply return it. This can happen when the client retries. If a
+   * catalogPath is specified and cannot be resolved, we will return null and none of the entities
+   * will be persisted. And of course if any entity conflicts with an existing entity with the same
+   * name, we will fail all entities and also return null.
+   *
+   * @param catalogPath path inside a catalog. If null, the entity to persist is assumed to be
+   *     top-level.
+   * @param entities batch of entities to write
+   * @return the newly created entities. If the entities were already created, we will simply return
+   *     the already created entity. We will return null if a different entity with the same name
+   *     exists or if the catalogPath couldn't be resolved. If null is returned, the client app
+   *     should retry this operation.
+   */
+  @Nonnull
+  EntitiesResult createEntitiesIfNotExist(
+      @Nullable List<PolarisEntityCore> catalogPath,
+      @Nonnull List<? extends PolarisBaseEntity> entities);
+
+  /**
+   * Update some properties of this entity assuming it can still be resolved the same way and itself
+   * has not changed. If this is not the case we will return false. Else we will update both the
+   * internal and visible properties and return true
+   *
+   * @param catalogPath path to that entity. Could be null if this entity is top-level
+   * @param entity entity to update, cannot be null
+   * @return the entity we updated or null if the client should retry
+   */
+  @Nonnull
+  EntityResult updateEntityPropertiesIfNotChanged(
+      @Nullable List<PolarisEntityCore> catalogPath, @Nonnull PolarisBaseEntity entity);
+
+  /**
+   * This works exactly like {@link #updateEntityPropertiesIfNotChanged(List, PolarisBaseEntity)}
+   * but allows to operate on multiple entities at once. Just loop through the list, calling each
+   * entity update and return null if any of those fail.
+   *
+   * @param entities the set of entities to update
+   * @return list of all entities we updated or null if the client should retry because one update
+   *     failed
+   */
+  @Nonnull
+  EntitiesResult updateEntitiesPropertiesIfNotChanged(@Nonnull List<EntityWithPath> entities);
+
+  /**
+   * Rename an entity, potentially re-parenting it.
+   *
+   * @param catalogPath path to that entity. Could be an empty list of the entity is a catalog.
+   * @param entityToRename entity to rename. This entity should have been resolved by the client
+   * @param newCatalogPath if not null, new catalog path
+   * @param renamedEntity the new renamed entity we need to persist. We will use this argument to
+   *     also update the internal and external properties as part of the rename operation. This is
+   *     required to update the namespace path of the entity if it has changed
+   * @return the entity after renaming it or null if the rename operation has failed
+   */
+  @Nonnull
+  EntityResult renameEntity(
+      @Nullable List<PolarisEntityCore> catalogPath,
+      @Nonnull PolarisBaseEntity entityToRename,
+      @Nullable List<PolarisEntityCore> newCatalogPath,
+      @Nonnull PolarisEntity renamedEntity);
+
+  /**
+   * Drop the specified entity assuming it exists
+   *
+   * @param catalogPath path to that entity. Could be an empty list of the entity is a catalog.
+   * @param entityToDrop entity to drop, must have been resolved by the client
+   * @param cleanupProperties if not null, properties that will be persisted with the cleanup task
+   * @param cleanup true if resources owned by this entity should be deleted as well
+   * @return the result of the drop entity call, either success or error. If the error, it could be
+   *     that the namespace or catalog to drop still has children, this should not be retried and
+   *     should cause a failure
+   */
+  @Nonnull
+  DropEntityResult dropEntityIfExists(
+      @Nullable List<PolarisEntityCore> catalogPath,
+      @Nonnull PolarisBaseEntity entityToDrop,
+      @Nullable Map<String, String> cleanupProperties,
+      boolean cleanup);
+
+  /**
+   * Load the entity from backend store. Will return NULL if the entity does not exist, i.e. has
+   * been purged. The entity being loaded might have been dropped
+   *
+   * @param entityCatalogId id of the catalog for that entity
+   * @param entityId the id of the entity to load
+   */
+  @Nonnull
+  EntityResult loadEntity(
+      long entityCatalogId, long entityId, @Nonnull PolarisEntityType entityType);
+
+  /**
+   * Fetch a list of tasks to be completed. Tasks
+   *
+   * @param executorId executor id
+   * @param pageToken page token to start after
+   * @return list of tasks to be completed
+   */
+  @Nonnull
+  EntitiesResult loadTasks(String executorId, PageToken pageToken);
+
+  /**
+   * Load change tracking information for a set of entities in one single shot and return for each
+   * the version for the entity itself and the version associated to its grant records.
+   *
+   * @param entityIds list of catalog/entity pair ids for which we need to efficiently load the
+   *     version information, both entity version and grant records version.
+   * @return a list of version tracking information. Order in that returned list is the same as the
+   *     input list. Some elements might be NULL if the entity has been purged. Not expected to fail
+   */
+  @Nonnull
+  ChangeTrackingResult loadEntitiesChangeTracking(@Nonnull List<PolarisEntityId> entityIds);
+
+  /**
+   * Load a resolved entity, i.e. an entity definition and associated grant records, from the
+   * backend store. The entity is identified by its id (entity catalog id and id).
+   *
+   * <p>For entities that can be grantees, the associated grant records will include both the grant
+   * records for this entity as a grantee and for this entity as a securable.
+   *
+   * @param entityCatalogId id of the catalog for that entity
+   * @param entityId id of the entity
+   * @return result with entity and grants. Status will be ENTITY_NOT_FOUND if the entity was not
+   *     found
+   */
+  @Nonnull
+  ResolvedEntityResult loadResolvedEntityById(
+      long entityCatalogId, long entityId, PolarisEntityType entityType);
+
+  /**
+   * Load a resolved entity, i.e. an entity definition and associated grant records, from the
+   * backend store. The entity is identified by its name. Will return NULL if the entity does not
+   * exist, i.e. has been purged or dropped.
+   *
+   * <p>For entities that can be grantees, the associated grant records will include both the grant
+   * records for this entity as a grantee and for this entity as a securable.
+   *
+   * @param entityCatalogId id of the catalog for that entity
+   * @param parentId the id of the parent of that entity
+   * @param entityType the type of this entity
+   * @param entityName the name of this entity
+   * @return result with entity and grants. Status will be ENTITY_NOT_FOUND if the entity was not
+   *     found
+   */
+  @Nonnull
+  ResolvedEntityResult loadResolvedEntityByName(
+      long entityCatalogId,
+      long parentId,
+      @Nonnull PolarisEntityType entityType,
+      @Nonnull String entityName);
+
+  /**
+   * Load a batch of resolved entities of a specified entity type given their {@link
+   * PolarisEntityId}. Will return an empty list if the input list is empty. Order in that returned
+   * list is the same as the input list. Some elements might be NULL if the entity has been dropped.
+   *
+   * @param entityType the type of entities to load
+   * @param entityIds the list of entity ids to load
+   * @return a non-null list of entities corresponding to the lookup keys. Some elements might be
+   *     NULL if the entity has been dropped.
+   */
+  @Nonnull
+  ResolvedEntitiesResult loadResolvedEntities(
+      @Nonnull PolarisEntityType entityType, @Nonnull List<PolarisEntityId> entityIds);
+
+  /**
+   * Refresh a resolved entity from the backend store. Will return NULL if the entity does not
+   * exist, i.e. has been purged or dropped. Else, will determine what has changed based on the
+   * version information sent by the caller and will return only what has changed.
+   *
+   * <p>For entities that can be grantees, the associated grant records will include both the grant
+   * records for this entity as a grantee and for this entity as a securable.
+   *
+   * @param entityType type of the entity whose entity and grants we are refreshing
+   * @param entityCatalogId id of the catalog for that entity
+   * @param entityId the id of the entity to load
+   * @return result with entity and grants. Status will be ENTITY_NOT_FOUND if the entity was not
+   *     found
+   */
+  @Nonnull
+  ResolvedEntityResult refreshResolvedEntity(
+      int entityVersion,
+      int entityGrantRecordsVersion,
+      @Nonnull PolarisEntityType entityType,
+      long entityCatalogId,
+      long entityId);
+
+  /**
+   * Check if the specified IcebergTableLikeEntity has any same-namespace siblings which share a
+   * location
+   *
+   * @param entity the entity to check for overlapping siblings for
+   * @return Optional.of(Optional.of ( location)) if the parent entity has children,
+   *     Optional.of(Optional.empty()) if not, and Optional.empty() if the metastore doesn't support
+   *     this operation
+   */
+  <T extends PolarisEntity & LocationBasedEntity> Optional<Optional<String>> hasOverlappingSiblings(
+      @Nonnull T entity);
+
+  /**
+   * Indicates whether this metastore manager implementation requires entities to be reloaded via
+   * {@link #loadEntitiesChangeTracking} in order to ensure the most recent versions are obtained.
+   *
+   * <p>Generally this flag is {@code true} when entity caching is used.
+   */
+  boolean requiresEntityReload();
+
+  default Optional<PrincipalEntity> findRootPrincipal() {
+    return findPrincipalByName(PolarisEntityConstants.getRootPrincipalName());
+  }
+
+  default Optional<PrincipalEntity> findPrincipalById(long principalId) {
+    EntityResult loadResult =
+        loadEntity(PolarisEntityConstants.getNullId(), principalId, PolarisEntityType.PRINCIPAL);
+    if (!loadResult.isSuccess()) {
+      return Optional.empty();
+    }
+    return Optional.of(loadResult.getEntity()).map(PrincipalEntity::of);
+  }
+
+  default Optional<PrincipalEntity> findPrincipalByName(String principalName) {
+    EntityResult entityResult =
+        readEntityByName(
+            null, PolarisEntityType.PRINCIPAL, PolarisEntitySubType.NULL_SUBTYPE, principalName);
+    if (!entityResult.isSuccess()) {
+      return Optional.empty();
+    }
+    return Optional.of(entityResult.getEntity()).map(PrincipalEntity::of);
+  }
+
+  /**
+   * Load the principal secrets given the client_id.
+   *
+   * @param clientId principal client id
+   * @return the secrets associated to that principal, including the entity id of the principal
+   */
+  @Nonnull
+  PrincipalSecretsResult loadPrincipalSecrets(@Nonnull String clientId);
+
+  /**
+   * Rotate secrets
+   *
+   * @param clientId principal client id
+   * @param principalId id of the principal
+   * @param reset true if the principal's secrets should be disabled and replaced with a one-time
+   *     password. if the principal's secret is already a one-time password, this flag is
+   *     automatically true
+   * @param oldSecretHash main secret hash for the principal
+   * @return the secrets associated to that principal amd the id of the principal
+   */
+  @Nonnull
+  PrincipalSecretsResult rotatePrincipalSecrets(
+      @Nonnull String clientId, long principalId, boolean reset, @Nonnull String oldSecretHash);
+
+  /**
+   * Reset the secrets of a principal entity.
+   *
+   * <p>This operation makes the specified secrets (either provided by the caller or newly
+   * generated) the active credentials for the principal. It effectively overwrites any previous
+   * secrets and sets the provided values as the new client id/secret for the principal.
+   *
+   * @param principalId id of the principal
+   * @param resolvedClientId current principal client id
+   * @param customClientSecret optional new client secret to assign (may be {@code null} if
+   *     system-generated)
+   * @return the secrets associated with the principal, including the updated client id and secret
+   */
+  @Nonnull
+  PrincipalSecretsResult resetPrincipalSecrets(
+      long principalId, @Nonnull String resolvedClientId, String customClientSecret);
+
+  /**
+   * Permanently delete the secrets of a principal.
+   *
+   * <p>This operation removes all stored secrets associated with the given principal
+   *
+   * @param clientId principal client id
+   * @param principalId id of the principal whose secrets should be deleted
+   */
+  void deletePrincipalSecrets(@Nonnull String clientId, long principalId);
+
+  /**
+   * Grant usage on a role to a grantee, for example granting usage on a catalog role to a principal
+   * role or granting a principal role to a principal.
+   *
+   * @param catalog if the role is a catalog role, the caller needs to pass-in the catalog entity
+   *     which was used to resolve that granted. Else null.
+   * @param role resolved catalog or principal role
+   * @param grantee principal role or principal as resolved by the caller
+   * @return the grant record we created for this grant. Will return ENTITY_NOT_FOUND if the
+   *     specified role couldn't be found. Should be retried in that case
+   */
+  @Nonnull
+  PrivilegeResult grantUsageOnRoleToGrantee(
+      @Nullable PolarisEntityCore catalog,
+      @Nonnull PolarisEntityCore role,
+      @Nonnull PolarisEntityCore grantee);
+
+  /**
+   * Revoke usage on a role (a catalog or a principal role) from a grantee (e.g. a principal role or
+   * a principal).
+   *
+   * @param catalog if the granted is a catalog role, the caller needs to pass-in the catalog entity
+   *     which was used to resolve that role. Else null should be passed-in.
+   * @param role a catalog/principal role as resolved by the caller
+   * @param grantee resolved principal role or principal
+   * @return the result. Will return ENTITY_NOT_FOUND if the * specified role couldn't be found.
+   *     Should be retried in that case. Will return GRANT_NOT_FOUND if the grant to revoke cannot
+   *     be found
+   */
+  @Nonnull
+  PrivilegeResult revokeUsageOnRoleFromGrantee(
+      @Nullable PolarisEntityCore catalog,
+      @Nonnull PolarisEntityCore role,
+      @Nonnull PolarisEntityCore grantee);
+
+  /**
+   * Grant a privilege on a catalog securable to a grantee.
+   *
+   * @param grantee resolved role, the grantee
+   * @param catalogPath path to that entity, cannot be null or empty unless securable is top-level
+   * @param securable securable entity, must have been resolved by the client. Can be the catalog
+   *     itself
+   * @param privilege privilege to grant
+   * @return the grant record we created for this grant. Will return ENTITY_NOT_FOUND if the
+   *     specified role couldn't be found. Should be retried in that case
+   */
+  @Nonnull
+  PrivilegeResult grantPrivilegeOnSecurableToRole(
+      @Nonnull PolarisEntityCore grantee,
+      @Nullable List<PolarisEntityCore> catalogPath,
+      @Nonnull PolarisEntityCore securable,
+      @Nonnull PolarisPrivilege privilege);
+
+  /**
+   * Revoke a privilege on a catalog securable from a grantee.
+   *
+   * @param grantee resolved role, the grantee
+   * @param catalogPath path to that entity, cannot be null or empty unless securable is top-level
+   * @param securable securable entity, must have been resolved by the client. Can be the catalog
+   *     itself.
+   * @param privilege privilege to revoke
+   * @return the result. Will return ENTITY_NOT_FOUND if the * specified role couldn't be found.
+   *     Should be retried in that case. Will return GRANT_NOT_FOUND if the grant to revoke cannot
+   *     be found
+   */
+  @Nonnull
+  PrivilegeResult revokePrivilegeOnSecurableFromRole(
+      @Nonnull PolarisEntityCore grantee,
+      @Nullable List<PolarisEntityCore> catalogPath,
+      @Nonnull PolarisEntityCore securable,
+      @Nonnull PolarisPrivilege privilege);
+
+  /**
+   * This method should be used by the Polaris app to cache all grant records on a securable.
+   *
+   * @param securable the securable entity
+   * @return the list of grants and the version of the grant records. We will return
+   *     ENTITY_NOT_FOUND if the securable cannot be found
+   */
+  @Nonnull
+  LoadGrantsResult loadGrantsOnSecurable(PolarisEntityCore securable);
+
+  /**
+   * This method should be used by the Polaris app to load all grants made to a grantee, either a
+   * role or a principal.
+   *
+   * @param grantee the grantee entity
+   * @return the list of grants and the version of the grant records. We will return NULL if the
+   *     grantee does not exist
+   */
+  @Nonnull
+  LoadGrantsResult loadGrantsToGrantee(PolarisEntityCore grantee);
+
+  /**
+   * Attach a policy to a target entity, for example attach a policy to a table.
+   *
+   * <p>For inheritable policy, only one policy of the same type can be attached to the target. For
+   * non-inheritable policy, multiple policies of the same type can be attached to the target.
+   *
+   * @param targetCatalogPath path to the target entity
+   * @param target target entity
+   * @param policyCatalogPath path to the policy entity
+   * @param policy policy entity
+   * @param parameters additional parameters for the attachment
+   * @return The policy mapping record we created for this attachment. Will return ENTITY_NOT_FOUND
+   *     if the specified target or policy does not exist. Will return
+   *     POLICY_OF_SAME_TYPE_ALREADY_ATTACHED if the target already has a policy of the same type
+   *     attached and the policy is inheritable.
+   */
+  @Nonnull
+  PolicyAttachmentResult attachPolicyToEntity(
+      @Nonnull List<PolarisEntityCore> targetCatalogPath,
+      @Nonnull PolarisEntityCore target,
+      @Nonnull List<PolarisEntityCore> policyCatalogPath,
+      @Nonnull PolicyEntity policy,
+      Map<String, String> parameters);
+
+  /**
+   * Detach a policy from a target entity
+   *
+   * @param catalogPath path to the target entity
+   * @param target target entity
+   * @param policyCatalogPath path to the policy entity
+   * @param policy policy entity
+   * @return The policy mapping record we detached. Will return ENTITY_NOT_FOUND if the specified
+   *     target or policy does not exist. Will return POLICY_MAPPING_NOT_FOUND if the mapping cannot
+   *     be found
+   */
+  @Nonnull
+  PolicyAttachmentResult detachPolicyFromEntity(
+      @Nonnull List<PolarisEntityCore> catalogPath,
+      @Nonnull PolarisEntityCore target,
+      @Nonnull List<PolarisEntityCore> policyCatalogPath,
+      @Nonnull PolicyEntity policy);
+
+  /**
+   * Load all policies attached to a target entity
+   *
+   * @param target target entity
+   * @return the list of policy mapping records on the target entity. Will return ENTITY_NOT_FOUND
+   *     if the specified target does not exist.
+   */
+  @Nonnull
+  LoadPolicyMappingsResult loadPoliciesOnEntity(@Nonnull PolarisEntityCore target);
+
+  /**
+   * Load all policies of a specific type attached to a target entity
+   *
+   * @param target target entity
+   * @param policyType the type of policy
+   * @return the list of policy mapping records on the target entity. Will return ENTITY_NOT_FOUND
+   *     if the specified target does not exist.
+   */
+  @Nonnull
+  LoadPolicyMappingsResult loadPoliciesOnEntityByType(
+      @Nonnull PolarisEntityCore target, @Nonnull PolicyType policyType);
+
+  /**
+   * Get a sub-scoped credentials for an entity against the provided allowed read and write
+   * locations.
+   *
+   * @param catalogId the catalog id
+   * @param entityId the entity id
+   * @param allowListOperation whether to allow LIST operation on the allowedReadLocations and
+   *     allowedWriteLocations
+   * @param allowedReadLocations a set of allowed to read locations
+   * @param allowedWriteLocations a set of allowed to write locations
+   * @param refreshCredentialsEndpoint an optional endpoint to use for refreshing credentials. If
+   *     supported by the storage type it will be returned to the client in the appropriate
+   *     properties. The endpoint may be relative to the base URI and the client is responsible for
+   *     handling the relative path
+   * @return an enum map containing the scoped credentials
+   */
+  @Nonnull
+  ScopedCredentialsResult getSubscopedCredsForEntity(
+      long catalogId,
+      long entityId,
+      PolarisEntityType entityType,
+      boolean allowListOperation,
+      @Nonnull Set<String> allowedReadLocations,
+      @Nonnull Set<String> allowedWriteLocations,
+      Optional<String> refreshCredentialsEndpoint);
+
+  void writeEvents(@Nonnull List<PolarisEvent> polarisEvents);
+}

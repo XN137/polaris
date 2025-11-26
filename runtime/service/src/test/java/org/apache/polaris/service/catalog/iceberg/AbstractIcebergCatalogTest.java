@@ -89,7 +89,6 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.rest.requests.UpdateTableRequest;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.CharSequenceSet;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.admin.model.AwsStorageConfigInfo;
 import org.apache.polaris.core.admin.model.CreateCatalogRequest;
@@ -100,7 +99,6 @@ import org.apache.polaris.core.auth.PolarisAuthorizerImpl;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.NamespaceEntity;
@@ -113,8 +111,7 @@ import org.apache.polaris.core.entity.TaskEntity;
 import org.apache.polaris.core.entity.table.IcebergTableLikeEntity;
 import org.apache.polaris.core.exceptions.CommitConflictException;
 import org.apache.polaris.core.identity.provider.ServiceIdentityProvider;
-import org.apache.polaris.core.persistence.MetaStoreManagerFactory;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.cache.EntityCache;
 import org.apache.polaris.core.persistence.dao.entity.BaseResult;
 import org.apache.polaris.core.persistence.dao.entity.EntityResult;
@@ -146,6 +143,7 @@ import org.apache.polaris.service.exception.FakeAzureHttpResponse;
 import org.apache.polaris.service.exception.IcebergExceptionMapper;
 import org.apache.polaris.service.storage.PolarisStorageIntegrationProviderImpl;
 import org.apache.polaris.service.task.TableCleanupTaskHandler;
+import org.apache.polaris.service.task.TaskContext;
 import org.apache.polaris.service.task.TaskExecutor;
 import org.apache.polaris.service.task.TaskFileIOSupplier;
 import org.apache.polaris.service.test.TestData;
@@ -225,15 +223,13 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
           "catalog-override-key4");
 
   @Inject Clock clock;
-  @Inject MetaStoreManagerFactory metaStoreManagerFactory;
   @Inject StorageCredentialCache storageCredentialCache;
   @Inject PolarisStorageIntegrationProvider storageIntegrationProvider;
   @Inject ServiceIdentityProvider serviceIdentityProvider;
   @Inject PolarisDiagnostics diagServices;
   @Inject PolarisEventListener polarisEventListener;
-  @Inject PolarisMetaStoreManager metaStoreManager;
+  @Inject MetaStore metaStore;
   @Inject UserSecretsManager userSecretsManager;
-  @Inject CallContext callContext;
   @Inject RealmConfig realmConfig;
   @Inject ResolutionManifestFactory resolutionManifestFactory;
   @Inject StorageAccessConfigProvider storageAccessConfigProvider;
@@ -242,7 +238,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
   private IcebergCatalog catalog;
   private String realmName;
-  private PolarisCallContext polarisContext;
+  private RealmContext realmContext;
   private PolarisAdminService adminService;
   private ResolverFactory resolverFactory;
   private InMemoryFileIO fileIO;
@@ -260,9 +256,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
   @Nullable
   protected abstract EntityCache createEntityCache(
-      PolarisDiagnostics diagnostics,
-      RealmConfig realmConfig,
-      PolarisMetaStoreManager metaStoreManager);
+      PolarisDiagnostics diagnostics, RealmConfig realmConfig);
 
   protected void bootstrapRealm(String realmName) {}
 
@@ -277,24 +271,16 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
                 testInfo.getTestMethod().map(Method::getName).orElse("test"), System.nanoTime());
     bootstrapRealm(realmName);
 
-    RealmContext realmContext = () -> realmName;
+    realmContext = () -> realmName;
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
-    polarisContext = callContext.getPolarisCallContext();
 
-    EntityCache entityCache = createEntityCache(diagServices, realmConfig, metaStoreManager);
+    EntityCache entityCache = createEntityCache(diagServices, realmConfig);
     resolverFactory =
         (principal, referenceCatalogName) ->
-            new Resolver(
-                diagServices,
-                polarisContext,
-                metaStoreManager,
-                principal,
-                entityCache,
-                referenceCatalogName);
+            new Resolver(diagServices, metaStore, principal, entityCache, referenceCatalogName);
     QuarkusMock.installMockForType(resolverFactory, ResolverFactory.class);
 
-    PrincipalEntity rootPrincipal =
-        metaStoreManager.findRootPrincipal(polarisContext).orElseThrow();
+    PrincipalEntity rootPrincipal = metaStore.findRootPrincipal().orElseThrow();
     authenticatedRoot = PolarisPrincipal.of(rootPrincipal, Set.of());
 
     PolarisAuthorizer authorizer = new PolarisAuthorizerImpl(realmConfig);
@@ -302,9 +288,9 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
     adminService =
         new PolarisAdminService(
-            polarisContext,
+            realmConfig,
             resolutionManifestFactory,
-            metaStoreManager,
+            metaStore,
             userSecretsManager,
             serviceIdentityProvider,
             authenticatedRoot,
@@ -366,7 +352,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
   @AfterEach
   public void after() throws IOException {
     catalog().close();
-    metaStoreManager.purge(polarisContext);
+    metaStore.purge();
   }
 
   @Override
@@ -416,16 +402,15 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
   }
 
   protected IcebergCatalog newIcebergCatalog(String catalogName) {
-    return newIcebergCatalog(catalogName, metaStoreManager);
+    return newIcebergCatalog(catalogName, metaStore);
+  }
+
+  protected IcebergCatalog newIcebergCatalog(String catalogName, MetaStore metaStore) {
+    return newIcebergCatalog(catalogName, metaStore, fileIOFactory);
   }
 
   protected IcebergCatalog newIcebergCatalog(
-      String catalogName, PolarisMetaStoreManager metaStoreManager) {
-    return newIcebergCatalog(catalogName, metaStoreManager, fileIOFactory);
-  }
-
-  protected IcebergCatalog newIcebergCatalog(
-      String catalogName, PolarisMetaStoreManager metaStoreManager, FileIOFactory fileIOFactory) {
+      String catalogName, MetaStore metaStore, FileIOFactory fileIOFactory) {
     PolarisPassthroughResolutionView passthroughView =
         new PolarisPassthroughResolutionView(
             resolutionManifestFactory, authenticatedRoot, catalogName);
@@ -433,8 +418,9 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     return new IcebergCatalog(
         diagServices,
         resolverFactory,
-        metaStoreManager,
-        polarisContext,
+        metaStore,
+        realmContext,
+        realmConfig,
         passthroughView,
         authenticatedRoot,
         taskExecutor,
@@ -982,7 +968,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     final String tableLocation = "s3://externally-owned-bucket/validate_table/";
     final String tableMetadataLocation = tableLocation + "metadata/";
     FileIOFactory fileIOFactory = spy(this.fileIOFactory);
-    IcebergCatalog catalog = newIcebergCatalog(catalog().name(), metaStoreManager, fileIOFactory);
+    IcebergCatalog catalog = newIcebergCatalog(catalog().name(), metaStore, fileIOFactory);
     catalog.initialize(
         CATALOG_NAME,
         ImmutableMap.of(
@@ -1063,7 +1049,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     final String tableMetadataLocation = tableLocation + "metadata/v1.metadata.json";
 
     // Use a spy so we can inject a concurrency error
-    PolarisMetaStoreManager spyMetaStore = spy(metaStoreManager);
+    MetaStore spyMetaStore = spy(metaStore);
     IcebergCatalog catalog = newIcebergCatalog(CATALOG_NAME, spyMetaStore);
     catalog.initialize(
         CATALOG_NAME,
@@ -1091,7 +1077,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     // been the one to succeed creating the namespace first.
     doAnswer(
             invocation -> {
-              PolarisEntity entity = (PolarisEntity) invocation.getArgument(2);
+              PolarisEntity entity = invocation.getArgument(1);
               EntityResult result = (EntityResult) invocation.callRealMethod();
               if (entity.getType() == PolarisEntityType.NAMESPACE) {
                 return new EntityResult(
@@ -1102,7 +1088,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
               }
             })
         .when(spyMetaStore)
-        .createEntityIfNotExists(any(), any(), any());
+        .createEntityIfNotExists(any(), any());
 
     Assertions.assertThat(catalog.sendNotification(table, request))
         .as("Notification should be sent successfully")
@@ -1171,8 +1157,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     final String anotherTableLocation =
         String.format("s3://my-bucket/path/to/data/another_table_%s/", tableSuffix);
 
-    metaStoreManager.updateEntityPropertiesIfNotChanged(
-        polarisContext,
+    metaStore.updateEntityPropertiesIfNotChanged(
         List.of(PolarisEntity.toCore(catalogEntity)),
         new CatalogEntity.Builder(CatalogEntity.of(catalogEntity))
             .addProperty(
@@ -1231,8 +1216,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     final String anotherTableLocation =
         String.format("s3://my-bucket/path/to/data/another_table_%s", tableSuffix);
 
-    metaStoreManager.updateEntityPropertiesIfNotChanged(
-        polarisContext,
+    metaStore.updateEntityPropertiesIfNotChanged(
         List.of(PolarisEntity.toCore(catalogEntity)),
         new CatalogEntity.Builder(CatalogEntity.of(catalogEntity))
             .addProperty(
@@ -1288,8 +1272,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     final String anotherTableLocation =
         String.format("s3://my-bucket/path/to/data/another_table_%s/", tableSuffix);
 
-    metaStoreManager.updateEntityPropertiesIfNotChanged(
-        polarisContext,
+    metaStore.updateEntityPropertiesIfNotChanged(
         List.of(PolarisEntity.toCore(catalogEntity)),
         new CatalogEntity.Builder(CatalogEntity.of(catalogEntity))
             .addProperty(
@@ -1873,15 +1856,12 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
         .as("Table should not exist after drop")
         .rejects(TABLE);
     List<PolarisBaseEntity> tasks =
-        metaStoreManager
-            .loadTasks(polarisContext, "testExecutor", PageToken.fromLimit(1))
-            .getEntities();
+        metaStore.loadTasks("testExecutor", PageToken.fromLimit(1)).getEntities();
     Assertions.assertThat(tasks).hasSize(1);
     TaskEntity taskEntity = TaskEntity.of(tasks.get(0));
     Map<String, String> credentials =
-        metaStoreManager
+        metaStore
             .getSubscopedCredsForEntity(
-                polarisContext,
                 0,
                 taskEntity.getId(),
                 taskEntity.getType(),
@@ -1930,8 +1910,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
                     realmConfig, noPurgeStorageConfigModel, storageLocation)
                 .build()
                 .asCatalog(serviceIdentityProvider)));
-    IcebergCatalog noPurgeCatalog =
-        newIcebergCatalog(noPurgeCatalogName, metaStoreManager, fileIOFactory);
+    IcebergCatalog noPurgeCatalog = newIcebergCatalog(noPurgeCatalogName, metaStore, fileIOFactory);
     noPurgeCatalog.initialize(
         noPurgeCatalogName,
         ImmutableMap.of(
@@ -2023,7 +2002,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
   @Test
   public void testFileIOWrapper() {
     MeasuredFileIOFactory measured = new MeasuredFileIOFactory();
-    IcebergCatalog catalog = newIcebergCatalog(CATALOG_NAME, metaStoreManager, measured);
+    IcebergCatalog catalog = newIcebergCatalog(CATALOG_NAME, metaStore, measured);
     catalog.initialize(
         CATALOG_NAME,
         ImmutableMap.of(
@@ -2051,10 +2030,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
         .isTrue();
     TaskEntity taskEntity =
         TaskEntity.of(
-            metaStoreManager
-                .loadTasks(polarisContext, "testExecutor", PageToken.fromLimit(1))
-                .getEntities()
-                .getFirst());
+            metaStore.loadTasks("testExecutor", PageToken.fromLimit(1)).getEntities().getFirst());
     Map<String, String> properties = taskEntity.getInternalPropertiesAsMap();
     properties.put(CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.inmemory.InMemoryFileIO");
     taskEntity =
@@ -2075,9 +2051,9 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
             storageAccessConfigProvider);
 
     TableCleanupTaskHandler handler =
-        new TableCleanupTaskHandler(
-            Mockito.mock(), clock, metaStoreManagerFactory, taskFileIOSupplier);
-    handler.handleTask(taskEntity, polarisContext);
+        new TableCleanupTaskHandler(Mockito.mock(), clock, taskFileIOSupplier);
+    TaskContext taskContext = new TaskContext(realmContext, realmConfig, metaStore);
+    handler.handleTask(taskEntity, taskContext);
     Assertions.assertThat(measured.getNumDeletedFiles()).as("A table was deleted").isGreaterThan(0);
   }
 
@@ -2103,7 +2079,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
     // Use a spy so that non-transactional pre-requisites succeed normally, but we inject
     // a concurrency failure at final commit.
-    PolarisMetaStoreManager spyMetaStore = spy(metaStoreManager);
+    MetaStore spyMetaStore = spy(metaStore);
     final IcebergCatalog catalog = newIcebergCatalog(CATALOG_NAME, spyMetaStore);
     catalog.initialize(
         CATALOG_NAME,
@@ -2121,7 +2097,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
                 BaseResult.ReturnStatus.ENTITY_ALREADY_EXISTS,
                 PolarisEntitySubType.ICEBERG_TABLE.getCode()))
         .when(spyMetaStore)
-        .createEntityIfNotExists(any(), any(), any());
+        .createEntityIfNotExists(any(), any());
     Assertions.assertThatThrownBy(() -> catalog.createTable(table, SCHEMA))
         .isInstanceOf(AlreadyExistsException.class)
         .hasMessageContaining("conflict_table");
@@ -2140,7 +2116,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
     // Use a spy so that non-transactional pre-requisites succeed normally, but we inject
     // a concurrency failure at final commit.
-    PolarisMetaStoreManager spyMetaStore = spy(metaStoreManager);
+    MetaStore spyMetaStore = spy(metaStore);
     final IcebergCatalog catalog = newIcebergCatalog(CATALOG_NAME, spyMetaStore);
     catalog.initialize(
         CATALOG_NAME,
@@ -2156,7 +2132,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
 
     doReturn(new EntityResult(BaseResult.ReturnStatus.TARGET_ENTITY_CONCURRENTLY_MODIFIED, null))
         .when(spyMetaStore)
-        .updateEntityPropertiesIfNotChanged(any(), any(), any());
+        .updateEntityPropertiesIfNotChanged(any(), any());
 
     UpdateSchema update = table.updateSchema().addColumn("new_col", Types.LongType.get());
     Schema expected = update.apply();
@@ -2268,16 +2244,14 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
     catalog.loadTable(TABLE).newFastAppend().appendFile(FILE_A).commit();
     Table afterAppend = catalog.loadTable(TABLE);
     EntityResult schemaResult =
-        metaStoreManager.readEntityByName(
-            polarisContext,
+        metaStore.readEntityByName(
             List.of(catalogEntity),
             PolarisEntityType.NAMESPACE,
             PolarisEntitySubType.NULL_SUBTYPE,
             NS.toString());
     Assertions.assertThat(schemaResult).returns(true, EntityResult::isSuccess);
     EntityResult tableResult =
-        metaStoreManager.readEntityByName(
-            polarisContext,
+        metaStore.readEntityByName(
             List.of(catalogEntity, schemaResult.getEntity()),
             PolarisEntityType.TABLE_LIKE,
             PolarisEntitySubType.ICEBERG_TABLE,
@@ -2333,8 +2307,7 @@ public abstract class AbstractIcebergCatalogTest extends CatalogTests<IcebergCat
       EntityResult schemaResult, String key, Function<Table, String> expectedValue) {
     Table afterUpdate = catalog.loadTable(TABLE);
     EntityResult tableResult =
-        metaStoreManager.readEntityByName(
-            polarisContext,
+        metaStore.readEntityByName(
             List.of(catalogEntity, schemaResult.getEntity()),
             PolarisEntityType.TABLE_LIKE,
             PolarisEntitySubType.ICEBERG_TABLE,

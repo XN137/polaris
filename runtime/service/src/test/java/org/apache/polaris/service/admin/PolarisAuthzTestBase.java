@@ -44,7 +44,6 @@ import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.types.Types;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.admin.model.AuthenticationParameters;
 import org.apache.polaris.core.admin.model.ConnectionConfigInfo;
@@ -60,7 +59,6 @@ import org.apache.polaris.core.auth.PolarisAuthorizer;
 import org.apache.polaris.core.auth.PolarisAuthorizerImpl;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.credentials.PolarisCredentialManager;
 import org.apache.polaris.core.entity.CatalogEntity;
@@ -70,7 +68,7 @@ import org.apache.polaris.core.entity.PolarisPrivilege;
 import org.apache.polaris.core.entity.PrincipalEntity;
 import org.apache.polaris.core.entity.PrincipalRoleEntity;
 import org.apache.polaris.core.identity.provider.ServiceIdentityProvider;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.dao.entity.BaseResult;
 import org.apache.polaris.core.persistence.dao.entity.PrivilegeResult;
 import org.apache.polaris.core.persistence.resolver.PolarisResolutionManifest;
@@ -196,11 +194,11 @@ public abstract class PolarisAuthzTestBase {
   @Inject protected StorageCredentialCache storageCredentialCache;
   @Inject protected ResolverFactory resolverFactory;
   @Inject protected StorageAccessConfigProvider storageAccessConfigProvider;
-  @Inject protected PolarisMetaStoreManager metaStoreManager;
+  @Inject protected MetaStore metaStore;
   @Inject protected UserSecretsManager userSecretsManager;
-  @Inject protected CallContext callContext;
   @Inject protected RealmConfig realmConfig;
 
+  protected RealmContext realmContext;
   protected IcebergCatalog baseCatalog;
   protected PolarisGenericTableCatalog genericTableCatalog;
   protected PolicyCatalog policyCatalog;
@@ -210,7 +208,6 @@ public abstract class PolarisAuthzTestBase {
   protected PrincipalEntity principalEntity;
   protected PolarisPrincipal authenticatedRoot;
   protected PolarisAuthorizer polarisAuthorizer;
-  protected PolarisCallContext polarisContext;
 
   @BeforeAll
   public static void setUpMocks() {
@@ -227,9 +224,8 @@ public abstract class PolarisAuthzTestBase {
   public void before(TestInfo testInfo) {
     storageCredentialCache.invalidateAll();
 
-    RealmContext realmContext = testInfo::getDisplayName;
+    realmContext = testInfo::getDisplayName;
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
-    polarisContext = callContext.getPolarisCallContext();
 
     ContainerRequestContext containerRequestContext = Mockito.mock(ContainerRequestContext.class);
     Mockito.when(containerRequestContext.getProperty(Mockito.anyString()))
@@ -238,16 +234,15 @@ public abstract class PolarisAuthzTestBase {
 
     polarisAuthorizer = new PolarisAuthorizerImpl(realmConfig);
 
-    PrincipalEntity rootPrincipal =
-        metaStoreManager.findRootPrincipal(polarisContext).orElseThrow();
+    PrincipalEntity rootPrincipal = metaStore.findRootPrincipal().orElseThrow();
     this.authenticatedRoot = PolarisPrincipal.of(rootPrincipal, Set.of());
     QuarkusMock.installMockForType(authenticatedRoot, PolarisPrincipal.class);
 
     this.adminService =
         new PolarisAdminService(
-            callContext,
+            realmConfig,
             resolutionManifestFactory,
-            metaStoreManager,
+            metaStore,
             userSecretsManager,
             serviceIdentityProvider,
             authenticatedRoot,
@@ -324,8 +319,7 @@ public abstract class PolarisAuthzTestBase {
     PrincipalWithCredentials principal =
         adminService.createPrincipal(new PrincipalEntity.Builder().setName(PRINCIPAL_NAME).build());
     principalEntity =
-        rotateAndRefreshPrincipal(
-            metaStoreManager, PRINCIPAL_NAME, principal.getCredentials(), polarisContext);
+        rotateAndRefreshPrincipal(metaStore, PRINCIPAL_NAME, principal.getCredentials());
 
     // Pre-create the principal roles and catalog roles without any grants on securables, but
     // assign both principal roles to the principal, then CATALOG_ROLE1 to PRINCIPAL_ROLE1,
@@ -433,7 +427,7 @@ public abstract class PolarisAuthzTestBase {
         }
       }
     } finally {
-      metaStoreManager.purge(polarisContext);
+      metaStore.purge();
     }
   }
 
@@ -442,19 +436,14 @@ public abstract class PolarisAuthzTestBase {
   }
 
   protected @Nonnull PrincipalEntity rotateAndRefreshPrincipal(
-      PolarisMetaStoreManager metaStoreManager,
-      String principalName,
-      PrincipalWithCredentialsCredentials credentials,
-      PolarisCallContext polarisContext) {
-    PrincipalEntity principal =
-        metaStoreManager.findPrincipalByName(polarisContext, principalName).orElseThrow();
-    metaStoreManager.rotatePrincipalSecrets(
-        callContext.getPolarisCallContext(),
+      MetaStore metaStore, String principalName, PrincipalWithCredentialsCredentials credentials) {
+    PrincipalEntity principal = metaStore.findPrincipalByName(principalName).orElseThrow();
+    metaStore.rotatePrincipalSecrets(
         credentials.getClientId(),
         principal.getId(),
         false,
         credentials.getClientSecret()); // This should actually be the secret's hash
-    return metaStoreManager.findPrincipalByName(polarisContext, principalName).orElseThrow();
+    return metaStore.findPrincipalByName(principalName).orElseThrow();
   }
 
   /**
@@ -478,8 +467,9 @@ public abstract class PolarisAuthzTestBase {
         new IcebergCatalog(
             diagServices,
             resolverFactory,
-            metaStoreManager,
-            callContext,
+            metaStore,
+            realmContext,
+            realmConfig,
             passthroughView,
             authenticatedRoot,
             Mockito.mock(),
@@ -490,10 +480,9 @@ public abstract class PolarisAuthzTestBase {
         CATALOG_NAME,
         ImmutableMap.of(
             CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.inmemory.InMemoryFileIO"));
-    this.genericTableCatalog =
-        new PolarisGenericTableCatalog(metaStoreManager, callContext, passthroughView);
+    this.genericTableCatalog = new PolarisGenericTableCatalog(metaStore, passthroughView);
     this.genericTableCatalog.initialize(CATALOG_NAME, ImmutableMap.of());
-    this.policyCatalog = new PolicyCatalog(metaStoreManager, callContext, passthroughView);
+    this.policyCatalog = new PolicyCatalog(metaStore, passthroughView);
   }
 
   @Alternative
@@ -503,7 +492,7 @@ public abstract class PolarisAuthzTestBase {
 
     @SuppressWarnings("unused") // Required by CDI
     protected TestPolarisCallContextCatalogFactory() {
-      this(null, null, null, null, null, null, null, null, null);
+      this(null, null, null, null, null, null, null, null, null, null);
     }
 
     @Inject
@@ -514,8 +503,9 @@ public abstract class PolarisAuthzTestBase {
         StorageAccessConfigProvider accessConfigProvider,
         FileIOFactory fileIOFactory,
         PolarisEventListener polarisEventListener,
-        PolarisMetaStoreManager metaStoreManager,
-        CallContext callContext,
+        MetaStore metaStore,
+        RealmContext realmContext,
+        RealmConfig realmConfig,
         PolarisPrincipal principal) {
       super(
           diagnostics,
@@ -524,8 +514,9 @@ public abstract class PolarisAuthzTestBase {
           accessConfigProvider,
           fileIOFactory,
           polarisEventListener,
-          metaStoreManager,
-          callContext,
+          metaStore,
+          realmContext,
+          realmConfig,
           principal);
     }
 

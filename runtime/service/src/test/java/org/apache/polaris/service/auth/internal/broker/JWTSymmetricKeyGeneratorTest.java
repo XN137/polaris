@@ -25,10 +25,9 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.Optional;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.entity.PolarisPrincipalSecrets;
 import org.apache.polaris.core.entity.PrincipalEntity;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.dao.entity.PrincipalSecretsResult;
 import org.apache.polaris.service.types.TokenType;
 import org.junit.jupiter.api.Test;
@@ -39,21 +38,18 @@ public class JWTSymmetricKeyGeneratorTest {
   /** Sanity test to verify that we can generate a token */
   @Test
   public void testJWTSymmetricKeyGenerator() {
-    PolarisCallContext polarisCallContext = Mockito.mock(PolarisCallContext.class);
-    PolarisMetaStoreManager metastoreManager = Mockito.mock(PolarisMetaStoreManager.class);
+    MetaStore metaStore = Mockito.mock(MetaStore.class);
     long principalId = 123L;
     String mainSecret = "test_secret";
     String clientId = "test_client_id";
     PolarisPrincipalSecrets principalSecrets =
         new PolarisPrincipalSecrets(principalId, clientId, mainSecret, "otherSecret");
-    Mockito.when(metastoreManager.loadPrincipalSecrets(polarisCallContext, clientId))
+    Mockito.when(metaStore.loadPrincipalSecrets(clientId))
         .thenReturn(new PrincipalSecretsResult(principalSecrets));
     PrincipalEntity principal =
         new PrincipalEntity.Builder().setId(principalId).setName("principal").build();
-    Mockito.when(metastoreManager.findPrincipalById(polarisCallContext, principalId))
-        .thenReturn(Optional.of(principal));
-    TokenBroker generator =
-        new SymmetricKeyJWTBroker(metastoreManager, polarisCallContext, 666, () -> "polaris");
+    Mockito.when(metaStore.findPrincipalById(principalId)).thenReturn(Optional.of(principal));
+    TokenBroker generator = new SymmetricKeyJWTBroker(metaStore, 666, () -> "polaris");
     TokenResponse token =
         generator.generateFromClientSecrets(
             clientId,

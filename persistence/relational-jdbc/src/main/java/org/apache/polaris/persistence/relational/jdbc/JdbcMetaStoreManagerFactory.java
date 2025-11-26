@@ -235,10 +235,8 @@ public class JdbcMetaStoreManagerFactory implements MetaStoreManagerFactory {
   public synchronized EntityCache getOrCreateEntityCache(
       RealmContext realmContext, RealmConfig realmConfig) {
     if (!entityCacheMap.containsKey(realmContext.getRealmIdentifier())) {
-      PolarisMetaStoreManager metaStoreManager = getOrCreateMetaStoreManager(realmContext);
       entityCacheMap.put(
-          realmContext.getRealmIdentifier(),
-          new InMemoryEntityCache(diagnostics, realmConfig, metaStoreManager));
+          realmContext.getRealmIdentifier(), new InMemoryEntityCache(diagnostics, realmConfig));
     }
 
     return entityCacheMap.get(realmContext.getRealmIdentifier());

@@ -31,7 +31,6 @@ import org.apache.iceberg.ManifestFiles;
 import org.apache.iceberg.ManifestReader;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.io.FileIO;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.entity.AsyncTaskType;
 import org.apache.polaris.core.entity.TaskEntity;
 import org.slf4j.Logger;
@@ -58,7 +57,7 @@ public class ManifestFileCleanupTaskHandler extends FileCleanupTaskHandler {
   }
 
   @Override
-  public boolean handleTask(TaskEntity task, CallContext callContext) {
+  public boolean handleTask(TaskEntity task, TaskContext taskContext) {
     ManifestCleanupTask cleanupTask = task.readData(ManifestCleanupTask.class);
     TableIdentifier tableId = cleanupTask.tableId();
     try (FileIO authorizedFileIO = fileIOSupplier.apply(task, tableId)) {

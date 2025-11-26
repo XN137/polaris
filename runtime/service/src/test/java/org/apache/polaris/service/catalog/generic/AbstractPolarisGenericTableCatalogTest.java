@@ -35,7 +35,6 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.types.Types;
-import org.apache.polaris.core.PolarisCallContext;
 import org.apache.polaris.core.PolarisDiagnostics;
 import org.apache.polaris.core.admin.model.AwsStorageConfigInfo;
 import org.apache.polaris.core.admin.model.CreateCatalogRequest;
@@ -45,14 +44,13 @@ import org.apache.polaris.core.auth.PolarisAuthorizerImpl;
 import org.apache.polaris.core.auth.PolarisPrincipal;
 import org.apache.polaris.core.config.FeatureConfiguration;
 import org.apache.polaris.core.config.RealmConfig;
-import org.apache.polaris.core.context.CallContext;
 import org.apache.polaris.core.context.RealmContext;
 import org.apache.polaris.core.entity.CatalogEntity;
 import org.apache.polaris.core.entity.PolarisEntity;
 import org.apache.polaris.core.entity.PrincipalEntity;
 import org.apache.polaris.core.entity.table.GenericTableEntity;
 import org.apache.polaris.core.identity.provider.ServiceIdentityProvider;
-import org.apache.polaris.core.persistence.PolarisMetaStoreManager;
+import org.apache.polaris.core.persistence.MetaStore;
 import org.apache.polaris.core.persistence.resolver.ResolutionManifestFactory;
 import org.apache.polaris.core.persistence.resolver.ResolverFactory;
 import org.apache.polaris.core.secrets.UserSecretsManager;
@@ -100,9 +98,8 @@ public abstract class AbstractPolarisGenericTableCatalogTest {
   @Inject PolarisDiagnostics diagServices;
   @Inject ResolverFactory resolverFactory;
   @Inject ResolutionManifestFactory resolutionManifestFactory;
-  @Inject PolarisMetaStoreManager metaStoreManager;
+  @Inject MetaStore metaStore;
   @Inject UserSecretsManager userSecretsManager;
-  @Inject CallContext callContext;
   @Inject RealmConfig realmConfig;
   @Inject StorageAccessConfigProvider storageAccessConfigProvider;
   @Inject FileIOFactory fileIOFactory;
@@ -111,7 +108,6 @@ public abstract class AbstractPolarisGenericTableCatalogTest {
   private IcebergCatalog icebergCatalog;
   private AwsStorageConfigInfo storageConfigModel;
   private String realmName;
-  private PolarisCallContext polarisContext;
   private PolarisAdminService adminService;
   private PolarisPrincipal authenticatedRoot;
   private PolarisEntity catalogEntity;
@@ -143,10 +139,8 @@ public abstract class AbstractPolarisGenericTableCatalogTest {
 
     RealmContext realmContext = () -> realmName;
     QuarkusMock.installMockForType(realmContext, RealmContext.class);
-    polarisContext = callContext.getPolarisCallContext();
 
-    PrincipalEntity rootPrincipal =
-        metaStoreManager.findRootPrincipal(polarisContext).orElseThrow();
+    PrincipalEntity rootPrincipal = metaStore.findRootPrincipal().orElseThrow();
     authenticatedRoot = PolarisPrincipal.of(rootPrincipal, Set.of());
 
     PolarisAuthorizer authorizer = new PolarisAuthorizerImpl(realmConfig);
@@ -154,9 +148,9 @@ public abstract class AbstractPolarisGenericTableCatalogTest {
 
     adminService =
         new PolarisAdminService(
-            polarisContext,
+            realmConfig,
             resolutionManifestFactory,
-            metaStoreManager,
+            metaStore,
             userSecretsManager,
             serviceIdentityProvider,
             authenticatedRoot,
@@ -215,15 +209,15 @@ public abstract class AbstractPolarisGenericTableCatalogTest {
             isA(AwsStorageConfigurationInfo.class)))
         .thenReturn((PolarisStorageIntegration) storageIntegration);
 
-    this.genericTableCatalog =
-        new PolarisGenericTableCatalog(metaStoreManager, polarisContext, passthroughView);
+    this.genericTableCatalog = new PolarisGenericTableCatalog(metaStore, passthroughView);
     this.genericTableCatalog.initialize(CATALOG_NAME, Map.of());
     this.icebergCatalog =
         new IcebergCatalog(
             diagServices,
             resolverFactory,
-            metaStoreManager,
-            polarisContext,
+            metaStore,
+            realmContext,
+            realmConfig,
             passthroughView,
             authenticatedRoot,
             taskExecutor,
@@ -238,7 +232,7 @@ public abstract class AbstractPolarisGenericTableCatalogTest {
 
   @AfterEach
   public void after() throws IOException {
-    metaStoreManager.purge(polarisContext);
+    metaStore.purge();
   }
 
   @Test
