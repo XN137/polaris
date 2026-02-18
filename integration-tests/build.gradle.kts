@@ -38,7 +38,7 @@ dependencies {
   implementation("org.apache.iceberg:iceberg-api:${libs.versions.iceberg.get()}:tests")
   implementation("org.apache.iceberg:iceberg-core:${libs.versions.iceberg.get()}:tests")
 
-  implementation(libs.hadoop.common) {
+  runtimeOnly(libs.hadoop.common) {
     exclude("org.slf4j", "slf4j-reload4j")
     exclude("org.slf4j", "slf4j-log4j12")
     exclude("ch.qos.reload4j", "reload4j")

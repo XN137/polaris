@@ -18,8 +18,8 @@
  */
 package org.apache.polaris.service.it.test;
 
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.CREATED;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.apache.polaris.service.it.env.PolarisClient.polarisClient;
 import static org.apache.polaris.service.it.test.PolarisApplicationIntegrationTest.PRINCIPAL_ROLE_ALL;
 import static org.assertj.core.api.Assertions.assertThat;

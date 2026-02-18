@@ -45,8 +45,6 @@ dependencies {
     exclude("com.sun.jersey", "jersey-servlet")
     exclude("io.dropwizard.metrics", "metrics-core")
   }
-  implementation(libs.hadoop.client.api)
-  implementation(libs.hadoop.client.runtime)
 
   // CDI dependencies for runtime discovery
   implementation(libs.jakarta.enterprise.cdi.api)
