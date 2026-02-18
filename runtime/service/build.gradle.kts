@@ -74,8 +74,7 @@ dependencies {
   implementation(libs.guava)
   implementation(libs.slf4j.api)
 
-  implementation(libs.hadoop.client.api)
-  implementation(libs.hadoop.client.runtime)
+  runtimeOnly(libs.hadoop.common)
 
   implementation(libs.auth0.jwt)
 
