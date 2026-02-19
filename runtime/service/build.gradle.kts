@@ -74,8 +74,6 @@ dependencies {
   implementation(libs.guava)
   implementation(libs.slf4j.api)
 
-  runtimeOnly(libs.hadoop.common)
-
   implementation(libs.auth0.jwt)
 
   implementation(libs.smallrye.common.annotation)
